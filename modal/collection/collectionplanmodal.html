@@ -1,0 +1,68 @@
+
+<?php include __DIR__ . '/../../crud/collection/plan.php';?>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="form-collection" id="collectionform">
+    <legend>Collection Planning</legend>
+    <form method="post">
+      <input type="hidden" id="RequestId">
+     
+        <div class="form-group">
+          <label for="requestTitle">Plan title</label>
+          <input type="text" id="requestTitle" name="requestTitle" required>
+        </div>
+
+
+ 
+
+
+    
+                  <div class="form-group">
+          <label for="dam">Remaining Days</label>
+          <input type="number" id="dam" name="remaining">
+        </div>
+        
+
+        <div class="form-group">
+          <label for="paymentMethod">Plan TYPE</label>
+          <select id="paymentMethod" name="planType">
+            <option value="">Select Plan Type</option>
+            <option value="Automated">Automated</option>
+            <option value="Manual">Manual</option>
+             <option value="Mixed / Hybrid">Mixed / Hybrid</option>
+     </select>
+        </div>
+  
+       
+     
+
+        <div class="form-actions">
+          <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        <button type="submit" name="plan" class="btn btn-primary">Submit Request</button>
+
+        </div>
+    
+    </form>
+  </div>
+</div>
+
+<script>
+  const toggleFormBtn = document.getElementById('toggleFormBtn');
+const modalOverlay = document.getElementById('modalOverlay');
+const cancelBtn = document.getElementById('cancelBtn');
+
+toggleFormBtn.addEventListener('click', () => {
+  modalOverlay.style.display = 'flex';
+});
+
+cancelBtn.addEventListener('click', () => {
+  modalOverlay.style.display = 'none';
+});
+
+// Optional: Close modal when clicking outside
+modalOverlay.addEventListener('click', (e) => {
+  if (e.target === modalOverlay) {
+    modalOverlay.style.display = 'none';
+  }
+});
+
+</script>

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FMS — Disbursement Prototype</title>
+  <style>
+    :root{--bg:#f4f6fb;--card:#fff;--accent:#0b66ff;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#111}
+    header{height:64px;background:linear-gradient(90deg,var(--accent),#4ea8ff);color:#fff;display:flex;align-items:center;padding:0 20px;gap:14px}
+    .logo{font-weight:700}
+    .app{display:grid;grid-template-columns:260px 1fr;min-height:calc(100vh - 64px)}
+    nav{padding:18px;background:transparent;border-right:1px solid rgba(16,24,40,0.04)}
+    .nav-card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.04)}
+    .nav-list{list-style:none;padding:0;margin:12px 0 0 0}
+    .nav-list li{margin-bottom:8px}
+    .nav-btn{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;border:none;background:transparent;width:100%;text-align:left;cursor:pointer}
+    .nav-btn.active{background:rgba(11,102,255,0.08);color:var(--accent)}
+    main{padding:20px}
+    .card{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(16,24,40,0.04);margin-bottom:16px}
+    .toolbar{display:flex;gap:8px;align-items:center}
+    .btn{background:var(--accent);color:#fff;padding:8px 10px;border-radius:8px;border:none;cursor:pointer}
+    .ghost{background:transparent;border:1px solid #e6eefc;color:var(--accent)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px;border-bottom:1px solid #f1f5f9;text-align:left;font-size:13px}
+    .badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,0.45);display:none;align-items:center;justify-content:center}
+    .modal{background:var(--card);width:880px;max-width:96%;padding:16px;border-radius:10px}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:12px}
+    .small{font-size:13px;color:var(--muted)}
+    .search{padding:8px;border-radius:8px;border:1px solid #e6eefc;width:320px}
+    @media (max-width:900px){.app{grid-template-columns:1fr}nav{display:none}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">FMS · Disbursement Prototype</div>
+    <div style="margin-left:auto" class="small">Demo UI — multipage HTML prototype</div>
+  </header>
+
+  <div class="app">
+    <nav style="padding:18px">
+      <div class="nav-card">
+        <div style="font-weight:600">Modules</div>
+        <ul class="nav-list" id="navList">
+          <li><button class="nav-btn active" data-page="payments">Payments</button></li>
+          <li><button class="nav-btn" data-page="vendors">Vendors</button></li>
+          <li><button class="nav-btn" data-page="invoices">Invoices</button></li>
+          <li><button class="nav-btn" data-page="approvals">Approvals</button></li>
+          <li><button class="nav-btn" data-page="schedule">Schedule</button></li>
+          <li><button class="nav-btn" data-page="ledger">Ledger</button></li>
+          <li><button class="nav-btn" data-page="bank">Bank Connect</button></li>
+        </ul>
+      </div>
+    </nav>
+
+    <main id="content">
+      <!-- Payments -->
+      <section class="page" id="payments">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Payments</h2>
+              <div class="small">Execute and track payments</div>
+            </div>
+            <div class="toolbar">
+              <input class="search" placeholder="Search txn / vendor" />
+              <button class="btn" onclick="openModal('paymentView')">New Payment</button>
+              <button class="btn ghost" onclick="alert('Batch Pay flow')">Batch Pay</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="padding:12px;border-radius:8px;background:#fff;min-width:180px">Total Due<br><strong>₱75,000</strong></div>
+            <div style="padding:12px;border-radius:8px;background:#fff;min-width:180px">Today<br><strong>₱25,000</strong></div>
+            <div style="padding:12px;border-radius:8px;background:#fff;min-width:180px">Failed<br><strong>1</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>PaymentID</th><th>Vendor</th><th>Job</th><th>Amount</th><th>Method</th><th>Scheduled</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>DIS001</td><td>OceanBlue Shipping</td><td>J-2025-01</td><td>50,000</td><td>Bank</td><td>2025-08-05</td><td><span class="badge" style="background:#e6f4ff;color:#0b66ff">Completed</span></td><td><button class="btn ghost" onclick="openModal('paymentView','DIS001')">View</button></td></tr>
+              <tr><td>DIS002</td><td>Manila Truck Lines</td><td>J-2025-02</td><td>25,000</td><td>Cash</td><td>2025-08-10</td><td><span class="badge" style="background:#fff7e6;color:#ff9900">Scheduled</span></td><td><button class="btn ghost" onclick="openModal('paymentView','DIS002')">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Vendors -->
+      <section class="page" id="vendors" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Vendors</h2>
+              <div class="small">Manage payee details & bank accounts</div>
+            </div>
+            <div class="toolbar">
+              <input class="search" placeholder="Search vendor" />
+              <button class="btn" onclick="openModal('vendorAdd')">Add Vendor</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>VendorID</th><th>Name</th><th>Contact</th><th>Bank</th><th>Terms</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>V001</td><td>OceanBlue Shipping</td><td>+63-912-111-2222</td><td>123-456-789</td><td>Net 30</td><td><button class="btn ghost" onclick="openModal('vendorView','V001')">View</button></td></tr>
+              <tr><td>V002</td><td>Manila Truck Lines</td><td>+63-915-222-3333</td><td>987-654-321</td><td>Net 15</td><td><button class="btn ghost" onclick="openModal('vendorView','V002')">View</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Invoices -->
+      <section class="page" id="invoices" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Invoices</h2>
+              <div class="small">Verify and match invoices to jobs</div>
+            </div>
+            <div class="toolbar">
+              <input class="search" placeholder="Search invoice / job" />
+              <button class="btn" onclick="openModal('invoiceUpload')">Upload Invoice</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card grid">
+          <div>
+            <table>
+              <thead><tr><th>InvoiceID</th><th>Vendor</th><th>Job</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody>
+                <tr><td>INV001</td><td>OceanBlue Shipping</td><td>J-2025-01</td><td>50,000</td><td><span class="badge" style="background:#e6f4ff;color:#0b66ff">Verified</span></td><td><button class="btn ghost" onclick="openModal('invoiceView','INV001')">Verify</button></td></tr>
+                <tr><td>INV002</td><td>Manila Truck Lines</td><td>J-2025-02</td><td>25,000</td><td><span class="badge" style="background:#fff7e6;color:#ff9900">Pending</span></td><td><button class="btn ghost" onclick="openModal('invoiceView','INV002')">Verify</button></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <div class="card">
+              <div style="font-weight:600">OCR Confidence</div>
+              <div class="small">Auto-extraction suggests Job#: J-2025-02 (82% confidence)</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Approvals -->
+      <section class="page" id="approvals" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Approvals</h2>
+              <div class="small">Multi-level approval workflow</div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" onclick="alert('Open my approvals')">My Approvals</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>RequestID</th><th>Type</th><th>Requestor</th><th>Vendor</th><th>Amount</th><th>Current Approver</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>REQ001</td><td>Invoice</td><td>J. Santos</td><td>OceanBlue</td><td>50,000</td><td>Manager A</td><td><button class="btn" onclick="openModal('approvalView','REQ001')">Approve</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Schedule -->
+      <section class="page" id="schedule" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Payment Schedule</h2>
+              <div class="small">Calendar & batching controls</div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" onclick="alert('Run due today')">Run Due Today</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-weight:600">Upcoming (Next 7 days)</div>
+          <table>
+            <thead><tr><th>Date</th><th>PaymentID</th><th>Vendor</th><th>Amount</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>2025-08-10</td><td>DIS002</td><td>Manila Truck Lines</td><td>25,000</td><td><button class="btn ghost" onclick="alert('Reschedule')">Reschedule</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Ledger -->
+      <section class="page" id="ledger" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Ledger / Reconciliation</h2>
+              <div class="small">Bookkeeping and bank reconciliation</div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" onclick="alert('Upload bank statement')">Reconcile</button>
+              <button class="btn ghost" onclick="alert('Export journal')">Export</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>LedgerID</th><th>Date</th><th>PaymentID</th><th>Vendor</th><th>Debit</th><th>GL Account</th></tr></thead>
+            <tbody>
+              <tr><td>L001</td><td>2025-08-05</td><td>DIS001</td><td>OceanBlue</td><td>50,000</td><td>Bank - Cash</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Bank Connect -->
+      <section class="page" id="bank" style="display:none">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <h2 style="margin:0">Bank Connect</h2>
+              <div class="small">Manage bank API & logs</div>
+            </div>
+            <div class="toolbar">
+              <button class="btn" onclick="openModal('bankAdd')">Add Bank</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <div style="padding:12px;border-radius:8px;background:#fff;min-width:220px">Connected: 1</div>
+            <div style="padding:12px;border-radius:8px;background:#fff;min-width:220px">Last sync: 2025-08-09</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>Bank</th><th>Status</th><th>Last Sync</th><th>Actions</th></tr></thead>
+            <tbody>
+              <tr><td>Bank of Manila (Sandbox)</td><td>Connected</td><td>2025-08-09 08:22</td><td><button class="btn ghost" onclick="alert('View logs')">Logs</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" id="modalContent"></div>
+  </div>
+
+  <script>
+    // navigation
+    document.getElementById('navList').addEventListener('click', e=>{
+      if(!e.target.matches('.nav-btn')) return;
+      document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+      e.target.classList.add('active');
+      const page = e.target.dataset.page;
+      document.querySelectorAll('.page').forEach(p=>p.style.display='none');
+      document.getElementById(page).style.display = 'block';
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+
+    // modal helper
+    function openModal(type,id){
+      const mb = document.getElementById('modalBackdrop');
+      const mc = document.getElementById('modalContent');
+      let html = '';
+      if(type==='paymentView'){
+        html = `<h3>Payment View ${id?'- '+id:''}</h3><div class='small'>Timeline / txn refs</div><hr><div style='display:flex;gap:12px'><div style='flex:1'><p><strong>Amount:</strong> ₱50,000</p><p><strong>Vendor:</strong> OceanBlue Shipping</p><p><strong>Status:</strong> Completed</p></div><div style='width:260px'><button class='btn' onclick="alert('Download receipt')">Download Receipt</button></div></div><div style='margin-top:12px;text-align:right'><button class='btn ghost' onclick='closeModal()'>Close</button></div>`;
+      } else if(type==='vendorAdd'){
+        html = `<h3>Add Vendor</h3><div class='small'>Fill vendor details</div><hr><div><label>Vendor Name</label><input style='width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #eef2ff'></div><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Save</button> <button class='btn ghost' onclick='closeModal()'>Cancel</button></div>`;
+      } else if(type==='vendorView'){
+        html = `<h3>Vendor ${id}</h3><div class='small'>Profile • Bank Accounts • Docs</div><hr><div><p><strong>Phone:</strong> +63-912-111-2222</p><p><strong>Bank:</strong> 123-456-789</p></div><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Close</button></div>`;
+      } else if(type==='invoiceUpload'){
+        html = `<h3>Upload Invoice</h3><div class='small'>PDF, JPG or PNG</div><hr><input type='file' style='width:100%'><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Upload</button> <button class='btn ghost' onclick='closeModal()'>Cancel</button></div>`;
+      } else if(type==='invoiceView'){
+        html = `<h3>Invoice ${id}</h3><div class='small'>Preview & match to job</div><hr><div style='display:flex;gap:12px'><div style='flex:1'><div style='height:220px;background:#f7fafc;border:1px dashed #e6eefc;border-radius:8px;display:flex;align-items:center;justify-content:center'>PDF Preview</div></div><div style='width:320px'><p><strong>Detected Job:</strong> J-2025-02</p><p><strong>Amount:</strong> ₱25,000</p><p><strong>Confidence:</strong> 82%</p></div></div><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Match & Verify</button> <button class='btn ghost' onclick='closeModal()'>Flag</button></div>`;
+      } else if(type==='approvalView'){
+        html = `<h3>Approval ${id}</h3><div class='small'>Approve or request changes</div><hr><p><strong>Amount:</strong> ₱50,000</p><p><strong>Requested by:</strong> J. Santos</p><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Approve</button> <button class='btn ghost' onclick='closeModal()'>Reject</button></div>`;
+      } else if(type==='bankAdd'){
+        html = `<h3>Add Bank Connection</h3><div class='small'>API credentials (secure)</div><hr><div><label>Bank Name</label><input style='width:100%;padding:8px;margin-top:6px;border-radius:6px;border:1px solid #eef2ff'></div><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Save</button> <button class='btn ghost' onclick='closeModal()'>Cancel</button></div>`;
+      } else {
+        html = `<h3>Info</h3><div class='small'>No view</div><div style='margin-top:12px;text-align:right'><button class='btn' onclick='closeModal()'>Close</button></div>`;
+      }
+      mc.innerHTML = html; mb.style.display='flex';
+    }
+    function closeModal(){document.getElementById('modalBackdrop').style.display='none';document.getElementById('modalContent').innerHTML='';}
+
+    // close modal when clicking backdrop
+    document.getElementById('modalBackdrop').addEventListener('click', e=>{ if(e.target.id==='modalBackdrop') closeModal(); });
+  </script>
+</body>
+</html>

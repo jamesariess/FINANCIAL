@@ -1,0 +1,154 @@
+ <div class="table-section" id="invoiceTableSection">
+      <h3>Plan Report</h3>
+      <table id="employeesTable">
+          <thead>
+      <tr>
+        <th>ID</th>
+        <th>Plan Title</th>
+        <th>Remaining Days</th>
+        <th>Plan Type</th>
+        <th>Status</th>
+        <th>Created At</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (!empty($plans)): ?>
+        <?php foreach ($plans as $row): ?>
+          <tr>
+            <td><?php echo htmlspecialchars($row['planID']); ?></td>
+            <td><?php echo htmlspecialchars($row['plan']); ?></td>
+            <td><?php echo htmlspecialchars($row['remaining_days']); ?></td>
+            <td><?php echo htmlspecialchars($row['plan_type']); ?></td>
+            <td><?php echo htmlspecialchars($row['status']); ?></td>
+          
+            <td><?php echo htmlspecialchars($row['Date']); ?></td>
+           <td>
+           <button type="button" onclick="openViewModal('<?php echo $row['planID']; ?>','<?php echo $row['plan']; ?>','<?php echo $row['remaining_days']; ?>','<?php echo $row['plan_type']; ?>','<?php echo $row['status']; ?>','<?php echo $row['Date']; ?>')">👁️ View</button>
+           <button type="button" onclick="openUpdateModal('<?php echo $row['planID']; ?>','<?php echo $row['plan']; ?>','<?php echo $row['remaining_days']; ?>','<?php echo $row['plan_type']; ?>')">✏️ Update</button>
+           <button type="button" onclick="archivePlan('<?php echo $row['planID']; ?>')">📦 Archive</button>
+           </td>
+
+          </tr>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr>
+          <td colspan="7">No collection plans found.</td>
+        </tr>
+      <?php endif; ?>
+    </tbody>
+      </table>
+    </div>
+
+
+    <!-- View To bossing -james -->
+<div class="modal-overlay" id="viewModal" style="display:none;">
+  <div class="form-collection">
+    <h3>👁️ View Collection Plan</h3>
+    <p><b>ID:</b> <span id="view_id"></span></p>
+    <p><b>Plan Title:</b> <span id="view_title"></span></p>
+    <p><b>Remaining Days:</b> <span id="view_remaining"></span></p>
+    <p><b>Type:</b> <span id="view_type"></span></p>
+    <p><b>Status:</b> <span id="view_status"></span></p>
+    <p><b>Created At:</b> <span id="view_created"></span></p>
+    <button type="button" onclick="closeViewModal()">Close</button>
+  </div>
+</div>
+
+<script>
+function openViewModal(id, title, remaining, type, status, created) {
+  document.getElementById('view_id').innerText = id;
+  document.getElementById('view_title').innerText = title;
+  document.getElementById('view_remaining').innerText = remaining;
+  document.getElementById('view_type').innerText = type;
+  document.getElementById('view_status').innerText = status;
+  document.getElementById('view_created').innerText = created;
+  document.getElementById('viewModal').style.display = 'flex';
+}
+
+function closeViewModal() {
+  document.getElementById('viewModal').style.display = 'none';
+}
+</script>
+
+
+
+
+<!-- Update Modal -->
+<div class="modal-overlay" id="updateModal" style="display:none;">
+  <div class="form-collection">
+    <h3>✏️ Update Collection Plan</h3>
+    <form id="updateForm">
+      <input type="hidden" name="id" id="updateID">
+
+      <label>Plan Title</label>
+      <input type="text" name="requestTitle" id="updateTitle" required>
+
+      <label>Remaining Days</label>
+      <input type="number" name="remaining" id="updateRemaining" required>
+
+      <label>Plan Type</label>
+      <select name="planType" id="updateType" required>
+        <option value="Automated">Automated</option>
+        <option value="Manual">Manual</option>
+        <option value="Mixed / Hybrid">Mixed / Hybrid</option>
+      </select>
+
+      <button type="submit">💾 Save</button>
+      <button type="button" onclick="closeUpdateModal()">Cancel</button>
+    </form>
+  </div>
+</div>
+
+<script>
+function openUpdateModal(id, title, remaining, type) {
+  document.getElementById('updateID').value = id;
+  document.getElementById('updateTitle').value = title;
+  document.getElementById('updateRemaining').value = remaining;
+  document.getElementById('updateType').value = type;
+  document.getElementById('updateModal').style.display = 'flex';
+}
+
+function closeUpdateModal() {
+  document.getElementById('updateModal').style.display = 'none';
+}
+
+// AJAX submit
+document.getElementById('updateForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  let formData = new FormData(this);
+
+  fetch( '', {
+    method: 'POST',
+    body: formData
+  })
+  .then(res => res.text())
+  .then(data => {
+    alert(data);
+    location.reload(); // refresh table
+  })
+  .catch(err => console.error(err));
+});
+</script>
+
+
+
+
+
+<script>
+function archivePlan(id) {
+  if (!confirm("Are you sure you want to archive this plan?")) return;
+
+  fetch( '', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: 'id=' + id
+  })
+  .then(res => res.text())
+  .then(data => {
+    alert(data);
+    location.reload(); // refresh table
+  })
+  .catch(err => console.error(err));
+}
+</script>
