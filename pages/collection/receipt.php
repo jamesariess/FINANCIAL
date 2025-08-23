@@ -1,3 +1,4 @@
+<?php include __DIR__ . '/../../crud/collection/receipt.php';?>
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -26,7 +27,8 @@
     </div>
    <?php include __DIR__ . '/../../filtering/collection/receipt.html'; ?>
    <br>
-    <?php include __DIR__ . '/../../modal/collection/receipt.html'; ?>
+      
+  
     <?php include __DIR__ . '/../../table/collection/receipttable.html';?>
 
 </div>
