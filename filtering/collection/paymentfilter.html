@@ -12,7 +12,7 @@
 
         <button class="btn btn-filter">⬇ Download</button>
         
-        <button id="toggleFormBtn" class="btn btn-add">+ Add New</button>
+       
        
       </div>
     </div>
@@ -77,8 +77,8 @@
     rows.forEach(row => {
         const cells = Array.from(row.cells);
 
-        const amountCell = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, "")) || 0;
-        const dateCell = new Date(cells[5].textContent);
+        const amountCell = parseFloat(cells[2].textContent.replace(/[^0-9.-]+/g, "")) || 0;
+        const dateCell = new Date(cells[3].textContent);
 
         const searchMatch = cells.some(td =>
             (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
