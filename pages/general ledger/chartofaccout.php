@@ -1,3 +1,5 @@
+
+<?php include __DIR__ . '/../../crud/legder/chartofaccounts.php';?>
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
