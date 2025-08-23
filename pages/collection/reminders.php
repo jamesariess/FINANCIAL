@@ -1,3 +1,4 @@
+<?php include __DIR__ . '/../../crud/collection/reminder.php';?>
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
