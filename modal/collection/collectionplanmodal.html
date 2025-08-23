@@ -37,7 +37,7 @@
 
         <div class="form-actions">
           <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-        <button type="submit" name="plan" class="btn btn-primary">Submit Request</button>
+        <button type="submit" name="plans" class="btn btn-primary">Submit Request</button>
 
         </div>
     
@@ -58,7 +58,7 @@ cancelBtn.addEventListener('click', () => {
   modalOverlay.style.display = 'none';
 });
 
-// Optional: Close modal when clicking outside
+
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) {
     modalOverlay.style.display = 'none';
