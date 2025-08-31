@@ -14,16 +14,159 @@
             </tr>
         </thead>
         <tbody id="employeesTableBody">
+            <?php if(!empty($adjustmentReports)):
+            foreach($adjustmentReports as $row): ?>
             <tr>
-                <td>BA-001</td>
-                <td>B001</td>
-                <td>kupal</td>
-                <td>2025-07-11</td>
-                <td>Budget Reallocation</td>
-                <td>$5000</td>
-                <td>Approved</td>
-                <td><button class="btn btn-secondary">View</button></td>
+                <td><?php echo htmlspecialchars($row['adjustID']);?></td>
+                <td><?php echo htmlspecialchars($row['budgetID']);?></td>
+                <td><?php echo htmlspecialchars($row['adjustedBy']);?></td>
+                <td><?php echo htmlspecialchars($row['adjustmentDate']);?></td>
+                <td><?php echo htmlspecialchars($row['reason']);?></td>
+                <td><?php echo htmlspecialchars($row['newAmount']);?></td>
+                <td><?php echo htmlspecialchars($row['status']);?></td>
+                <td>
+                    <a href="#"
+                       onclick="openViewModal(
+                           '<?php echo $row['adjustID'];?>',
+                           '<?php echo htmlspecialchars($row['budgetID'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['adjustedBy'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['adjustmentDate'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['reason'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['newAmount'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['status'],ENT_QUOTES);?>');
+                       return false;">
+                        👁️ View
+                    </a>
+                    <a href="#"
+                       onclick="openUpdateModal(
+                           '<?php echo $row['adjustID'];?>',
+                           '<?php echo htmlspecialchars($row['budgetID'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['adjustedBy'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['adjustmentDate'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['reason'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['newAmount'],ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['status'],ENT_QUOTES);?>');
+                       return false;">
+                        ✏️ Update
+                    </a>
+                    <a href="#"
+                       onclick="openArchiveModal('<?php echo $row['adjustID']?>'); return false;">
+                        🗄️ Archive
+                    </a>
+                </td>
+         
             </tr>
+            <?php endforeach; else:?>
+            <tr><Td colspan="8" class="text-center p-4">NO Records Found.</Td></tr>
+            <?php endif;?>
         </tbody>
     </table>
 </div>
+
+<div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'viewModal')">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
+        <h2 class="text-lg font-bold mb-4">View Budget Adjustment</h2>
+        <div class="space-y-2">
+            <p><strong>Adjustment ID:</strong> <span id="viewAdjustID"></span></p>
+            <p><strong>Budget ID:</strong> <span id="viewBudgetID"></span></p>
+            <p><strong>Adjusted By:</strong> <span id="viewAdjustedBy"></span></p>
+            <p><strong>Adjustment Date:</strong> <span id="viewAdjustmentDate"></span></p>
+            <p><strong>Reason:</strong> <span id="viewReason"></span></p>
+            <p><strong>New Amount:</strong> <span id="viewNewAmount"></span></p>
+            <p><strong>Status:</strong> <span id="viewStatus"></span></p>
+        </div>
+      
+    </div>
+</div>
+
+<!-- Update Modal -->
+<div id="updateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'updateModal')">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
+    <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('updateModal')">&times;</button>
+    <h2 class="text-lg font-bold mb-4">Update Budget Adjustment</h2>
+
+    <form method="post">
+      <input type="hidden" name="update_adjustID" id="updateAdjustID">
+
+      <div class="space-y-4">
+        <div>
+          <label for="updateBudgetID" class="block text-gray-700">Budget ID:</label>
+          <input type="text" name="update_budgetID" id="updateBudgetID" class="w-full p-2 border rounded" required>
+
+          <label for="updateAdjustedBy" class="block text-gray-700">Adjusted By:</label>
+          <input type="text" name="update_adjustedBy" id="updateAdjustedBy" class="w-full p-2 border rounded" required>
+
+          <label for="updateAdjustmentDate" class="block text-gray-700">Adjustment Date:</label>
+          <input type="date" name="update_adjustmentDate" id="updateAdjustmentDate" class="w-full p-2 border rounded" required>
+
+          <label for="updateReason" class="block text-gray-700">Reason:</label>
+          <input type="text" name="update_reason" id="updateReason" class="w-full p-2 border rounded" required>
+
+          <label for="updateNewAmount" class="block text-gray-700">New Amount:</label>
+          <input type="number" name="update_newAmount" id="updateNewAmount" class="w-full p-2 border rounded" required>
+
+          <label for="updateStatus" class="block text-gray-700">Status:</label>
+          <input type="text" name="update_status" id="updateStatus" class="w-full p-2 border rounded" required>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-3 mt-4">
+        <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('updateModal')">Cancel</button>
+        <button type="submit" name="update" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Update</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+<div id="archiveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'archiveModal')">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
+    <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('archiveModal')">&times;</button>
+     <h2 class="text-lg font-bold mb-4">Archive Budget Adjustment</h2>
+        <p>Are you sure you want to archive this budget adjustment?</p>
+        <form method="post">
+          
+          <div class="flex justify-end space-x-3">
+            <input type="hidden" name="archive_adjustID" id="archiveAdjustID">
+            <button type="submit" name="archive" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Archive</button>
+            <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('archiveModal')">Cancel</button>
+          </div>
+        </form>
+  </div>
+</div>
+
+<script>
+function openViewModal(adjustID, budgetID, adjustedBy, adjustmentDate, reason, newAmount, status) {
+    document.getElementById('viewAdjustID').innerText = adjustID;
+    document.getElementById('viewBudgetID').innerText = budgetID;
+    document.getElementById('viewAdjustedBy').innerText = adjustedBy;
+    document.getElementById('viewAdjustmentDate').innerText = adjustmentDate;
+    document.getElementById('viewReason').innerText = reason;
+    document.getElementById('viewNewAmount').innerText = newAmount;
+    document.getElementById('viewStatus').innerText = status;
+    document.getElementById('viewModal').classList.remove('hidden');
+}
+function openUpdateModal(adjustID, budgetID, adjustedBy, adjustmentDate, reason, newAmount, status) {
+    document.getElementById('updateAdjustID').value = adjustID;
+    document.getElementById('updateBudgetID').value = budgetID;
+    document.getElementById('updateAdjustedBy').value = adjustedBy;
+    document.getElementById('updateAdjustmentDate').value = adjustmentDate;
+    document.getElementById('updateReason').value = reason;
+    document.getElementById('updateNewAmount').value = newAmount;
+    document.getElementById('updateStatus').value = status;
+    document.getElementById('updateModal').classList.remove('hidden');
+}
+function openArchiveModal(adjustID) {
+    document.getElementById('archiveAdjustID').value = adjustID;
+    document.getElementById('archiveModal').classList.remove('hidden');
+}
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.add('hidden');
+}
+function outsideClick(event, modalId) {
+    if (event.target.id === modalId) {
+        closeModal(modalId);
+    }
+}
+</script>
