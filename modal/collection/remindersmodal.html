@@ -9,8 +9,25 @@
   
 
         <div class="form-group">
-          <label for="dam">Invoice ID</label>
-          <input type="text" id="dam">
+         <label for="referenceNo" class="block text-sm font-medium text-gray-700">Reference No</label>
+         <select name="referenceNo" id="referenceNo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+          <option value="">Select Invoice</option>
+          <?php
+          try{
+            $sql = "SELECT 	reference_no FROM ar_invoices WHERE customer_id = :custumerID ORDER BY created_at DESC";
+                 $stmt = $pdo['ar']->prepare($sql);
+                                $stmt->bindParam(':custumerID', $custumerID);
+                                $stmt->execute();
+                                $invoices = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                foreach ($invoices as $invoice) {
+                                    echo '<option value="' . htmlspecialchars($invoice['reference_no']) . '">' . htmlspecialchars($invoice['reference_no']) . '</option>';
+                                }
+                            } catch (PDOException $e) {
+                                echo '<option value="">Error loading invoices: ' . $e->getMessage() . '</option>';
+                            }
+          
+          ?>
+         </select>
         </div>
 
           <div class="form-group">
