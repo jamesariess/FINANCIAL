@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paper Receipt</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* A little extra CSS for the dotted line effect */
+    .border-dashed-y {
+      border-top-width: 1px;
+      border-bottom-width: 1px;
+      border-style: dashed;
+    }
+  </style>
+</head>
+<body class="bg-gray-200 flex justify-center p-8">
+
+  <div class="max-w-xs w-full mx-auto bg-white shadow-lg p-6 font-mono text-sm">
+    <div class="text-center mb-4">
+      <h1 class="text-lg font-bold uppercase">SLATE Freight Mgmt System</h1>
+      <p>123 Business Avenue</p>
+      <p>San Francisco, CA 94103</p>
+      <p class="text-xs mt-1">www.slatefreight.com</p>
+    </div>
+
+    <div class="text-xs mb-4">
+      <div class="flex justify-between">
+        <span>Receipt No:</span>
+        <span>RCP-2023-0042</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Date:</span>
+        <span>December 5, 2023</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Invoice Ref:</span>
+        <span>INV-2023-0042</span>
+      </div>
+    </div>
+
+    <div class="border-dashed-y border-gray-400 py-3 mb-4">
+      <h2 class="font-bold mb-1">Bill To:</h2>
+      <p>Client Company Ltd.</p>
+      <p>Attn: John Smith</p>
+    </div>
+
+    <div class="border-dashed-y border-gray-400 py-3 mb-4">
+      <div class="flex justify-between mb-2 font-bold uppercase">
+        <span>Description</span>
+        <span>Amount</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Web Dev Services</span>
+        <span>$3,825.00</span>
+      </div>
+      <div class="flex justify-between">
+        <span>UI/UX Design</span>
+        <span>$1,900.00</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Content Creation</span>
+        <span>$1,125.00</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Project Management</span>
+        <span>$900.00</span>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <div class="flex justify-between">
+        <span>Subtotal:</span>
+        <span>$7,750.00</span>
+      </div>
+      <div class="flex justify-between">
+        <span>Tax (8.5%):</span>
+        <span>$658.75</span>
+      </div>
+      <div class="flex justify-between font-bold text-lg mt-2">
+        <span>TOTAL PAID:</span>
+        <span class="text-green-600">$8,408.75</span>
+      </div>
+    </div>
+    
+    <div class="border-dashed-y border-gray-400 py-3 mb-4 text-xs">
+        <div class="flex justify-between">
+            <span>Method:</span>
+            <span>Credit Card (Visa **** **** 4242)</span>
+        </div>
+        <div class="flex justify-between">
+            <span>Transaction ID:</span>
+            <span>TXN-78945612</span>
+        </div>
+    </div>
+
+    <div class="text-center text-xs text-gray-500">
+      <p class="mb-2">Thank you for your business!</p>
+      <p>This is a computer-generated receipt.</p>
+    </div>
+  </div>
+
+</body>
+</html>
