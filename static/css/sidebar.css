@@ -34,6 +34,7 @@
 
     /* Sidebar */
     .sidebar {
+      overflow-y: auto;
       width: var(--sidebar-width);
       height: 100vh;
       position: fixed;
@@ -88,6 +89,25 @@
         }
 
 
+/* DESIGN NG SCROLL DOWN TO JANMES */
+.sidebar::-webkit-scrollbar {
+  width: 10px; 
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #2c3e50; 
+  border-radius: 10px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: #4e73df; 
+  border-radius: 10px; 
+  border: 2px solid #2c3e50; 
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: #3a5bc7; /* END */
+}
 
 
     .admin-feature {
@@ -402,4 +422,5 @@
       .content {
         margin-left: 0;
       }
+      
     }
