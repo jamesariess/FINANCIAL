@@ -1,14 +1,14 @@
 <?php
-$server   = "localhost";
-$username = "root";
-$password = "";
+$server   = 'localhost:3307';
+$username = 'root';
+$password = '';
 $db       = [
-    "collection"=> "financial",
-    "disbursement"=>"financial",
-    "general"=> "financial",
-    "budget"=> "financial",
-    "account"=>"financial",
-    "ar"=>"financial"
+    'collection'=> 'financial',
+    'disbursement'=>'financial',
+    'general'=> 'financial',
+    'budget'=> 'financial',
+    'account'=>'financial',
+    'ar'=>'financial'
 ];
 
 $pdo=[];
