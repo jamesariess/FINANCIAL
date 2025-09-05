@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide-react@latest"></script>
+  <style>
+    /* Since we can't use React components, we'll use inline SVGs for the icons */
+    .icon {
+        width: 24px;
+        height: 24px;
+        color: currentColor;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="space-y-6">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">
+        Financial Dashboard
+      </h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Welcome back! Here's an overview of your financial data.
+      </p>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div class="space-y-1">
+            <h3 class="text-sm text-gray-500">Total Disbursement</h3>
+            <p class="text-2xl font-semibold text-gray-900">$128,430</p>
+          </div>
+          <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down icon"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="inline-flex items-center text-sm font-medium text-red-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down mr-1"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M17 17h5v-5"/></svg>
+            12%
+          </span>
+          <span class="text-xs text-gray-500 ml-2">from last month</span>
+        </div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div class="space-y-1">
+            <h3 class="text-sm text-gray-500">Budget Utilization</h3>
+            <p class="text-2xl font-semibold text-gray-900">73.5%</p>
+          </div>
+          <div class="p-2 rounded-full bg-purple-100 text-purple-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart icon"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10Z"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="inline-flex items-center text-sm font-medium text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-1"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            4%
+          </span>
+          <span class="text-xs text-gray-500 ml-2">from last month</span>
+        </div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div class="space-y-1">
+            <h3 class="text-sm text-gray-500">Total Collections</h3>
+            <p class="text-2xl font-semibold text-gray-900">$95,400</p>
+          </div>
+          <div class="p-2 rounded-full bg-green-100 text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coins icon"><path d="M9.8 19.95 2.15 15.8a1 1 0 0 1 0-1.6L9.8 10.05a1 1 0 0 1 1.4.15L18.4 14.8a1 1 0 0 1 0 1.6l-7.25 4.05a1 1 0 0 1-1.4-.15z"/><path d="m15 10-8.6 4.86a1 1 0 0 0 0 1.76L15 21l8.6-4.86a1 1 0 0 0 0-1.76L15 10z"/><path d="m7 7 8.6 4.86a1 1 0 0 0 0 1.76L7 18l-8.6-4.86a1 1 0 0 0 0-1.76L7 7z"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="inline-flex items-center text-sm font-medium text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-1"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            8%
+          </span>
+          <span class="text-xs text-gray-500 ml-2">from last month</span>
+        </div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div class="space-y-1">
+            <h3 class="text-sm text-gray-500">Accounts Payable</h3>
+            <p class="text-2xl font-semibold text-gray-900">$42,150</p>
+          </div>
+          <div class="p-2 rounded-full bg-red-100 text-red-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="21" y2="21"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="inline-flex items-center text-sm font-medium text-red-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down mr-1"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><path d="M17 17h5v-5"/></svg>
+            5%
+          </span>
+          <span class="text-xs text-gray-500 ml-2">from last month</span>
+        </div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+        <div class="flex justify-between items-start">
+          <div class="space-y-1">
+            <h3 class="text-sm text-gray-500">Accounts Receivable</h3>
+            <p class="text-2xl font-semibold text-gray-900">$63,290</p>
+          </div>
+          <div class="p-2 rounded-full bg-yellow-100 text-yellow-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt icon"><path d="M4 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v20l-2-2-2 2-2-2-2 2-2-2-2 2-2-2V2z"/></svg>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center">
+          <span class="inline-flex items-center text-sm font-medium text-green-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-1"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+            3%
+          </span>
+          <span class="text-xs text-gray-500 ml-2">from last month</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-white p-6 rounded-lg shadow-md h-80 flex items-center justify-center text-gray-500">
+          Financial Overview Placeholder
+        </div>
+      </div>
+      <div>
+        <div class="bg-white p-6 rounded-lg shadow-md h-80 flex items-center justify-center text-gray-500">
+          Recent Transactions Placeholder
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

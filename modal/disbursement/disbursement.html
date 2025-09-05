@@ -1,0 +1,62 @@
+<div class="modal-overlay" id="modalOverlay">
+    <div class="form-collection" id="collectionform">
+        <legend>Add New Disbursement</legend>
+        <form action="">
+            <input type="hidden" id="disbursementId">
+            <fieldset>
+                <div class="form-group">
+                    <label for="disbursementAmount">Amount</label>
+                    <input type="number" id="disbursementAmount">
+                </div>
+                <div class="form-group">
+                    <label for="disbursementDate">Disbursement Date</label>
+                    <input type="date" id="disbursementDate">
+                </div>
+                <div class="form-group">
+                    <label for="disbursementStatus">Status</label>
+                    <input type="text" id="disbursementStatus">
+                </div>
+                <div class="form-group">
+                    <label for="disbursementDescription">Description</label>
+                    <input type="text" id="disbursementDescription">
+                </div>
+                <div class="form-group">
+                    <label for="approverId">Approver ID</label>
+                    <input type="number" id="approverId">
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethodId">Payment Method ID</label>
+                    <input type="number" id="paymentMethodId">
+                </div>
+                <div class="form-group">
+                    <label for="projectId">Project ID</label>
+                    <input type="number" id="projectId">
+                </div>
+                <div class="form-actions">
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+<script>
+    const toggleFormBtn = document.getElementById('toggleFormBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const cancelBtn = document.getElementById("cancelBtn");
+
+    toggleFormBtn.addEventListener('click', () => {
+        modalOverlay.style.display = 'flex';
+    });
+
+    cancelBtn.addEventListener('click', () => {
+        modalOverlay.style.display = "none";
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+            modalOverlay.style.display = 'none';
+        }
+    });
+</script>
