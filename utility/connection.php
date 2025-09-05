@@ -1,14 +1,14 @@
 <?php
-$server   = 'localhost:3307';
-$username = 'root';
-$password = '';
+$server   = '23.94.230.146';
+$username = 'fina_finances';
+$password = 'finance';
 $db       = [
-    'collection'=> 'financial',
-    'disbursement'=>'financial',
-    'general'=> 'financial',
-    'budget'=> 'financial',
-    'account'=>'financial',
-    'ar'=>'financial'
+    'collection'=> 'fina_financial',
+    'disbursement'=>'fina_financial',
+    'general'=> 'fina_financial',
+    'budget'=> 'fina_financial',
+    'account'=>'fina_financial',
+    'ar'=>'fina_financial'
 ];
 
 $pdo=[];
