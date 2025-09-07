@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM chartofaccount WHERE accountID = :id";
-$stmt = $pdo['general']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['archive'])) {
         $accountID = $_POST['accountID'];
         $sql = "UPDATE chartofaccount SET Archive = 'YES' WHERE accountID = :accountID";
-        $stmt =$pdo['general']->prepare($sql);
+        $stmt =$pdo->prepare($sql);
         $stmt->bindParam(':accountID', $accountID);
 
         try {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $sql = "UPDATE chartofaccount SET accountCode = :accountCode, accountName = :accountName, accounType = :accountType, status = :status WHERE accountID = :accountID";
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':accountCode', $accountCode);
         $stmt->bindParam(':accountName', $accountName);
         $stmt->bindParam(':accountType', $accountType);
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $sql = "INSERT INTO chartofaccount (accountCode, accountName, accounType, Archive) VALUES (:accountCode, :accountName, :accountType, 'NO')";
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':accountCode', $accountCode);
         $stmt->bindParam(':accountName', $accountName);
         $stmt->bindParam(':accountType', $accountType);
@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 try {
     $sql = "SELECT * FROM  chartofaccount WHERE Archive = 'NO'";
-    $stmt = $pdo['general']->query($sql);
+    $stmt = $pdo->query($sql);
     $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
