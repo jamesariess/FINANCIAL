@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM ar_adjustments WHERE adjustment_id   = :id";
-$stmt = $pdo['ar']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -19,7 +19,7 @@ if(isset($_POST['archive'])) {
                 Archive = 'YES'
                 WHERE adjustment_id  = :archive_adjustID";
 
-        $stmt = $pdo['ar']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive_adjustID', $archive_adjustID);
 
         try {
@@ -44,7 +44,7 @@ if(isset($_POST['archive'])) {
                 status = :status,
                 created_at = :created_at
                 WHERE adjustment_id = :adjustment_id";
-        $stmt = $pdo['ar']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':invoice_id', $invoice_id);
         $stmt->bindParam(':type', $type);
         $stmt->bindParam(':amount', $amount);
@@ -66,7 +66,7 @@ if(isset($_POST['archive'])) {
 try {
     $sql = "SELECT * FROM  ar_adjustments WHERE Archive = 'NO'
             ORDER BY created_at Asc";
-    $stmt = $pdo['ar']->query($sql);
+    $stmt = $pdo->query($sql);
     $adjustReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
