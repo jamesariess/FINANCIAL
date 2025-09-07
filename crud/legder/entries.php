@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM entries WHERE journalID = :id";
-$stmt = $pdo['general']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   if (isset($_POST['archive'])) {
         $journalID = $_POST['archive_journalID'];
         $sql = "UPDATE entries SET Archive = 'YES' WHERE journalID = :journalID";
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':journalID', $journalID);
 
         try {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         $sql = "UPDATE entries SET date = :date, description = :description, referenceType = :referenceType, createdBy = :createdBy WHERE journalID = :journalID";
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':journalID', $journalID);
         $stmt->bindParam(':date', $date);
         $stmt->bindParam(':description', $description);
@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 try {
     $sql = "SELECT * FROM  entries WHERE Archive = 'NO'";
-    $stmt = $pdo['general']->query($sql);
+    $stmt = $pdo->query($sql);
     $journals = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
