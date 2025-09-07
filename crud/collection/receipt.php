@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM receipt WHERE receiptID = :id";
-$stmt = $pdo['collection']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['archive'])) {
         $receiptID = $_POST['receiptID'];
         $sql = "UPDATE receipt SET Archive = 'YES' WHERE receiptID = :receiptID";
-        $stmt = $pdo['collection']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':receiptID', $receiptID);
 
         try {
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         } else {
             $sql = "UPDATE receipt SET issueBy = :issueBy WHERE receiptID = :receiptID";
-            $stmt = $pdo['collection']->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':issueBy', $issueBy);
             $stmt->bindParam(':receiptID', $receiptID);
      
@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
     $sql = "SELECT * FROM receipt WHERE Archive = 'NO'
             ORDER BY receiptsdate Asc";
-    $stmt = $pdo['collection']->query($sql);
+    $stmt = $pdo->query($sql);
     $receipts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
