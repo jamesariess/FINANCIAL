@@ -7,7 +7,7 @@ date_default_timezone_set('Asia/Manila');
 $id = $_GET['id'] ?? null;
 if ($id) {
     $sql = "SELECT * FROM approver WHERE approver_id = :id";
-    $stmt = $pdo['budget']->prepare($sql);
+    $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':id', $id);
     $stmt->execute();
 }
@@ -22,8 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 case 'add':
                     $approve_name = $_POST['approve_name'];
                     $title = $_POST['title'];
-                    $sql = "INSERT INTO approver (approve_name, title) VALUES (:approve_name, :title)";
-                    $stmt = $pdo['budget']->prepare($sql);
+                    $sql = "INSERT INTO approver (approver_name, title) VALUES (:approve_name, :title)";
+                    $stmt = $pdo->prepare($sql);
                     $stmt->bindParam(':approve_name', $approve_name);
                     $stmt->bindParam(':title', $title);
                     $stmt->execute();
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $approve_name = $_POST['approve_name'];
                     $title = $_POST['title'];
                     $sql = "UPDATE approver SET approve_name = :approve_name, title = :title WHERE approver_id = :approver_id";
-                    $stmt = $pdo['budget']->prepare($sql);
+                    $stmt = $pdo->prepare($sql);
                     $stmt->bindParam(':approve_name', $approve_name);
                     $stmt->bindParam(':title', $title);
                     $stmt->bindParam(':approver_id', $approver_id);
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 case 'delete':
                     $approver_id = $_POST['approver_id'];
                     $sql = "DELETE FROM approver WHERE approver_id = :approver_id";
-                    $stmt = $pdo['budget']->prepare($sql);
+                    $stmt = $pdo->prepare($sql);
                     $stmt->bindParam(':approver_id', $approver_id);
                     $stmt->execute();
                     echo "✅ Approver deleted successfully.";
@@ -60,9 +60,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 // Fetch all approvers for the table display
 try {
-    $sql = "SELECT * FROM approver ORDER BY approve_name ASC";
-    $stmt = $pdo['budget']->query($sql);
-    $approvers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $sql = "SELECT * FROM approver WHERE ARCHIVE = 'NO'";
+    $stmt = $pdo->query($sql);
+    $approverReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching approvers: " . $e->getMessage();
 }
