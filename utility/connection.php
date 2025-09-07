@@ -1,25 +1,15 @@
-<?php
-$server   = '23.94.230.146';
-$username = 'fina_finances';
-$password = 'finance';
-$db       = [
-    'collection'=> 'fina_financial',
-    'disbursement'=>'fina_financial',
-    'general'=> 'fina_financial',
-    'budget'=> 'fina_financial',
-    'account'=>'fina_financial',
-    'ar'=>'fina_financial'
-];
 
-$pdo=[];
+<?php
+$host = "localhost"; // or yourdomain.com
+$port = 3306;
+$dbname = "financial";
+$username = "root";
+$password = "";
 
 try {
-    foreach ($db as $key => $dbname) {
-        $pdo[$key] = new PDO("mysql:host=$server;dbname=$dbname", $username, $password);
-        $pdo[$key]->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    }
+    $pdo = new PDO("mysql:host=$host;port=$port;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
-
-?>
