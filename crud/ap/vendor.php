@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM vendors WHERE vendor_id   = :id";
-$stmt = $pdo['account']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -19,7 +19,7 @@ if(isset($_POST['archive'])) {
                 Archive = 'YES'
                 WHERE vendor_id  = :archive_adjustID";
 
-        $stmt = $pdo['account']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive_adjustID', $archive_adjustID);
 
         try {
@@ -51,7 +51,7 @@ if(isset($_POST['archive'])) {
                 WHERE vendor_id = :adjustment_id";
 
 
-        $stmt = $pdo['account']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':invoice_id', $invoice_id);
         $stmt->bindParam(':type', $type);
         $stmt->bindParam(':amount', $amount);
@@ -75,7 +75,7 @@ if(isset($_POST['archive'])) {
 try {
     $sql = "SELECT * FROM vendors WHERE Archive = 'NO'
             ORDER BY created_at Asc";
-    $stmt = $pdo['account']->query($sql);
+    $stmt = $pdo->query($sql);
     $adjustReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
