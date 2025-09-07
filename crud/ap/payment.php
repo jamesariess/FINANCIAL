@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM ap_payments WHERE payment_id  = :id";
-$stmt = $pdo['account']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $custumerID = $_POST['archive_collectionID'];
 
         $sql = "UPDATE ap_payments SET Archive = 'YES' WHERE payment_id  = :custumerID";
-        $stmt = $pdo['account']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':custumerID', $custumerID);
 
         try {
@@ -40,7 +40,7 @@ if(isset($_POST['update'])) {
                 remarks = :address
                 WHERE payment_id  = :custumerID";
 
-        $stmt = $pdo['account']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':custumerName', $custumerName);
         $stmt->bindParam(':contactNumber', $contactNumber);
         $stmt->bindParam(':email', $email);
@@ -60,7 +60,7 @@ if(isset($_POST['update'])) {
 try {
     $sql = "SELECT * FROM  ap_payments WHERE Archive = 'NO'
             ORDER BY created_at Asc";
-    $stmt = $pdo['account']->query($sql);
+    $stmt = $pdo->query($sql);
     $collectionReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
