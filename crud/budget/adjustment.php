@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM adjustment WHERE adjustID = :id";
-$stmt = $pdo['budget']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $archive = 'YES';
 
         $sql = "UPDATE adjustment SET Archive = :archive WHERE adjustID = :adjustID";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive', $archive);
         $stmt->bindParam(':adjustID', $adjustID);
 
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $status = $_POST['update_status'];
 
         $sql = "UPDATE adjustment SET budgetID = :paymentDate, adjustedBy = :particulars, adjustmentDate = :amount, reason = :remarks,newAmount=:newAmount , status=:status WHERE adjustID = :adjustID";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':paymentDate', $paymentDate);
         $stmt->bindParam(':particulars', $particulars);
         $stmt->bindParam(':amount', $amount);
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
     $sql = "SELECT * FROM  adjustment WHERE Archive = 'NO'
             ORDER BY adjustmentDate Asc";
-    $stmt = $pdo['budget']->query($sql);
+    $stmt = $pdo->query($sql);
     $adjustmentReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
