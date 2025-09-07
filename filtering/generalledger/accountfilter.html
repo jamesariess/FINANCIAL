@@ -24,9 +24,10 @@
         <select id="plantypefilter" onchange="applyFilters()"">
           <option>All</option>
           <option>Revenue</option>
-          <option>Expense</option>
-          <option>Asset</option>
-          <option>Liability</option>
+          <option>Expenses</option>
+          <option>Assets</option>
+          <option>Equity</option>
+          <option>Liabilities </option>
         </select>
       </div>
    
@@ -54,7 +55,7 @@
             (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
         );
 
-        const plantypeCell = cells[2].textContent.toUpperCase();
+        const plantypeCell = cells[3].textContent.toUpperCase();
         const planMatch = planTypeFilter === "ALL" || plantypeCell === planTypeFilter;
 
 
