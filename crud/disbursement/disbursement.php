@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM disbursement WHERE disbursement_id = :id";
-$stmt = $pdo['budget']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $archive = 'YES';
 
         $sql = "UPDATE disbursement SET Archive = :archive WHERE disbursement_id = :disbursement_id";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive', $archive);
         $stmt->bindParam(':disbursement_id', $disbursement_id);
 
@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $project_id = $_POST['update_project_id'];
 
         $sql = "UPDATE disbursement SET amount = :amount, disbursement_date = :disbursement_date, status = :status, description = :description, approver_id = :approver_id, payment_method_id = :payment_method_id, project_id = :project_id WHERE disbursement_id = :disbursement_id";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':amount', $amount);
         $stmt->bindParam(':disbursement_date', $disbursement_date);
         $stmt->bindParam(':status', $status);
@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
     $sql = "SELECT * FROM  disbursement WHERE Archive = 'NO'
              ORDER BY disbursement_date Asc";
-    $stmt = $pdo['budget']->query($sql);
+    $stmt = $pdo->query($sql);
     $disbursementReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
