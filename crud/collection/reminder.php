@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM follow WHERE reminderID = :id";
-$stmt = $pdo['collection']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['archive'])) {
         $reminderID = $_POST['reminderID'];
         $sql = "UPDATE  follow SET Archive = 'YES' WHERE reminderID = :reminderID";
-        $stmt = $pdo['collection']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':reminderID', $reminderID);
 
         try {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         } else {
             $sql = "UPDATE  follow SET planID = :planID, InvoiceID = :invoiceID, FollowUpDate = :followUpDate, Contactinfo = :contactinfo, Remarks = :remarks, paymentstatus = :status WHERE reminderID = :reminderID";
-            $stmt = $pdo['collection']->prepare($sql);
+            $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':planID', $planID);
             $stmt->bindParam(':invoiceID', $invoiceID);
             $stmt->bindParam(':followUpDate', $followUpDate);
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
     $sql = "SELECT * FROM  follow WHERE Archive = 'NO'
             ORDER BY FollowUpDate Asc";
-    $stmt = $pdo['collection']->query($sql);
+    $stmt = $pdo->query($sql);
     $reminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
