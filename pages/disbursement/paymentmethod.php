@@ -1,4 +1,4 @@
-<?php include __DIR__ . '/../../crud/paymentmethod/paymentmethod.php';?>
+<?php include __DIR__ . '/../../crud/disbursement/paymentmethod.php';?>
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -23,10 +23,11 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/paymentmethod/paymentmethod.html'; ?>
+<?php include __DIR__ . '/../../filtering/disbursement/paymentmethod.html'; ?>
 <br>
-    <?php include __DIR__ . '/../../modal/paymentmethod/paymentmethodmodal.html'; ?>
-    <?php include __DIR__ . '/../../table/paymentmethod/paymentmethodtable.html';?>
+    <?php include __DIR__ . '/../../modal/disbursement/paymentmethod.html'; ?>
+    <?php include __DIR__ . '/../../table/disbursement/paymentmethod.html';?>
+
 </div>
 <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
 <script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
