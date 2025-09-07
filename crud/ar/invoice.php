@@ -6,7 +6,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM ar_invoices WHERE invoice_id  = :id";
-$stmt = $pdo['ar']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -21,7 +21,7 @@ if(isset($_POST['archive'])) {
             
                 WHERE invoice_id  = :archive_InvoiceID";
 
-        $stmt = $pdo['ar']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive_InvoiceID', $archive_InvoiceID);
 
         try {
@@ -51,7 +51,7 @@ if(isset($_POST['archive'])) {
                 updated_at = :updated_at
                 WHERE invoice_id  = :invoice_id";
 
-        $stmt = $pdo['ar']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':customer_id', $customer_id);
         $stmt->bindParam(':amount', $amount);
         $stmt->bindParam(':due_date', $due_date);
@@ -74,7 +74,7 @@ if(isset($_POST['archive'])) {
 try {
     $sql = "SELECT * FROM  ar_invoices WHERE Archive = 'NO'
             ORDER BY created_at Asc";
-    $stmt = $pdo['ar']->query($sql);
+    $stmt = $pdo->query($sql);
     $invoiceReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
