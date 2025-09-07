@@ -92,16 +92,24 @@
       <input type="hidden" name="accountID" id="updateAccountID">
       <div>
         <label for="accountCode" class="block font medium mb-1">Account Code</label>
-        <input type="text" name="accountCode" id="updateAccountCode" class="w-full border border-gray-300 rounded px-3 py-2" required>
+        <input type="text" name="accountCode" id="updateAccountCode" readonly class="w-full border border-gray-300 rounded px-3 py-2" required>
       </div>
       <div>
         <label for="accountName" class="block font medium mb-1">Account Name</label>
         <input type="text" name="accountName" id="updateAccountName" class="w-full border border-gray-300 rounded px-3 py-2" required>
       </div>
-      <div>
-        <label for="accountType" class="block font  medium mb-1">Account Type</label>
-        <input type="text" name="accountType" id="updateAccountType" class="w-full border border-gray-300 rounded px-3 py-2" required> 
-      </div>
+    <div>
+  <label for="updateAccountType" class="block font-medium mb-1">Account Type</label>
+  <select name="accountType" id="updateAccountType" class="w-full border border-gray-300 rounded px-3 py-2" required>
+    <option value="">-- Select Account Type --</option>
+    <option value="Assets">Assets</option>
+    <option value="Liabilities">Liabilities</option>
+    <option value="Equity">Equity</option>
+    <option value="Revenue">Revenue</option>
+    <option value="Expenses">Expenses</option>
+  </select>
+</div>
+
       <div>
         <label for="status" class="block font medium mb-1">Status</label>
         <select name="status" id="updateStatus" class="w-full border border-gray-300 rounded px-3 py-2" required>
