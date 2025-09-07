@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM project WHERE project_id = :id";
-$stmt = $pdo['budget']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $archive = 'YES';
 
         $sql = "UPDATE project SET Archive = :archive WHERE project_id = :project_id";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive', $archive);
         $stmt->bindParam(':project_id', $project_id);
 
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $department = $_POST['update_department'];
 
         $sql = "UPDATE project SET project_name = :project_name, budget_code = :budget_code, department = :department WHERE project_id = :project_id";
-        $stmt = $pdo['budget']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':project_name', $project_name);
         $stmt->bindParam(':budget_code', $budget_code);
         $stmt->bindParam(':department', $department);
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 try {
     $sql = "SELECT * FROM  project WHERE Archive = 'NO'
              ORDER BY project_name Asc";
-    $stmt = $pdo['budget']->query($sql);
+    $stmt = $pdo->query($sql);
     $projectReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
