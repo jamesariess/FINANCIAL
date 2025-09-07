@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM details WHERE accountID = :id";
-$stmt = $pdo['general']->prepare($sql);
+$stmt = $pdo->prepare($sql);
 $stmt->bindParam(':id', $id);
 $stmt->execute();
 
@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $accountID = $_POST['archive_entriesID'];
 
         $sql = "UPDATE details SET Archive = 'YES' WHERE entriesID = :accountID";
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':accountID', $accountID);
 
         try {
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                        credit    = :credit  
                  WHERE entriesID = :entriesID";
 
-        $stmt = $pdo['general']->prepare($sql);
+        $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':journalID', $journalID);
         $stmt->bindParam(':accountID', $accountID);
         $stmt->bindParam(':debit', $debit);
@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 try {
     $sql = "SELECT * FROM  details WHERE Archive = 'NO'";
-    $stmt = $pdo['general']->query($sql);
+    $stmt = $pdo->query($sql);
     $journalDetails = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "❌ Error fetching plans: " . $e->getMessage();
