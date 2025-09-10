@@ -13,6 +13,10 @@
 <link rel="stylesheet" href="/static/css/sidebar.css">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.4/dist/tailwind.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 
 
 </head>
@@ -37,12 +41,10 @@
     <span class="arrow">▶</span>
   </a>
   <div class="dropdown-menu">
-    <a href="<?php echo $baseURL; ?>disbursement/approver.php" class="sidebar-item">Approval</a>
-    <a href="<?php echo $baseURL; ?>disbursement/disbursement.php" class="sidebar-item">Disbursement</a>
-    <a href="<?php echo $baseURL; ?>disbursement/paymentmethod.php" class="sidebar-item">Payment Method</a>
-    <a href="<?php echo $baseURL; ?>disbursement/project.php" class="sidebar-item">Pojects</a>
-
- 
+    <a href="<?php echo $baseURL; ?>disbursement/approver.php" class="sidebar-item">Payment Release</a>
+    <a href="<?php echo $baseURL; ?>disbursement/disbursement.php" class="sidebar-item">Request Reports</a>
+    <a href="<?php echo $baseURL; ?>disbursement/paymentmethod.php" class="sidebar-item">Request Loan </a>
+    
   </div>
  </div>
 
@@ -95,6 +97,7 @@
     <a href="<?php echo $baseURL; ?>budget/budgetplanning.php" class="sidebar-item">Budget Planning</a>
     <a href="<?php echo $baseURL; ?>budget/budgetallocation.php" class="sidebar-item">Cost Allocation</a>
     <a href="<?php echo $baseURL; ?>budget/budgetadjustment.php" class="sidebar-item">Budget Adjustments</a>
+    <a href="<?php echo $baseURL; ?>budget/approval.php" class="sidebar-item">Approval</a>
 
     <a href="<?php echo $baseURL; ?>budget/budgetmonitoring.php" class="sidebar-item">Budget Monitoring</a>
   </div>
