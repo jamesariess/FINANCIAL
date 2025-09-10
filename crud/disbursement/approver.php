@@ -1,70 +1,56 @@
 <?php
 include_once __DIR__ . '/../../utility/connection.php';
-
 date_default_timezone_set('Asia/Manila');
 
-// Check for a specific approver ID, though it may not be needed for a full list
-$id = $_GET['id'] ?? null;
-if ($id) {
-    $sql = "SELECT * FROM approver WHERE approver_id = :id";
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':id', $id);
-    $stmt->execute();
-}
+$data = [
+    "totalRequest" => 0,
+    "totalAmountRelease" => 0,
+    "rejectedRequest" => 0,
+    "newRequest" => 0
+];
 
-// Handle POST requests for creating, updating, or deleting an approver
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    if (isset($_POST['action'])) {
-        $action = $_POST['action'];
-        
-        try {
-            switch ($action) {
-                case 'add':
-                    $approve_name = $_POST['approve_name'];
-                    $title = $_POST['title'];
-                    $sql = "INSERT INTO approver (approver_name, title) VALUES (:approve_name, :title)";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->bindParam(':approve_name', $approve_name);
-                    $stmt->bindParam(':title', $title);
-                    $stmt->execute();
-                    echo "✅ Approver added successfully.";
-                    break;
+// Total Requests
+$sql = "SELECT COUNT(*) as total FROM request WHERE Archive = 'NO'";
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$data["totalRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-                case 'update':
-                    $approver_id = $_POST['approver_id'];
-                    $approve_name = $_POST['approve_name'];
-                    $title = $_POST['title'];
-                    $sql = "UPDATE approver SET approve_name = :approve_name, title = :title WHERE approver_id = :approver_id";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->bindParam(':approve_name', $approve_name);
-                    $stmt->bindParam(':title', $title);
-                    $stmt->bindParam(':approver_id', $approver_id);
-                    $stmt->execute();
-                    echo "✅ Approver updated successfully.";
-                    break;
+// Total Amount Released
+$sql = "SELECT IFNULL(SUM(Amount),0) as total FROM request WHERE status IN ('Paid') AND Archive = 'NO'";
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$data["totalAmountRelease"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-                case 'delete':
-                    $approver_id = $_POST['approver_id'];
-                    $sql = "DELETE FROM approver WHERE approver_id = :approver_id";
-                    $stmt = $pdo->prepare($sql);
-                    $stmt->bindParam(':approver_id', $approver_id);
-                    $stmt->execute();
-                    echo "✅ Approver deleted successfully.";
-                    break;
-            }
-        } catch (PDOException $e) {
-            echo "❌ Error: " . $e->getMessage();
-        }
+// Rejected Requests
+$sql = "SELECT COUNT(*) as total FROM request WHERE status = 'Reject' AND Archive = 'NO'";
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$data["rejectedRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+// New Requests
+$sql = "SELECT COUNT(*) as total FROM request WHERE DATE(date) = CURDATE() AND Archive = 'NO'";
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$data["newRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+
+$sql = "SELECT requestID, requestTitle, Modules, Amount, Requested_by, Due, status, date 
+        FROM request 
+        WHERE status IN ('Approved','Verified') AND Archive = 'NO'
+        ORDER BY date DESC 
+        LIMIT 12";
+$stmt = $pdo->prepare($sql);
+$stmt->execute();
+$requests = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $input = json_decode(file_get_contents("php://input"), true);
+    if (isset($input["requestID"])) {
+        $requestID = intval($input["requestID"]);
+        $update = $pdo->prepare("UPDATE request SET status = 'Paid' WHERE requestID = :id");
+        $update->execute([":id" => $requestID]);
+        echo json_encode(["success" => true]);
+        exit;
     }
 }
-
-// Fetch all approvers for the table display
-try {
-    $sql = "SELECT * FROM approver WHERE ARCHIVE = 'NO'";
-    $stmt = $pdo->query($sql);
-    $approverReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "❌ Error fetching approvers: " . $e->getMessage();
-}
-
 ?>
