@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $disbursement_id = $_POST['archive_disbursement_id'];
         $archive = 'YES';
 
-        $sql = "UPDATE disbursement SET Archive = :archive WHERE disbursement_id = :disbursement_id";
+        $sql = "UPDATE request SET Archive = :archive WHERE requestID = :disbursement_id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':archive', $archive);
         $stmt->bindParam(':disbursement_id', $disbursement_id);
@@ -28,24 +28,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
     if(isset($_POST['update'])){
-        $disbursement_id = $_POST['update_disbursement_id'];
-        $amount = $_POST['update_amount'];
-        $disbursement_date = $_POST['update_disbursement_date'];
-        $status = $_POST['update_status'];
-        $description = $_POST['update_description'];
-        $approver_id = $_POST['update_approver_id'];
-        $payment_method_id = $_POST['update_payment_method_id'];
-        $project_id = $_POST['update_project_id'];
+        $disbursement_id = $_POST['update_request_id'];
+        $amount = $_POST['update_title'];
+        $disbursement_date = $_POST['update_modules'];
+        $status = $_POST['update_amount'];
+        $description = $_POST['update_requested_by'];
+        $approver_id = $_POST['update_due'];
+  
 
-        $sql = "UPDATE disbursement SET amount = :amount, disbursement_date = :disbursement_date, status = :status, description = :description, approver_id = :approver_id, payment_method_id = :payment_method_id, project_id = :project_id WHERE disbursement_id = :disbursement_id";
+        $sql = "UPDATE request SET requestTiTle = :amount, Modules = :disbursement_date, Amount = :status, Requested_by	 = :description, Due = :approver_id WHERE requestID = :disbursement_id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':amount', $amount);
         $stmt->bindParam(':disbursement_date', $disbursement_date);
         $stmt->bindParam(':status', $status);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':approver_id', $approver_id);
-        $stmt->bindParam(':payment_method_id', $payment_method_id);
-        $stmt->bindParam(':project_id', $project_id);
         $stmt->bindParam(':disbursement_id', $disbursement_id);
 
         try {
@@ -59,8 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 try {
-    $sql = "SELECT * FROM  disbursement WHERE Archive = 'NO'
-             ORDER BY disbursement_date Asc";
+    $sql = "SELECT * FROM  request WHERE Archive = 'NO'";
     $stmt = $pdo->query($sql);
     $disbursementReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
