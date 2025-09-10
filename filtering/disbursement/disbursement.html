@@ -6,8 +6,8 @@
                 <input type="text" placeholder="🔍 Search Disbursement..." id="myInput" onkeyup="applyFilters()">
             </div>
             <button class="btn btn-sort" id="sortBtn" type="button" onclick="toggleSort()">⇅ Sort Asc</button>
-            <button class="btn btn-filter">⬇ Download</button>
-            <button id="toggleFormBtn" class="btn btn-add">+ Add New</button>
+            <button class="btn btn-filter" onclick=" openDownloadModal()">⬇ Download</button>
+
         </div>
     </div>
     
@@ -16,9 +16,10 @@
             <label>Status</label>
             <select id="statusFilter" onchange="applyFilters()">
                 <option>All</option>
-                <option>Approved</option>
+                <option>Verified</option>
                 <option>Rejected</option>
-                <option>Under Review</option>
+                <option>Approved</option>
+                <option>Paid</option>
             </select>
         </div>
         <div class="form-group">
@@ -31,7 +32,7 @@
         </div>
         
         <div class="form-group">
-            <label>Disbursement Date Range</label>
+            <label>Request Date Range</label>
             <div class="date-range">
                 <input type="date" id="startDate" onchange="applyFilters()">
                 <span>–</span>
@@ -46,41 +47,43 @@
 </div>
 
 <script>
-    function applyFilters() {
-        const searchInput = document.getElementById("myInput").value.toUpperCase();
-        const statusFilter = document.getElementById("statusFilter").value.toUpperCase();
-        const minAmount = parseFloat(document.getElementById("minAmount").value) || 0;
-        const maxAmount = parseFloat(document.getElementById("maxAmount").value) || Infinity;
-        const startDate = new Date(document.getElementById("startDate").value);
-        const endDate = new Date(document.getElementById("endDate").value);
+   function applyFilters() {
+    const searchInput = document.getElementById("myInput").value.toUpperCase();
+    const statusFilter = document.getElementById("statusFilter").value.toUpperCase();
+    const minAmount = parseFloat(document.getElementById("minAmount").value) || 0;
+    const maxAmount = parseFloat(document.getElementById("maxAmount").value) || Infinity;
+    const startDate = new Date(document.getElementById("startDate").value);
+    const endDate = new Date(document.getElementById("endDate").value);
 
-        const table = document.getElementById("employeesTable"); // Assuming this is your table ID
-        const tbody = table.tBodies[0];
-        const rows = Array.from(tbody.rows);
+    const table = document.getElementById("employeesTable"); 
+    const tbody = table.tBodies[0];
+    const rows = Array.from(tbody.rows);
 
-        rows.forEach(row => {
-            const cells = Array.from(row.cells);
-            
-            // Adjust these cell indices based on your table structure for disbursement
-            const amountCell = parseFloat(cells[1].textContent.replace(/[^0-9.-]+/g, "")) || 0; 
-            const dateCell = new Date(cells[2].textContent);
-            const statusCell = cells[3].textContent.toUpperCase();
+    rows.forEach(row => {
+        const cells = Array.from(row.cells);
 
-            const searchMatch = cells.some(td =>
-                (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
-            );
+        const amountCell = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, "")) || 0; 
+        const dateCell = new Date(cells[7].textContent);
 
-            const statusMatch = statusFilter === "ALL" || statusCell === statusFilter;
-            const amountMatch = (amountCell >= minAmount && amountCell <= maxAmount);
-            const dateMatch = (
-                (isNaN(startDate) || dateCell >= startDate) &&
-                (isNaN(endDate) || dateCell <= endDate)
-            );
+        // Fix: trim spaces
+        const statusCell = (cells[6].innerText || cells[6].textContent).trim().toUpperCase();
 
-            const show = searchMatch && statusMatch && amountMatch && dateMatch;
-            row.style.display = show ? "" : "none";
-        });
-    }
+        const searchMatch = cells.some(td =>
+            (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
+        );
+
+        const statusMatch = statusFilter === "ALL" || statusCell === statusFilter;
+        const amountMatch = (amountCell >= minAmount && amountCell <= maxAmount);
+        const dateMatch = (
+            (isNaN(startDate) || dateCell >= startDate) &&
+            (isNaN(endDate) || dateCell <= endDate)
+        );
+
+        const show = searchMatch && statusMatch && amountMatch && dateMatch;
+        row.style.display = show ? "" : "none";
+    });
+}
+
 
     function resetFilters() {
         document.getElementById("myInput").value = "";
