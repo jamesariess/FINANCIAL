@@ -13,7 +13,7 @@
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
-            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+            <h1>Request <span class="system-title">| (Financial)</span></h1>
         </div>
         <div class="theme-toggle-container">
             <span class="theme-label">Dark Mode</span>
@@ -23,6 +23,7 @@
             </label>
         </div>
     </div>
+<?php include __DIR__ . '/../../contents/disbursement/request.php'; ?>
 <?php include __DIR__ . '/../../filtering/disbursement/disbursement.html'; ?>
 <br>
     <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>
