@@ -1,16 +1,52 @@
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px; /* pill shape */
+        font-size: 0.875rem;   /* text-sm */
+        font-weight: 500;
+        display: inline-block;
+    }
+    .status-paid {
+        background-color: #dcfce7; 
+        color: #166534;          
+        border: 1px solid #86efac;
+    }
+    .status-approved {
+        background-color: #dbeafe; 
+        color: #1e40af;           
+        border: 1px solid #93c5fd;
+    }
+    .status-reject {
+        background-color: #fee2e2; 
+        color: #991b1b;            
+        border: 1px solid #fca5a5;
+    }
+    .status-verified {
+        background-color: #ffedd5; 
+        color: #9a3412;           
+        border: 1px solid #fdba74;
+    }
+    .status-default {
+        background-color: #e5e7eb; 
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+</style>
+
 <div class="table-section" id="disbursementTableSection">
-    <h3>Disbursement Report</h3>
+    <h3>Request Report</h3>
     <table id="employeesTable">
         <thead>
             <tr>
-                <th>Disbursement ID</th>
+                <th>Request ID</th>
+                <th>Title</th>
+                <th>Request Type</th>
                 <th>Amount</th>
-                <th>Disbursement Date</th>
+                <th>Request By</th>
+                <th>Due Date</th>
+                <th>Purpuse</th>
                 <th>Status</th>
-                <th>Description</th>
-                <th>Approver ID</th>
-                <th>Payment Method ID</th>
-                <th>Project ID</th>
+                <th>Date</th>
                 <th>Action</th>
             </tr>
         </thead>
@@ -18,43 +54,87 @@
             <?php if(!empty($disbursementReports)):
             foreach($disbursementReports as $row): ?>
             <tr>
-                <td><?php echo htmlspecialchars($row['disbursement_id']);?></td>
-                <td><?php echo htmlspecialchars($row['amount']);?></td>
-                <td><?php echo htmlspecialchars($row['disbursement_date']);?></td>
-                <td><?php echo htmlspecialchars($row['status']);?></td>
-                <td><?php echo htmlspecialchars($row['description']);?></td>
-                <td><?php echo htmlspecialchars($row['approver_id']);?></td>
-                <td><?php echo htmlspecialchars($row['payment_method_id']);?></td>
-                <td><?php echo htmlspecialchars($row['project_id']);?></td>
+                <td><?php echo htmlspecialchars($row['requestID']);?></td>
+                <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
+                <td><?php echo htmlspecialchars($row['Modules']);?></td>
+                <td>
+                  ₱ <?php 
+                 if (!empty($row['Amount'])) {
+            echo number_format($row['Amount'], 0, ".", ","); 
+                       } else {
+            echo "0";
+        }
+                   ?>
+              </td>
+                <td><?php echo htmlspecialchars($row['Requested_by']);?></td>
+                <td><?php if (!empty($row['Due'])) {
+                        echo date("F j, Y", strtotime($row['Due']));} else {
+                        echo "-";}?></td>
+             <td><?php echo htmlspecialchars($row['Purpuse']);?></td>
+        <td>
+           
+    <?php 
+        $status = strtolower($row['status']);
+        $statusClass = "status-default";
+
+        switch ($status) {
+            case "paid":
+                $statusClass = "status-paid";
+                break;
+            case "approved":
+                $statusClass = "status-approved";
+                break;
+            case "reject":
+            case "rejected":
+                $statusClass = "status-reject";
+                break;
+            case "verified":
+                $statusClass = "status-verified";
+                break;
+        }
+    ?>
+    <span class="status-badge <?php echo $statusClass; ?>">
+        <?php echo htmlspecialchars($row['status']); ?>
+    </span>
+</td>
+
+                <td> <?php 
+                    if (!empty($row['date'])) {
+                        echo date("F j, Y g:i A", strtotime($row['date'])); 
+                    } else {
+                        echo "-";
+                    }
+                ?></td>
                 <td>
                     <a href="#"
                        onclick="openViewModal(
-                           '<?php echo $row['disbursement_id'];?>',
-                           '<?php echo htmlspecialchars($row['amount'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['disbursement_date'], ENT_QUOTES);?>',
+                           '<?php echo $row['requestID'];?>',
+                           '<?php echo htmlspecialchars($row['requestTiTle'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Modules'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Amount'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Requested_by'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Due'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['status'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['description'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['approver_id'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['payment_method_id'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['project_id'], ENT_QUOTES);?>');
+                           '<?php echo htmlspecialchars($row['Purpuse'], ENT_QUOTES);?>');
+                           
                        return false;">
                        👁️ View
                     </a>
                     <a href="#"
                        onclick="openUpdateModal(
-                           '<?php echo $row['disbursement_id'];?>',
-                           '<?php echo htmlspecialchars($row['amount'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['disbursement_date'], ENT_QUOTES);?>',
+                           '<?php echo $row['requestID'];?>',
+                           '<?php echo htmlspecialchars($row['requestTiTle'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Modules'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Amount'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Requested_by'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Due'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['status'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['description'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['approver_id'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['payment_method_id'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['project_id'], ENT_QUOTES);?>');
+                           '<?php echo htmlspecialchars($row['date'], ENT_QUOTES);?>');
                        return false;">
                        ✏️ Update
                     </a>
                     <a href="#"
-                       onclick="openArchiveModal('<?php echo $row['disbursement_id']?>'); return false;">
+                       onclick="openArchiveModal('<?php echo $row['requestID']?>'); return false;">
                        🗄️ Archive
                     </a>
                 </td>
@@ -68,43 +148,58 @@
 
 <div id="viewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'viewModal')">
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
-        <h2 class="text-lg font-bold mb-4">View Disbursement</h2>
+        <h2 class="text-lg font-bold mb-4">View Request</h2>
         <div class="space-y-2">
-            <p><strong>Disbursement ID:</strong> <span id="viewDisbursementId"></span></p>
+            <p><strong>Request ID:</strong> <span id="viewRequestId"></span></p>
+            <p><strong>Title:</strong> <span id="viewTitle"></span></p>
+            <p><strong>Request Type:</strong> <span id="viewModules"></span></p>
             <p><strong>Amount:</strong> <span id="viewAmount"></span></p>
-            <p><strong>Disbursement Date:</strong> <span id="viewDisbursementDate"></span></p>
+            <p><strong>Requested By:</strong> <span id="viewRequestedBy"></span></p>
+            <p><strong>Due Date:</strong> <span id="viewDue"></span></p>
             <p><strong>Status:</strong> <span id="viewStatus"></span></p>
-            <p><strong>Description:</strong> <span id="viewDescription"></span></p>
-            <p><strong>Approver ID:</strong> <span id="viewApproverId"></span></p>
-            <p><strong>Payment Method ID:</strong> <span id="viewPaymentMethodId"></span></p>
-            <p><strong>Project ID:</strong> <span id="viewProjectId"></span></p>
+           
+         
+            <p><strong>Purpuse:</strong> <span id="viewPurpuse"></span></p>
         </div>
         <button class="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('viewModal')">Close</button>
     </div>
 </div>
 
+
 <div id="updateModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'updateModal')">
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
         <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('updateModal')">&times;</button>
-        <h2 class="text-lg font-bold mb-4">Update Disbursement</h2>
+        <h2 class="text-lg font-bold mb-4">Update Request</h2>
         <form method="post">
-            <input type="hidden" name="update_disbursement_id" id="updateDisbursementId">
+            <input type="hidden" name="update_request_id" id="updateRequestId">
             <div class="space-y-4">
                 <div>
+                    <label for="updateTitle" class="block text-gray-700">Title:</label>
+                    <input type="text" name="update_title" id="updateTitle" class="w-full p-2 border rounded" required>
+
+                    <label for="updateModules" class="block text-gray-700">Request Type:</label>
+                    <select name="update_modules" id="updateModules"
+                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
+                                required>
+                  <option value="">-- Select Department --</option>
+              <option value="General Services">Admin / General Services</option>
+              <option value="HR">HR (Human Resources)</option>
+                <option value="Maintenance">Maintenance</option>
+                     <option value="Finance">Finance</option>
+                  <option value="Operations">Operations</option>
+                   </select>
+
+
                     <label for="updateAmount" class="block text-gray-700">Amount:</label>
                     <input type="number" name="update_amount" id="updateAmount" class="w-full p-2 border rounded" required>
-                    <label for="updateDisbursementDate" class="block text-gray-700">Disbursement Date:</label>
-                    <input type="date" name="update_disbursement_date" id="updateDisbursementDate" class="w-full p-2 border rounded" required>
-                    <label for="updateStatus" class="block text-gray-700">Status:</label>
-                    <input type="text" name="update_status" id="updateStatus" class="w-full p-2 border rounded" required>
-                    <label for="updateDescription" class="block text-gray-700">Description:</label>
-                    <input type="text" name="update_description" id="updateDescription" class="w-full p-2 border rounded" required>
-                    <label for="updateApproverId" class="block text-gray-700">Approver ID:</label>
-                    <input type="number" name="update_approver_id" id="updateApproverId" class="w-full p-2 border rounded" required>
-                    <label for="updatePaymentMethodId" class="block text-gray-700">Payment Method ID:</label>
-                    <input type="number" name="update_payment_method_id" id="updatePaymentMethodId" class="w-full p-2 border rounded" required>
-                    <label for="updateProjectId" class="block text-gray-700">Project ID:</label>
-                    <input type="number" name="update_project_id" id="updateProjectId" class="w-full p-2 border rounded" required>
+
+                    <label for="updateRequestedBy" class="block text-gray-700">Requested By:</label>
+                    <input type="text" name="update_requested_by" id="updateRequestedBy" class="w-full p-2 border rounded" required>
+
+                    <label for="updateDue" class="block text-gray-700">Due Date:</label>
+                    <input type="date" name="update_due" id="updateDue" class="w-full p-2 border rounded" required>
+
+
                 </div>
             </div>
             <div class="flex justify-end space-x-3 mt-4">
@@ -115,11 +210,12 @@
     </div>
 </div>
 
+
 <div id="archiveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" onclick="outsideClick(event, 'archiveModal')">
     <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative" onclick="event.stopPropagation()">
         <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('archiveModal')">&times;</button>
-        <h2 class="text-lg font-bold mb-4">Archive Disbursement</h2>
-        <p>Are you sure you want to archive this disbursement record?</p>
+        <h2 class="text-lg font-bold mb-4">Archive Request</h2>
+        <p>Are you sure you want to archive this Request record?</p>
         <form method="post">
             <div class="flex justify-end space-x-3 mt-4">
                 <input type="hidden" name="archive_disbursement_id" id="archiveDisbursementId">
@@ -131,28 +227,28 @@
 </div>
 
 <script>
-function openViewModal(disbursementId, amount, disbursementDate, status, description, approverId, paymentMethodId, projectId) {
-    document.getElementById('viewDisbursementId').innerText = disbursementId;
+function openViewModal(requestID, title, modules, amount, requestedBy, due, status, Purpuse) {
+    document.getElementById('viewRequestId').innerText = requestID;
+    document.getElementById('viewTitle').innerText = title;
+    document.getElementById('viewModules').innerText = modules;
     document.getElementById('viewAmount').innerText = amount;
-    document.getElementById('viewDisbursementDate').innerText = disbursementDate;
+    document.getElementById('viewRequestedBy').innerText = requestedBy;
+    document.getElementById('viewDue').innerText = due;
     document.getElementById('viewStatus').innerText = status;
-    document.getElementById('viewDescription').innerText = description;
-    document.getElementById('viewApproverId').innerText = approverId;
-    document.getElementById('viewPaymentMethodId').innerText = paymentMethodId;
-    document.getElementById('viewProjectId').innerText = projectId;
+    document.getElementById('viewPurpuse').innerText=Purpuse;
     document.getElementById('viewModal').classList.remove('hidden');
 }
-function openUpdateModal(disbursementId, amount, disbursementDate, status, description, approverId, paymentMethodId, projectId) {
-    document.getElementById('updateDisbursementId').value = disbursementId;
+
+function openUpdateModal(requestID, title, modules, amount, requestedBy, due, status, date) {
+    document.getElementById('updateRequestId').value = requestID;
+    document.getElementById('updateTitle').value = title;
+    document.getElementById('updateModules').value = modules;
     document.getElementById('updateAmount').value = amount;
-    document.getElementById('updateDisbursementDate').value = disbursementDate;
-    document.getElementById('updateStatus').value = status;
-    document.getElementById('updateDescription').value = description;
-    document.getElementById('updateApproverId').value = approverId;
-    document.getElementById('updatePaymentMethodId').value = paymentMethodId;
-    document.getElementById('updateProjectId').value = projectId;
+    document.getElementById('updateRequestedBy').value = requestedBy;
+    document.getElementById('updateDue').value = due;
     document.getElementById('updateModal').classList.remove('hidden');
 }
+
 function openArchiveModal(disbursementId) {
     document.getElementById('archiveDisbursementId').value = disbursementId;
     document.getElementById('archiveModal').classList.remove('hidden');
