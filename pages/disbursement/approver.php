@@ -23,10 +23,10 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/disbursement/approver.html'; ?>
+<?php include __DIR__ . '/../../cards/disbursement/cashrelease.php'; ?>
 <br>
-    <?php include __DIR__ . '/../../modal/disbursement/approver.html'; ?>
-    <?php include __DIR__ . '/../../table/disbursement/approver.html';?>
+   
+    <?php include __DIR__ . '/../../contents/disbursement/approver.php';?>
 </div>
 <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
 <script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
