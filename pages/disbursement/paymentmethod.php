@@ -23,10 +23,9 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/disbursement/paymentmethod.html'; ?>
+<?php include __DIR__ . '/../../contents/disbursement/loan.php'; ?>
 <br>
-    <?php include __DIR__ . '/../../modal/disbursement/paymentmethod.html'; ?>
-    <?php include __DIR__ . '/../../table/disbursement/paymentmethod.html';?>
+   
 
 </div>
 <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
