@@ -27,7 +27,7 @@
     </div>
    <?php include __DIR__ . '/../../filtering/collection/receipt.html'; ?>
    <br>
-      
+    <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>  
   
     <?php include __DIR__ . '/../../table/collection/receipttable.html';?>
 
