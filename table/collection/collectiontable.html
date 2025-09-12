@@ -1,4 +1,30 @@
- <div class="table-section" id="invoiceTableSection">
+<style>
+      .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        font-size: 0.875rem;  
+        font-weight: 500;
+        display: inline-block;
+    }
+     .status-paid {
+        background-color: #dcfce7; 
+        color: #166534;          
+        border: 1px solid #86efac;
+    }
+    .status-reject {
+        background-color: #fee2e2; 
+        color: #991b1b;            
+        border: 1px solid #fca5a5;
+    }
+
+    
+    .status-default {
+        background-color: #e5e7eb; 
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+</style>
+<div class="table-section" id="invoiceTableSection">
       <h3>Plan Report</h3>
       <table id="employeesTable">
           <thead>
@@ -22,8 +48,25 @@
             <td><?php echo htmlspecialchars($row['plan']); ?></td>
             <td><?php echo htmlspecialchars($row['remaining_days']); ?></td>
             <td><?php echo htmlspecialchars($row['plan_type']); ?></td>
-            <td><?php echo htmlspecialchars($row['status']); ?></td>
-          
+           
+            <td>
+              <?php
+              $status = strtolower($row['status']);
+              $statusClass = "status-default";
+
+              switch($status){
+                case "active":
+                $statusClass= "status-paid";
+                break;
+                case "inactive":
+                $statusClass = "status-reject";
+                break;
+              }?>
+              <span class="status-badge <?php echo $statusClass;?>">
+                <?php echo htmlspecialchars($row['status']);?>
+              </span>
+            </td>
+
             <td><?php echo htmlspecialchars($date); ?></td>
          
 <td>
