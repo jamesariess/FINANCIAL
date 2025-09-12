@@ -1,4 +1,39 @@
- <div class="table-section" id="invoiceTableSection">
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 9999px; 
+        font-size: 0.875rem;  
+        text-align: center; 
+        font-weight: 500;
+        display: inline-block;
+    }
+    .status-paid {
+        background-color: #dcfce7; 
+        color: #166534;          
+        border: 1px solid #86efac;
+    }
+    .status-approved {
+        background-color: #dbeafe; 
+        color: #1e40af;           
+        border: 1px solid #93c5fd;
+    }
+    .status-reject {
+        background-color: #fee2e2; 
+        color: #991b1b;            
+        border: 1px solid #fca5a5;
+    }
+    .status-verified {
+        background-color: #ffedd5; 
+        color: #9a3412;           
+        border: 1px solid #fdba74;
+    }
+    .status-default {
+        background-color: #e5e7eb; 
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+</style>
+<div class="table-section" id="invoiceTableSection">
       <h3>Invoice</h3>
       <table id="employeesTable">
         <thead>
@@ -21,19 +56,67 @@
         <tr>
        
           <td><?php echo htmlspecialchars($row['reminderID']);?></td>
-          <td><?php echo htmlspecialchars($row['planID']);?></td>
-          <td><?php echo htmlspecialchars($row['InvoiceID']);?></td>
-          <td><?php echo htmlspecialchars($row['FollowUpDate']);?></td>
+          <td><?php echo htmlspecialchars($row['plan']);?></td>
+          <td><?php echo htmlspecialchars($row['reference_no']);?></td>
+          <td><?php echo date("F j, Y g:i A",strtotime($row['FollowUpDate']));?></td>
           <td><?php echo htmlspecialchars($row['Contactinfo']);?></td>
-          <td><?php echo htmlspecialchars($row['Remarks']);?></td>
-          <td><?php echo htmlspecialchars($row['paymentstatus']);?></td>
+                  <td>
+           
+    <?php 
+        $status = strtolower($row['Remarks']);
+        $statusClass = "status-default";
+
+        switch ($status) {
+            case "reminder sent":
+                $statusClass = "status-paid";
+                break;
+ 
+            case "failed to sent":
+            case "email not working":
+                $statusClass = "status-reject";
+                break;
+            case "to be sent":
+                $statusClass = "status-verified";
+                break;
+        }
+    ?>
+    <span class="status-badge <?php echo $statusClass; ?>">
+        <?php echo htmlspecialchars($row['Remarks']); ?>
+    </span>
+</td>
+       
+        <td>
+           
+    <?php 
+        $status = strtolower($row['paymentstatus']);
+        $statusClass = "status-default";
+
+        switch ($status) {
+            case "paid":
+                $statusClass = "status-paid";
+                break;
+  
+            
+            case "not paid":
+                $statusClass = "status-reject";
+                break;
+            case "partially paid":
+                $statusClass = "status-verified";
+                break;
+        }
+    ?>
+    <span class="status-badge <?php echo $statusClass; ?>">
+        <?php echo htmlspecialchars($row['paymentstatus']); ?>
+    </span>
+</td>
+         
       
           <td>
             <a href="?id=<?php echo $row['reminderID']?>"
               onclick="openViewModal(
                 '<?php echo $row['reminderID']; ?>',
-                '<?php echo htmlspecialchars($row['planID'], ENT_QUOTES); ?>',
-                '<?php echo htmlspecialchars($row['InvoiceID'], ENT_QUOTES); ?>',
+                '<?php echo htmlspecialchars($row['plan'], ENT_QUOTES); ?>',
+                '<?php echo htmlspecialchars($row['reference_no'], ENT_QUOTES); ?>',
                 '<?php echo htmlspecialchars($date, ENT_QUOTES); ?>',
                 '<?php echo htmlspecialchars($row['Contactinfo'], ENT_QUOTES); ?>',
                 '<?php echo htmlspecialchars($row['Remarks'], ENT_QUOTES); ?>',
@@ -45,9 +128,9 @@
             <a href="?update_id=<?php echo $row['reminderID']?>"
               onclick="openUpdateModal(
                 '<?php echo $row['reminderID']; ?>',
-                '<?php echo htmlspecialchars($row['planID'], ENT_QUOTES); ?>',
-                '<?php echo htmlspecialchars($row['InvoiceID'], ENT_QUOTES); ?>',
-                '<?php echo htmlspecialchars($date, ENT_QUOTES); ?>',
+                
+                
+                
                 '<?php echo htmlspecialchars($row['Contactinfo'], ENT_QUOTES); ?>',
                 '<?php echo htmlspecialchars($row['Remarks'], ENT_QUOTES); ?>',
                 '<?php echo htmlspecialchars($row['paymentstatus'], ENT_QUOTES); ?>'
@@ -56,7 +139,7 @@
           <a href="?archive_id=<?php echo $row['reminderID']?>" 
             onclick= "openArchiveModal(
               '<?php echo $row['reminderID']; ?>',
-              '<?php echo htmlspecialchars($row['InvoiceID'],ENT_QUOTES);?>');
+              '<?php echo htmlspecialchars($row['reference_no'],ENT_QUOTES);?>');
               return false;
               ">🗄️ Archive
           </a>
@@ -67,9 +150,8 @@
           <?php endif; ?>
         </tbody>
       </table>
-    </div>
 
-
+</div>
    <!-- View Modal -->
 <div id="viewModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onclick="outsideclick(event, 'viewModal')">
   <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm relative">
@@ -93,30 +175,30 @@
     <form method="POST" action="" id="updateForm">
       <input type="hidden" name="reminderID" id="updateReminderID">
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Plan ID</label>
-        <input type="text" name="planID" id="updatePlanID" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-      </div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Invoice ID</label>
-        <input type="text" name="InvoiceID" id="updateInvoiceID" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-      </div>
+<div class="mb-4">
+  <label class="block text-gray-700 font-medium mb-2">Contact</label>
+  <select name="Contactinfo" id="updateContactinfo" 
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+    <option value="">-- Select Contact --</option>
+    <option value="CellNumber">📞 Phone</option>
+    <option value="Email">📧 Email</option>
+    <option value="In Person">👥 In-Person</option>
+  </select>
+</div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Follow Up Date</label>
-        <input type="date" name="FollowUpDate" id="updateFollowUpDate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-      </div>
+<div class="mb-4">
+  <label class="block text-gray-700 font-medium mb-2">Remarks</label>
+  <select name="Remarks" id="updateRemarks" 
+          class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+    <option value="">-- Select Remark --</option>
+    <option value="Reminder Sent">Reminder Sent</option>
+    <option value="Failed To Sent">Failed To Sent</option>
+    <option value="Email not Working">Email not Working</option>
+    <option value="To Be Sent">To Be Sent</option>
+  </select>
+</div>
 
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Contact</label>
-        <input type="text" name="Contactinfo" id="updateContactinfo" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-      </div>
-
-      <div class="mb-4">
-        <label class="block text-gray-700 font-medium mb-2">Remarks</label>
-        <textarea name="Remarks" id="updateRemarks" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required></textarea>
-      </div>
 
 <div class="mb-4">
   <label for="updateStatus" class="block text-sm font-medium text-gray-700">Payment Status</label>
@@ -163,13 +245,8 @@ function openViewModal(reminderID, planID, invoiceID, followUpDate, contactinfo,
   document.getElementById('viewModal').classList.remove('hidden');
 }
 
-function openUpdateModal(reminderID, planID, invoiceID, followUpDate, contactinfo, remarks, status) {
+function openUpdateModal(reminderID, contactinfo, remarks, status) {
   document.getElementById('updateReminderID').value = reminderID;
-  document.getElementById('updatePlanID').value = planID;
-  document.getElementById('updateInvoiceID').value = invoiceID;
-  let dateObj = new Date(followUpDate);
-  let formatted = dateObj.toISOString().split('T')[0];
-  document.getElementById('updateFollowUpDate').value = formatted;
 
   document.getElementById('updateContactinfo').value = contactinfo;
   document.getElementById('updateRemarks').value = remarks;
@@ -191,5 +268,11 @@ function outsideclick(event, modalId) {
     closeModal(modalId);
   }
 }
+  function openOverdueModal() {
+    document.getElementById("overdueModal").classList.remove("hidden");
+  }
+  function closeOverdueModal() {
+    document.getElementById("overdueModal").classList.add("hidden");
+  }
         
       </script>
