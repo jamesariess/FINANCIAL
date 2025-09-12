@@ -68,12 +68,12 @@ function downloadCSV() {
 
     const rows = Array.from(table.querySelectorAll("tbody tr"));
     rows.forEach(row => {
-        if (row.style.display !== "none") { // only visible (filtered) rows
+        if (row.style.display !== "none") { 
             const cols = Array.from(row.cells)
                 .slice(0, -1)
                 .map((td, i) => {
                     let text = td.innerText;
-                    // Format Amount column
+                  
                     if(i === 3){
                         let num = text.replace(/[₱,]/g, '');
                         if(!isNaN(num)) text = '₱ ' + Number(num).toLocaleString();
@@ -128,7 +128,7 @@ async function downloadPDF() {
     if (headerAmountWidth > maxAmountWidth) maxAmountWidth = headerAmountWidth;
 
     doc.setFontSize(16);
-    doc.text("Request Report", 20, 30);
+    doc.text("Reports", 20, 30);
 
     const columnStyles = {};
     headers.forEach((_, i) => {
@@ -148,7 +148,7 @@ async function downloadPDF() {
         tableWidth: 'auto'
     });
 
-    doc.save("Request_report.pdf");
+    doc.save("reports.pdf");
 }
 
 
