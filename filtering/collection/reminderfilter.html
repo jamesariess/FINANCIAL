@@ -1,84 +1,111 @@
+<div id="overdueModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-2xl shadow-xl w-11/12 max-w-4xl p-6 relative max-h-[90vh] overflow-y-auto">
+    <button onclick="closeOverdueModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-lg font-bold">✖</button>
 
+    <h2 class="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+      <i class="fas fa-exclamation-circle"></i>
+       Reminders Reports
+    </h2>
 
-  <div class="card">
- 
-    <div class="card-header">
-      <h2>Filters ⚙️</h2>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="search-box">
-          <input type="text" placeholder="🔍 Search..." id="myInput" onkeyup="applyFilters()">
+    <div class="card">
+      <div class="card-header">
+        <h2>Filters ⚙️</h2>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="search-box">
+            <input type="text" placeholder="🔍 Search..." id="myInput" onkeyup="applyFilters()">
+          </div>
+          <button class="btn btn-sort" id="sortBtn" type="button" onclick="toggleSort()">⇅ Sort Asc</button>
+          <button class="btn btn-filter" onclick="openDownloadModal()">⬇ Download</button>
         </div>
-      <button class="btn btn-sort" id="sortBtn" type="button" onclick="toggleSort()">⇅ Sort Asc</button>
+      </div>
 
-        <button class="btn btn-filter">⬇ Download</button>
-        <button id="toggleFormBtn" class="btn btn-add">+ Add New</button>
-       
+      <div class="filters">
+        <div class="form-group">
+          <label>Contact</label>
+          <select id="plantypefilter" onchange="applyFilters()">
+            <option>All</option>
+            <option>Email</option>
+            <option>Number</option>
+            <option>Facebook</option>
+            <option>Telephone</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Date Range</label>
+          <select id="dateRangeFilter" onchange="applyFilters()">
+            <option value="all">All Time</option>
+            <option value="last24hours">Last 24 Hours</option>
+            <option value="last2days">Last 2 Days</option>
+            <option value="last7days">Last 7 Days</option>
+            <option value="last30days">Last 30 Days</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Reset -->
+      <div style="margin-top:15px;">
+        <button class="btn-reset" onclick="resetFilters()">⟳ Reset Filters</button>
       </div>
     </div>
 
-  
-    <div class="filters">
-
-      <div class="form-group">
-        <label>Contact</label>
-        <select id="plantypefilter" onchange="applyFilters()"">
-          <option>All</option>
-          <option>Email</option>
-          <option>Number</option>
-          <option>Facebook</option>
-          <option>Telephone</option>
-        </select>
-      </div>
-</div>
- <div class="form-group">
-    <label>Date Range</label>
-    <div class="date-range">
-      <input type="date" id="startDate" onchange="applyFilters() ">
-      <span>–</span>
-      <input type="date" id="endDate" onchange="applyFilters() ">
-    </div>
-    </div>
-
-    <!-- Reset -->
-    <div style="margin-top:15px;">
-      <button class="btn-reset" onclick="resetFilters()">⟳ Reset Filters</button>
-    </div>
-  </div>
 
 <script>
-    function applyFilters() {
+  function applyFilters() {
     const searchInput = document.getElementById("myInput").value.toUpperCase();
     const planTypeFilter = document.getElementById("plantypefilter").value.toUpperCase();
-    const minDate = new Date(document.getElementById("startDate").value);
-    const maxDate = new Date(document.getElementById("endDate").value);
+    const dateRangeFilter = document.getElementById("dateRangeFilter").value;
 
     const table = document.getElementById("employeesTable");
     const tbody = table.tBodies[0];
     const rows = Array.from(tbody.rows);
 
+    // Get current date for comparison
+    const now = new Date();
+    let minDate = null;
+
+    // Set minDate based on selected range
+    switch (dateRangeFilter) {
+      case "last24hours":
+        minDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
+      case "last2days":
+        minDate = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+        break;
+      case "last7days":
+        minDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "last30days":
+        minDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "all":
+      default:
+        minDate = null; // No date filtering for "All Time"
+        break;
+    }
+
     rows.forEach(row => {
-        const cells = Array.from(row.cells);
+      const cells = Array.from(row.cells);
+      const dateCell = new Date(cells[5].textContent); // Assuming date is in column 5 (Remarks? Adjust index if needed)
 
-        const dateCell = new Date(cells[5].textContent);
+      const searchMatch = cells.some(td =>
+        (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
+      );
 
-        const searchMatch = cells.some(td =>
-            (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
-        );
+      const plantypeCell = cells[2].textContent.toUpperCase(); // Assuming Contact is column 2
+      const planMatch = planTypeFilter === "ALL" || plantypeCell === planTypeFilter;
 
-        const plantypeCell = cells[2].textContent.toUpperCase();
-        const planMatch = planTypeFilter === "ALL" || plantypeCell === planTypeFilter;
+      const dateMatch = minDate === null || dateCell >= minDate;
 
-
-
-        const dateMatch = (
-            (isNaN(minDate) || dateCell >= minDate) &&
-            (isNaN(maxDate) || dateCell <= maxDate)
-        );
-
-        // ✅ only show row if ALL conditions match
-        const show = searchMatch && planMatch  && dateMatch;
-        row.style.display = show ? "" : "none";
+      // ✅ only show row if ALL conditions match
+      const show = searchMatch && planMatch && dateMatch;
+      row.style.display = show ? "" : "none";
     });
-}
+  }
 
+  function resetFilters() {
+    document.getElementById("myInput").value = "";
+    document.getElementById("plantypefilter").value = "All";
+    document.getElementById("dateRangeFilter").value = "all";
+    applyFilters();
+  }
 </script>
