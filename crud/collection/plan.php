@@ -90,5 +90,4 @@ try {
     echo "❌ Error fetching plans: " . $e->getMessage();
 }
 
-
 ?>
