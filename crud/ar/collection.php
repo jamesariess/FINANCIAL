@@ -10,13 +10,13 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
     // Colors
     $white = imagecolorallocate($im, 255, 255, 255);
     $black = imagecolorallocate($im, 0, 0, 0);
-    $gray = imagecolorallocate($im, 128, 128, 128);
+    $gray  = imagecolorallocate($im, 128, 128, 128);
     $green = imagecolorallocate($im, 0, 128, 0);
 
     // Fill background
     imagefilledrectangle($im, 0, 0, $width, $height, $white);
 
-    // Use imagestring instead of imagettftext
+    // Text
     $y = 20;
     imagestring($im, 5, 150, $y, "SLATE Freight Mgmt System", $black);
     $y += 30;
@@ -58,12 +58,20 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
 
     // Save image
     $folder = __DIR__ . "/../../uploads/receipt/";
-    if (!file_exists($folder)) mkdir($folder, 0777, true);
-    $filePath = $folder . "receipt_" . $receiptID . ".png";
+    if (!file_exists($folder)) {
+        mkdir($folder, 0777, true);
+    }
+
+    $fileName = "receipt_" . $receiptID . ".png";
+    $filePath = $folder . $fileName;
+
     imagepng($im, $filePath);
     imagedestroy($im);
 
+    // Return relative path for DB (so it works in <img src>)
+    return "uploads/receipt/" . $fileName;
 }
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
