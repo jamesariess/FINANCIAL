@@ -24,7 +24,9 @@
             </label>
         </div>
     </div>
+  
     <?php include __DIR__ . '/../../filtering/collection/planfilter.html';?>
+      <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>
     <br>
     <?php include __DIR__ . '/../../modal/collection/collectionplanmodal.html'; ?>
     <?php include __DIR__ . '/../../table/collection/collectiontable.html';?>
