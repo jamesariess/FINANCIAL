@@ -25,15 +25,18 @@
             <td><?php echo htmlspecialchars($date);?></td>
             <td><?php echo htmlspecialchars($row['receiptNumber']);?></td>
             <td><?php echo htmlspecialchars($row['issueBy']);?></td>
-            <td>
-              <?php if (!empty($row['receiptImage'])): ?>
-                <a href="<?php echo '/financial/uploads/' . htmlspecialchars($row['receiptImage']); ?>" target="_blank">
-                  <img src="<?php echo '/financial/uploads/' . htmlspecialchars($row['receiptImage']); ?>" alt="Receipt Image" style="width: 50px; height: 50px; object-fit: cover;">
-                </a>
-              <?php else: ?>
-                No Image
-              <?php endif; ?>
-            </td>
+        <td>
+                 <?php if (!empty($row['receiptImage'])): ?>
+                <a href="<?php echo '../../' . htmlspecialchars($row['receiptImage']); ?>" target="_blank">
+                 <img src="<?php echo '../../' . htmlspecialchars($row['receiptImage']); ?>" 
+           alt="Receipt Image" 
+           style="width: 50px; height: 50px; object-fit: cover;">
+    </a>
+  <?php else: ?>
+    No Image
+  <?php endif; ?>
+</td>
+
 
              <td>
               <a href="?id=<?php echo $row['receiptID']?>"
@@ -48,14 +51,7 @@
                  👁️ View</a>
 
 
-             <a href="?update_id=<?php echo $row['receiptID']?>"
-                 onclick="openUpdateModal(
-                   '<?php echo $row['receiptID']; ?>',
-                   '<?php echo htmlspecialchars($row['receiptNumber'], ENT_QUOTES); ?>',
-                   '<?php echo htmlspecialchars($row['issueBy'], ENT_QUOTES); ?>'
-                 ); return false;">
-                  ✏️ Update</a>
-
+         
 
               <a href="?download_id=<?php echo $row['receiptID']?>"
                 onclick="Downloadreceipt(
@@ -99,28 +95,7 @@
       </div>
     </div>
 
-        <div id="updateModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onclick="outsideclick(event, 'updateModal')">
-      <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm relative">
-        <button class="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl font-bold" onclick="closeModal('updateModal')">&times;</button>
-        <h2>Update Receipt</h2>
-        <form id="updateForm" method="post" action="">
-          <input type="hidden" name="receiptID" id="updateReceiptID">
-            <div class="mb-4">
-            <label for="updateReceiptNumber" class="block text-sm font-medium text-gray-700">Receipt Number:</label>
-            <input type="text" id="updateReceiptNumber" readonly name="receiptNumber" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-          </div>
-         <div class="mb-4">
-            <label for="updateIssueBy" class="block text-sm font-medium text-gray-700">Issued By:</label>
-            <input type="text" id="updateIssueBy" name="issueBy" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-          </div>
-           <div class="flex justify-end space-x-3">
-        <button type="button" onclick="closeModal('updateModal')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
-        <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" name="update">Save Changes</button>
-      </div>
-    </form>
-  </div>
-</div>
-         
+
 
 
 <div id="archiveModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onclick="outsideclick(event, 'archiveModal')">
@@ -149,26 +124,22 @@
         document.getElementById('viewModal').classList.remove('hidden');
       }
   
-      function openUpdateModal(receiptID, receiptNumber, issueBy) {
-        document.getElementById('updateReceiptID').value = receiptID;
-        document.getElementById('updateReceiptNumber').value = receiptNumber;
-        document.getElementById('updateIssueBy').value = issueBy;
-        document.getElementById('updateModal').classList.remove('hidden');
-      }
     
       function openArchiveModal(receiptID, receiptNumber) {
         document.getElementById('archiveReceiptID').value = receiptID;
         document.getElementById('archiveModal').classList.remove('hidden');
       }
    
-      function Downloadreceipt(receiptID, receiptImage) {
-        const link = document.createElement('a');
-        link.href = '/financial/uploads/' + receiptImage;
-        link.download = 'Receipt_' + receiptID + '.png';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+function Downloadreceipt(receiptID, receiptImage) {
+  
+  const link = document.createElement('a');
+  link.href = '../../' + receiptImage; 
+  link.download = 'Receipt_' + receiptID + '.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
       function outsideclick(event, modalId) {
         if (event.target === document.getElementById(modalId)) {
           closeModal(modalId);
