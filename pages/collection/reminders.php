@@ -1,4 +1,5 @@
 <?php include __DIR__ . '/../../crud/collection/reminder.php';?>
+<?php include __DIR__ . '/../../api/collection/sendgmail.php';?>
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -25,12 +26,17 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/collection/reminderfilter.html'; ?>
+    <?php include __DIR__ . '/../../cards/collection/reminders.php'; ?>
+      <?php include __DIR__ . '/../../contents/collection/reminder.php'; ?> 
+      <?php include __DIR__ . '/../../modal/collection/remindersmodal.html'; ?>
+    <?php include __DIR__ . '/../../filtering/collection/reminderfilter.html'; ?>
    <br>
-    <?php include __DIR__ . '/../../modal/collection/remindersmodal.html'; ?>
+   <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>
     <?php include __DIR__ . '/../../table/collection/reminderstable.html';?>
-
+     </div>
+       </div>
 </div>
+ </div>
 <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
 <script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
 
