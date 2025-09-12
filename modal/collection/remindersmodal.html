@@ -2,7 +2,7 @@
   <div class="form-collection" id="collectionform">
     <legend>Follow Up / Reminders</legend>
     
-    <!-- Add method="post" -->
+  
     <form method="post">
       <input type="hidden" name="reminderID" id="RequestId">
  
@@ -22,7 +22,7 @@
                         GROUP BY InvoiceID
                     ) f ON i.invoice_id = f.InvoiceID
                     WHERE i.Archive = 'NO'
-                      AND (f.follow_count IS NULL OR f.follow_count < 2)
+                      AND (f.follow_count IS NULL OR f.follow_count < 1)
                     ORDER BY i.created_at DESC";
 
             $stmt = $pdo->prepare($sql);
@@ -49,22 +49,30 @@
 
       <div class="form-group">
         <label for="planID" class="block text-sm font-medium text-gray-700">Plan</label>
-        <select name="planID" id="planID" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-          <option value="">Select Plan</option>
-          <?php
-          try {
-              $sql = "SELECT planID, plan FROM collection_plan WHERE status = 'Active' AND Archive = 'NO' ORDER BY planID ASC";
-              $stmt = $pdo->prepare($sql);
-              $stmt->execute();
-              $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
-              foreach ($plans as $plan) {
-                  echo '<option value="' . htmlspecialchars($plan['planID']) . '">' . htmlspecialchars($plan['plan']) . '</option>';
-              }
-          } catch (PDOException $e) {
-              echo '<option value="">Error loading plans: ' . $e->getMessage() . '</option>';
-          }
-          ?>
-        </select>
+<select name="planID" id="planID" 
+  class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+  <option value="">Select Plan</option>
+  <?php
+  try {
+      $sql = "SELECT planID, plan, plan_type 
+              FROM collection_plan 
+              WHERE status = 'Active' AND Archive = 'NO' 
+              ORDER BY planID ASC";
+      $stmt = $pdo->prepare($sql);
+      $stmt->execute();
+      $plans = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+      foreach ($plans as $plan) {
+          echo '<option value="' . htmlspecialchars($plan['planID']) . '">' 
+                . htmlspecialchars($plan['plan']) . ' - ' . htmlspecialchars($plan['plan_type']) . 
+               '</option>';
+      }
+  } catch (PDOException $e) {
+      echo '<option value="">Error loading plans: ' . htmlspecialchars($e->getMessage()) . '</option>';
+  }
+  ?>
+</select>
+
       </div>
 
     
@@ -85,23 +93,12 @@
   </select>
 </div>
 
-  <div class="form-group">
-  <label for="Remarks">Remarks</label>
-  <select id="Remarks" name="Remarks" 
-          class="mt-1 block w-full border-gray-300 rounded-md shadow-sm 
-                 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-    <option value="">Select Remark</option>
-    <option value="Failed To Sent">Failed To Sent</option>
-    <option value="Email not Working">Email not Working</option>
-    <option value="Under Review">Under Review</option>
-    <option value="Reminder Sent">Reminder Sent</option>
-  </select>
-</div>
+
 
 
       <div class="form-actions">
         <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
-        <!-- Add value so PHP detects it -->
+      
         <button type="submit" name="create" value="1" class="btn btn-primary">Submit Request</button>
       </div>
     </form>
@@ -121,7 +118,7 @@ cancelBtn.addEventListener('click', () => {
   modalOverlay.style.display = 'none';
 });
 
-// Optional: Close modal when clicking outside
+
 modalOverlay.addEventListener('click', (e) => {
   if (e.target === modalOverlay) {
     modalOverlay.style.display = 'none';
