@@ -24,10 +24,9 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/budget/allocation.html'; ?>
-<br>
-    <?php include __DIR__ . '/../../modal/budgetmanage/allocation.html'; ?>
-    <?php include __DIR__ . '/../../table/budgetmanagement.html/allocationtable.html';?>
+      <?php include __DIR__ . '/../../crud/budget/allocation.php'; ?>
+    <?php include __DIR__ . '/../../contents/budget/allocation.php'; ?>
+     <?php include __DIR__ . '/../../cards/budget/allocation.php'; ?>
 
 </div>
 <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
