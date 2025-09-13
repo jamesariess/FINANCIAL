@@ -9,32 +9,31 @@ $data = [
     "newRequest" => 0
 ];
 
-// Total Requests
+
 $sql = "SELECT COUNT(*) as total FROM request WHERE Archive = 'NO'";
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data["totalRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-// Total Amount Released
-$sql = "SELECT IFNULL(SUM(Amount),0) as total FROM request WHERE status IN ('Paid') AND Archive = 'NO'";
+
+$sql = "SELECT IFNULL(SUM(ApprovedAmount),0) as total FROM request WHERE status IN ('Paid') AND Archive = 'NO'";
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data["totalAmountRelease"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-// Rejected Requests
+
 $sql = "SELECT COUNT(*) as total FROM request WHERE status = 'Reject' AND Archive = 'NO'";
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data["rejectedRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-// New Requests
 $sql = "SELECT COUNT(*) as total FROM request WHERE DATE(date) = CURDATE() AND Archive = 'NO'";
 $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $data["newRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 
-$sql = "SELECT requestID, requestTitle, Modules, Amount, Requested_by, Due, status, date 
+$sql = "SELECT requestID, requestTitle, Modules, ApprovedAmount, Requested_by, Due, status, date 
         FROM request 
         WHERE status IN ('Approved','Verified') AND Archive = 'NO'
         ORDER BY date DESC 
