@@ -36,8 +36,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $approver_id = $_POST['update_due'];
   
 
-        $sql = "UPDATE request SET requestTiTle = :amount, Modules = :disbursement_date, Amount = :status, Requested_by	 = :description, Due = :approver_id WHERE requestID = :disbursement_id";
-        $stmt = $pdo->prepare($sql);
+        $sql = "UPDATE request SET requestTiTle = :amount, Modules = :disbursement_date, Amount = :status, Requested_by	 = :description, Due = :approver_id WHERE requestID = :disbursement_id"  ;   
+           $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':amount', $amount);
         $stmt->bindParam(':disbursement_date', $disbursement_date);
         $stmt->bindParam(':status', $status);
