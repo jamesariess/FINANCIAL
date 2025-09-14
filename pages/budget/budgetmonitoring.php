@@ -24,9 +24,9 @@
             </label>
         </div>
     </div>
+    <?php include __DIR__ . '/../../crud/budget/monitoring.php'; ?>
+    <?php include __DIR__ . '/../../contents/budget/monitoring.php'; ?>
 
-    <?php include __DIR__ . '/../../modal/budgetmanage/adjustmentmodal.html'; ?>
-    <?php include __DIR__ . '/../../table/budgetmanagement.html/adjustmenttable.html';?>
 
 </div>
 <script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
