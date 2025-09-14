@@ -12,7 +12,7 @@
         <option value="">Select Invoice</option>
         <?php
         try {
-            // ✅ Count only active (Archive = 'NO') follow-ups
+         
             $sql = "SELECT i.invoice_id, i.reference_no
                     FROM ar_invoices i
                     LEFT JOIN (
