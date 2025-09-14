@@ -15,7 +15,7 @@
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
-            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+            <h1>Cost Allocation Adjustment <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
         </div>
         <div class="theme-toggle-container">
             <span class="theme-label">Dark Mode</span>
@@ -25,14 +25,17 @@
             </label>
         </div>
     </div>
-<?php include __DIR__ . '/../../filtering/budget/adjustment.html'; ?>
+
+    <?php include __DIR__ . '/../../contents/budget/allocationadjustment.php'; ?>
+
 <br>
-    <?php include __DIR__ . '/../../modal/budgetmanage/adjustmenmodal.html'; ?>
+
     <?php include __DIR__ . '/../../table/budgetmanagement.html/adjustmenttable.html';?>
 
 </div>
-<script src="<?php echo '/financial/static/js/filter.js';?>"></script>
-<script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
+<
+<script src="<?php echo '../../static/js/filter.js';?>"></script>
+<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
 
 
 
