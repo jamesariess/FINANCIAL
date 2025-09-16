@@ -63,10 +63,10 @@
         const cells = Array.from(row.cells);
 
         const amountCell = parseFloat(cells[3].textContent.replace(/[^0-9.-]+/g, "")) || 0; 
-        const dateCell = new Date(cells[7].textContent);
+        const dateCell = new Date(cells[8].textContent);
 
         // Fix: trim spaces
-        const statusCell = (cells[6].innerText || cells[6].textContent).trim().toUpperCase();
+        const statusCell = (cells[7].innerText || cells[7].textContent).trim().toUpperCase();
 
         const searchMatch = cells.some(td =>
             (td.textContent || td.innerText || "").toUpperCase().includes(searchInput)
