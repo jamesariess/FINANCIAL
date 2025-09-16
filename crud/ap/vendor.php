@@ -1,86 +1,103 @@
 <?php
-
 include_once __DIR__ . '/../../utility/connection.php';
 
 date_default_timezone_set('Asia/Manila');
 
 $id = $_GET['id'] ?? null;
-$sql = "SELECT * FROM vendors WHERE vendor_id   = :id";
-$stmt = $pdo->prepare($sql);
-$stmt->bindParam(':id', $id);
-$stmt->execute();
+if ($id) {
+    $sql = "SELECT * FROM vendor WHERE vendor_id = :id";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+}
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-   
-if(isset($_POST['archive'])) {
-        $archive_adjustID = $_POST['archive_collectionID'];
+    if (isset($_POST['archive'])) {
+        $archive_vendorID = $_POST['archive_collectionID'];
 
-        $sql = "UPDATE  vendors SET 
+        $sql = "UPDATE vendor SET 
                 Archive = 'YES'
-                WHERE vendor_id  = :archive_adjustID";
+                WHERE vendor_id = :archive_vendorID";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':archive_adjustID', $archive_adjustID);
+        $stmt->bindParam(':archive_vendorID', $archive_vendorID);
 
         try {
             $stmt->execute();
-            echo "✅ Adjustment archived successfully.";
+            echo "✅ Vendor archived successfully.";
         } catch (PDOException $e) {
             echo "❌ Error: " . $e->getMessage();
         }
-    }if (isset($_POST['update'])) {
-        $adjustment_id = $_POST['vendors_id'];
-        $invoice_id = $_POST['name'];
-        $type = $_POST['contact'];
-        $amount = $_POST['email'];
-        $reason = $_POST['phone'];
-        $status = $_POST['address'];
-        $created_at = $_POST['terms'];
-        $stats =$_POST['status'];
-        
-        $sql = "UPDATE  vendors SET 
-                name = :invoice_id,
-
-                contact_person = :type,
-                email = :amount,
-                phone = :reason,
-                address_line = :status,
-                payment_terms = :created_at,
-                is_active = :stats
-
-                WHERE vendor_id = :adjustment_id";
-
-
-        $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':invoice_id', $invoice_id);
-        $stmt->bindParam(':type', $type);
-        $stmt->bindParam(':amount', $amount);
-        $stmt->bindParam(':reason', $reason);
-        $stmt->bindParam(':status', $status);
-        $stmt->bindParam(':created_at', $created_at);
-        $stmt->bindParam(':stats', $stats);
-
-        $stmt->bindParam(':adjustment_id', $adjustment_id);
-        try {
-            $stmt->execute();
-            echo "✅ Adjustment updated successfully.";
-        } catch (PDOException $e) {
-            echo "❌ Error: " . $e->getMessage();
-        }
-       
     }
-   
+    if (isset($_POST['update'])) {
+        $vendor_id = $_POST['vendors_id'];
+        $vendor_name = $_POST['name'];
+        $contact_info = $_POST['contact'];
+        $address = $_POST['address'];
+        $email = $_POST['email'];
+        $contact_person = $_POST['phone'];
+        $status = $_POST['status'];
+
+        $sql = "UPDATE vendor SET 
+                vendor_name = :vendor_name,
+                contact_info = :contact_info,
+                address = :address,
+                Email = :email,
+                Contact_person = :contact_person,
+                Status = :status
+                WHERE vendor_id = :vendor_id";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':vendor_name', $vendor_name);
+        $stmt->bindParam(':contact_info', $contact_info);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':contact_person', $contact_person);
+        $stmt->bindParam(':status', $status);
+        $stmt->bindParam(':vendor_id', $vendor_id);
+
+        try {
+            $stmt->execute();
+            echo "✅ Vendor updated successfully.";
+        } catch (PDOException $e) {
+            echo "❌ Error: " . $e->getMessage();
+        }
+    }
+    if (isset($_POST['create'])) {
+  
+        $vendor_name = $_POST['vendorName'];
+        $contact_info = $_POST['contactInfo'];
+        $address = $_POST['address'];
+        $email = $_POST['email'];
+        $contact_person = $_POST['contactPerson'];
+      
+
+        $sql = "INSERT INTO vendor ( vendor_name, contact_info, address, Email, Contact_person) 
+                VALUES ( :vendor_name, :contact_info, :address, :email, :contact_person)";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':vendor_name', $vendor_name);
+        $stmt->bindParam(':contact_info', $contact_info);
+        $stmt->bindParam(':address', $address);
+        $stmt->bindParam(':email', $email);
+        $stmt->bindParam(':contact_person', $contact_person);
+
+
+        try {
+            $stmt->execute();
+            echo "✅ Vendor created successfully.";
+        } catch (PDOException $e) {
+            echo "❌ Error: " . $e->getMessage();
+        }
+    }
 }
 
 try {
-    $sql = "SELECT * FROM vendors WHERE Archive = 'NO'
-            ORDER BY created_at Asc";
+    $sql = "SELECT * FROM vendor WHERE Archive = 'NO'
+            ORDER BY vendor_id ASC";
     $stmt = $pdo->query($sql);
     $adjustReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    echo "❌ Error fetching plans: " . $e->getMessage();
+    echo "❌ Error fetching vendors: " . $e->getMessage();
 }
-
-
 ?>
-
