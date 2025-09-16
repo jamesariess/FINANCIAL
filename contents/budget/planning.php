@@ -1,5 +1,3 @@
-
-
 <div class="container mx-auto p-6">
     <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
         <div class="flex items-center justify-between mb-6">
@@ -16,7 +14,7 @@
 
 <div id="detailsModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
-        <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+        <button onclick="closeModals()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
             <i class="fas fa-times"></i>
         </button>
         <h3 class="text-lg font-semibold text-gray-800 mb-4">Request Details</h3>
@@ -46,7 +44,7 @@
             let cardColor = "from-gray-50 to-white border-gray-200 text-gray-600";
             let icon = "fa-file-alt";
 
-            switch (req.Modules.toLowerCase()) {
+            switch (req.Name.toLowerCase()) {
                 case "hr":
                     cardColor = "from-purple-50 to-white border-purple-200 text-purple-600";
                     icon = "fa-users";
@@ -91,19 +89,23 @@
             }
 
             container.innerHTML += `
-                <div class="bg-gradient-to-br ${cardColor} rounded-xl shadow-md p-5 hover:shadow-lg transition duration-200 border flex flex-col justify-between group" 
-                     data-id="${req.requestID}">
-                    <div>
-                        <i class="fas ${icon} text-2xl mb-3 transition-transform duration-300 group-hover:scale-110"></i>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-3 capitalize">${req.Modules} Payment</h3>
-                        <div class="text-sm text-gray-600 space-y-1">
-                            <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
-                            <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
+                      <div class="bg-gradient-to-br ${cardColor} rounded-xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-opacity-50" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas ${icon} text-3xl ${cardColor.split(' ')[2].replace('border-', 'text-')}"></i>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${req.status}
+                        </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2 capitalize" id="card-title-${req.requestID}">${req.Name} Department</h3>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4 capitalize">${req.Title}</h4>
+                    <div class="text-sm text-gray-600 space-y-2">
+                        <p><span class="font-medium text-gray-700">ID:</span> REQ-${req.requestID}</p>
+                        <p><span class="font-medium text-gray-700">Title:</span> ${req.requestTitle}</p>
                             <p><span class="font-medium">Requested Amount:</span> ₱${Number(req.Amount).toLocaleString()}</p>
                             <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
-                            <p><span class="font-medium">Status:</span> ${req.status}</p>
+                 
                         </div>
-                    </div>
+                
                     <div class="mt-4">
                         ${buttonHTML}
                         <button class="text-indigo-600 text-sm mt-2 hover:underline" onclick="viewDetails(${req.requestID})">View Details</button>
@@ -114,39 +116,38 @@
     }
 
     function approve(id) {
-        const input = document.getElementById(`approvedAmount-${id}`);
-        if (!input || !input.value) {
-            alert("Please enter the approved amount.");
-            return;
-        }
-
-        const approvedAmount = parseFloat(input.value);
-        if (isNaN(approvedAmount) || approvedAmount <= 0) {
-            alert("Please enter a valid amount.");
-            return;
-        }
-
-        if (!confirm(`Approve request with amount ₱${approvedAmount.toLocaleString()}?`)) return;
-
-        fetch("", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ requestID: id, status: "Approved", approvedAmount })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                alert("Request Approved!");
-                window.location.reload();
-            } else {
-                alert("Failed to update request.");
-            }
-        })
-        .catch(err => {
-            console.error("Error:", err);
-            alert("An error occurred. Please try again.");
-        });
+    const input = document.getElementById(`approvedAmount-${id}`);
+    if (!input || !input.value) {
+        alert("Please enter the approved amount.");
+        return;
     }
+
+    const approvedAmount = parseFloat(input.value);
+    if (isNaN(approvedAmount) || approvedAmount <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+    }
+
+    if (!confirm(`Approve request with amount ₱${approvedAmount.toLocaleString()}?`)) return;
+
+    fetch(window.location.href, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestID: id, status: "Approved", approvedAmount })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert("Request Approved!");
+            window.location.reload();
+        } else {
+            alert("Failed to update request.");
+        }
+    })
+    .catch(err => {
+   window.location.reload();
+    });
+}
 
     
     function reject(id) {
@@ -168,8 +169,7 @@
             }
         })
         .catch(err => {
-            console.error("Error:", err);
-            alert("An error occurred. Please try again.");
+          window.location.reload();
         });
     }
 
@@ -179,9 +179,10 @@
         if (!req) return;
 
         modalContent.innerHTML = `
-            <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
+          <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
             <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
-            <p><span class="font-medium">Module:</span> ${req.Modules}</p>
+            <p><span class="font-medium">Cost Allocation:</span> ${req.Title}</p>
+            <p><span class="font-medium">Department:</span> ${req.Name}</p>
             <p><span class="font-medium">Requested Amount:</span> ₱${Number(req.Amount).toLocaleString()}</p>
             <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
             <p><span class="font-medium">Due:</span> ${req.Due}</p>
@@ -190,15 +191,14 @@
         `;
 
         modalButtons.innerHTML = `
-            <button onclick="closeModal()" 
+            <button onclick="closeModals()" 
                     class="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100">Close</button>
         `;
 
         modal.classList.remove("hidden");
     }
 
-    function closeModal() {
+    function closeModals() {
         modal.classList.add("hidden");
     }
 </script>
-
