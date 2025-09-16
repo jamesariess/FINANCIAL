@@ -14,7 +14,8 @@ if($_SERVER["REQUEST_METHOD"]=="POST"){
     $sql= "SELECT * FROM user WHERE username = $username  AND password =$password ";
 
     $stmt ->
-  }}
+  }
+}
 }
 ?>
 
