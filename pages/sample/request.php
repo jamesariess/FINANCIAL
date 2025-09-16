@@ -59,7 +59,7 @@
 <body>
     <div class="form-container">
         <?php
-        $conn = new mysqli("localhost", "rofina_financesot", "7rO-@mwup07Io^g0", "fina_financial");
+        $conn = new mysqli("localhost", "fina_finances", "7rO-@mwup07Io^g0", "fina_financial");
         if ($conn->connect_error) {
             die("Connection failed: " . $conn->connect_error);
         }
