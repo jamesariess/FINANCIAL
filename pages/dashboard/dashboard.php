@@ -18,7 +18,7 @@
 </head>
 <body class="bg-slate-950 flex min-h-screen text-slate-200">
 
-<?php include __DIR__ . "../sidebar.html"; ?>
+<?php include __DIR__ . "/../sidebar.html"; ?>
 <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
