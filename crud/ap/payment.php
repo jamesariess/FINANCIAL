@@ -28,20 +28,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 if(isset($_POST['update'])) {
         $custumerID = $_POST['update_collectionID'];
-        $custumerName = $_POST['update_invoiceID'];
+      
         $contactNumber = $_POST['update_amount'];
         $email = $_POST['update_paymentMethod'];
         $address = $_POST['update_remarks'];
 
         $sql = "UPDATE ap_payments SET 
-                bill_id  = :custumerName,
+       
                 amount = :contactNumber,
                 method = :email,
                 remarks = :address
                 WHERE payment_id  = :custumerID";
 
         $stmt = $pdo->prepare($sql);
-        $stmt->bindParam(':custumerName', $custumerName);
+       
         $stmt->bindParam(':contactNumber', $contactNumber);
         $stmt->bindParam(':email', $email);
         $stmt->bindParam(':address', $address);
