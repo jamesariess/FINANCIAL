@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Financial Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide-react@latest"></script>
+    <title>Approver Management</title>
+     <script src="https://cdn.jsdelivr.net/npm/lucide-react@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="stylesheet" href="/financial/static/css/sidebar.css">
+    <link rel="stylesheet" href="/static/css/sidebar.css">
+
     <style>
         .icon {
             width: 24px;
@@ -18,19 +18,30 @@
 </head>
 <body class="bg-slate-950 flex min-h-screen text-slate-200">
 
-<?php
-    include __DIR__ . "/../pages/sidebar.html";
-?>
-
-    <div class="flex-1 flex flex-col items-center p-6 lg:p-10 pl-20 lg:pl-64">
+<?php include __DIR__ . "/../sidebar.html"; ?>
+<div class="content" id="mainContent">
+    <div class="header">
+        <div class="hamburger" id="hamburger">☰</div>
+        <div>
+            <h1>Approver Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+        </div>
+        <div class="theme-toggle-container">
+            <span class="theme-label">Dark Mode</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+ 
         <div class="w-full max-w-7xl space-y-8">
             <header>
-                <h1 class="text-3xl font-bold text-white">Financial Dashboard</h1>
+                <h1 class="text-3xl font-bold text-var(--text-light)">Financial Dashboard</h1>
                 <p class="text-sm text-slate-400 mt-2">Welcome back! Here's a brief overview of your financial performance.</p>
             </header>
 
             <section>
-                <h2 class="text-xl font-semibold mb-4 text-white">Quick Stats</h2>
+                <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Quick Stats</h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
 
                     <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 transition-all duration-300 hover:scale-105 hover:border-blue-500">
@@ -40,7 +51,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down icon"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">$45,231</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$45,231</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -51,7 +62,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="21" y2="21"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">$12,450</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$12,450</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -62,7 +73,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt icon"><path d="M4 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v20l-2-2-2 2-2-2-2 2-2-2-2 2-2-2-2 2-2-2-2 2V2z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">$23,760</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$23,760</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -73,7 +84,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coins icon"><path d="M9.8 19.95 2.15 15.8a1 1 0 0 1 0-1.6L9.8 10.05a1 1 0 0 1 1.4.15L18.4 14.8a1 1 0 0 1 0 1.6l-7.25 4.05a1 1 0 0 1-1.4-.15z"/><path d="m15 10-8.6 4.86a1 1 0 0 0 0 1.76L15 21l8.6-4.86a1 1 0 0 0 0-1.76L15 10z"/><path d="m7 7 8.6 4.86a1 1 0 0 0 0 1.76L7 18l-8.6-4.86a1 1 0 0 0 0-1.76L7 7z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">$50,112</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$50,112</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
                     
@@ -84,7 +95,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart icon"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10Z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">85%</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">85%</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -95,7 +106,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-text icon"><path d="M2 11h20M12 2v20M2 15h20M2 19h20M2 7h20"/><path d="M2 3v18M22 3v18"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-white mb-1">1.2M Entries</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1">1.2M Entries</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -105,14 +116,14 @@
             <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2">
                     <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80">
-                        <h2 class="text-xl font-semibold mb-4 text-white">Financial Overview</h2>
+                        <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Financial Overview</h2>
                         <canvas id="financialChart" class="w-full h-full"></canvas>
                     </div>
                 </div>
 
                 <div>
                     <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80 overflow-y-auto">
-                        <h2 class="text-xl font-semibold mb-4 text-white">Recent Transactions</h2>
+                        <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Recent Transactions</h2>
                         <table class="w-full text-sm text-left">
                             <thead class="text-xs uppercase bg-slate-800">
                                 <tr>
@@ -206,5 +217,7 @@
             }
         });
     </script>
+    <script src="<?php echo '/financial/static/js/filter.js';?>"></script>
+<script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
 </body>
 </html>
