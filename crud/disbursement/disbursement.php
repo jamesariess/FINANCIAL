@@ -30,16 +30,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if(isset($_POST['update'])){
         $disbursement_id = $_POST['update_request_id'];
         $amount = $_POST['update_title'];
-        $disbursement_date = $_POST['update_modules'];
+ 
         $status = $_POST['update_amount'];
         $description = $_POST['update_requested_by'];
         $approver_id = $_POST['update_due'];
   
 
-        $sql = "UPDATE request SET requestTiTle = :amount, Modules = :disbursement_date, Amount = :status, Requested_by	 = :description, Due = :approver_id WHERE requestID = :disbursement_id"  ;   
+        $sql = "UPDATE request SET requestTiTle = :amount,  Amount = :status, Requested_by	 = :description, Due = :approver_id WHERE requestID = :disbursement_id"  ;   
            $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':amount', $amount);
-        $stmt->bindParam(':disbursement_date', $disbursement_date);
+        
         $stmt->bindParam(':status', $status);
         $stmt->bindParam(':description', $description);
         $stmt->bindParam(':approver_id', $approver_id);
@@ -56,7 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 try {
-    $sql = "SELECT * FROM  request WHERE Archive = 'NO'";
+      $sql = "SELECT r.* ,
+     c.Title,
+    d.Name
+    FROM request r
+JOIN costallocation c on r.allocationID = c.allocationID
+JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
+    
+     WHERE r.Archive = 'NO'";
     $stmt = $pdo->query($sql);
     $disbursementReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
