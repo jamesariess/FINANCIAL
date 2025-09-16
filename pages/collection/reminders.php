@@ -37,9 +37,8 @@
        </div>
 </div>
  </div>
-<script src="<?php echo '/financial/static/js/filter.js';?>"></script>
-<script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
-
+<script src="<?php echo '/../static/js/filter.js';?>"></script>
+<script src="<?php echo '/../static/js/modal.js'; ?>"></script>
 
 </body>
 
