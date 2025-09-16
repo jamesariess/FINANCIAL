@@ -18,7 +18,7 @@
             foreach($collectionReports as $row): ?>
             <tr>
     <td><?php echo htmlspecialchars($row['payment_id']);?></td>
-    <td><?php echo htmlspecialchars($row['bill_id']);?></td>
+    <td><?php echo htmlspecialchars('LN-' . date('Y' . '-' . str_pad($row['LoanID'],3,'0',STR_PAD_LEFT)));?></td>
     <td><?php echo htmlspecialchars($row['payment_date']);?></td>
     <td><?php echo htmlspecialchars($row['amount']);?></td>
     <td><?php echo htmlspecialchars($row['method']);?></td>
@@ -28,7 +28,7 @@
 <a href=""
 onclick="openViewModal(
     '<?php echo $row['payment_id'];?>',
-    '<?php echo htmlspecialchars($row['bill_id'],ENT_QUOTES);?>',
+    '<?php echo htmlspecialchars('LN-' . date('Y') . '-' . str_pad($row['LoanID'], 3, '0', STR_PAD_LEFT), ENT_QUOTES); ?>',
     '<?php echo htmlspecialchars($row['payment_date'],ENT_QUOTES);?>',
     '<?php echo htmlspecialchars($row['amount'],ENT_QUOTES);?>',
     '<?php echo htmlspecialchars($row['method'],ENT_QUOTES);?>',
@@ -38,7 +38,7 @@ onclick="openViewModal(
 <a href=""
 onclick="openUpdateModal(
     '<?php echo $row['payment_id'];?>',
-    '<?php echo htmlspecialchars($row['bill_id'],ENT_QUOTES);?>',
+    
     '<?php echo htmlspecialchars($row['payment_date'],ENT_QUOTES);?>',
     '<?php echo htmlspecialchars($row['amount'],ENT_QUOTES);?>',
     '<?php echo htmlspecialchars($row['method'],ENT_QUOTES);?>',
@@ -81,10 +81,7 @@ onclick="openUpdateModal(
     <form method="post">
         <input type="hidden" name="update_collectionID" id="updateAdjustID">
       <div class="space-y-4">
-        <div>
-          <label for="updateInvoiceID" class="block text-sm font-medium text-gray-700">Invoice ID</label>
-          <input type="text" name="update_invoiceID" id="updateInvoiceID" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required>
-        </div>  
+       
         <div>
           <label for="updatePaymentDate" class="block text-sm font-medium text-gray-700">Payment Date</label>
           <input type="date" name="update_paymentDate" id="updatePaymentDate" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2" required> 
@@ -141,9 +138,9 @@ function openViewModal(collectionID, invoiceID, paymentDate, amount, method, rem
     document.getElementById('viewNewAmount').innerText = remarks;
     document.getElementById('viewModal').classList.remove('hidden');
 }
-function openUpdateModal(collectionID, invoiceID, paymentDate, amount, method, remarks) {
+function openUpdateModal(collectionID, paymentDate, amount, method, remarks) {
     document.getElementById('updateAdjustID').value = collectionID;
-    document.getElementById('updateInvoiceID').value = invoiceID;
+  
     document.getElementById('updatePaymentDate').value = paymentDate;  
     document.getElementById('updateAmount').value = amount;
     document.getElementById('updatePaymentMethod').value = method;
