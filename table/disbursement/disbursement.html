@@ -56,7 +56,7 @@
             <tr>
                 <td><?php echo htmlspecialchars($row['requestID']);?></td>
                 <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
-                <td><?php echo htmlspecialchars($row['Modules']);?></td>
+                <td><?php echo htmlspecialchars($row['Title']);?></td>
                 <td>
                   ₱ <?php 
                  if (!empty($row['Amount'])) {
@@ -110,7 +110,7 @@
                        onclick="openViewModal(
                            '<?php echo $row['requestID'];?>',
                            '<?php echo htmlspecialchars($row['requestTiTle'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['Modules'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['Title'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Amount'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Requested_by'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Due'], ENT_QUOTES);?>',
@@ -124,7 +124,7 @@
                        onclick="openUpdateModal(
                            '<?php echo $row['requestID'];?>',
                            '<?php echo htmlspecialchars($row['requestTiTle'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['Modules'], ENT_QUOTES);?>',
+                    
                            '<?php echo htmlspecialchars($row['Amount'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Requested_by'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Due'], ENT_QUOTES);?>',
@@ -177,17 +177,7 @@
                     <label for="updateTitle" class="block text-gray-700">Title:</label>
                     <input type="text" name="update_title" id="updateTitle" class="w-full p-2 border rounded" required>
 
-                    <label for="updateModules" class="block text-gray-700">Request Type:</label>
-                    <select name="update_modules" id="updateModules"
-                      class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-700"
-                                required>
-                  <option value="">-- Select Department --</option>
-              <option value="General Services">Admin / General Services</option>
-              <option value="HR">HR (Human Resources)</option>
-                <option value="Maintenance">Maintenance</option>
-                     <option value="Finance">Finance</option>
-                  <option value="Operations">Operations</option>
-                   </select>
+             
 
 
                     <label for="updateAmount" class="block text-gray-700">Amount:</label>
@@ -239,10 +229,10 @@ function openViewModal(requestID, title, modules, amount, requestedBy, due, stat
     document.getElementById('viewModal').classList.remove('hidden');
 }
 
-function openUpdateModal(requestID, title, modules, amount, requestedBy, due, status, date) {
+function openUpdateModal(requestID, title,  amount, requestedBy, due, status, date) {
     document.getElementById('updateRequestId').value = requestID;
     document.getElementById('updateTitle').value = title;
-    document.getElementById('updateModules').value = modules;
+   
     document.getElementById('updateAmount').value = amount;
     document.getElementById('updateRequestedBy').value = requestedBy;
     document.getElementById('updateDue').value = due;
