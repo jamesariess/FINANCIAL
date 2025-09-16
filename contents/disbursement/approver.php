@@ -45,7 +45,7 @@
             let cardColor = "from-gray-50 to-white border-gray-200 text-gray-600";
             let icon = "fa-file-alt";
 
-            switch (req.Modules.toLowerCase()) {
+            switch (req.Name.toLowerCase()) {
                 case "hr":
                     cardColor = "from-purple-50 to-white border-purple-200 text-purple-600";
                     icon = "fa-users";
@@ -69,7 +69,7 @@
             }
 
             let buttonHTML = "";
-            let amountDisplay = req.status === "Approved" ? req.ApprovedAmount : req.Amount;
+            let amountDisplay = req.status === "Approved" ? req.ApprovedAmount : null;
 
             if (req.status === "Approved") {
                 buttonHTML = `<button class="bg-indigo-500 text-white text-sm font-semibold py-2 px-4 rounded-md hover:bg-indigo-600"
@@ -81,19 +81,29 @@
             }
 
             container.innerHTML += `
-                <div class="bg-gradient-to-br ${cardColor} rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200 border" data-id="${req.requestID}">
-                    <i class="fas ${icon} text-2xl mb-3"></i>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3 capitalize">${req.Modules} Payment</h3>
-                    <div class="text-sm text-gray-600 space-y-1">
-                        <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
-                        <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
-                        <p><span class="font-medium">Amount:</span> ₱${Number(amountDisplay).toLocaleString()}</p>
-                        <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
-                        <p><span class="font-medium">Status:</span> ${req.status}</p>
+                <div class="bg-gradient-to-br ${cardColor} rounded-xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-opacity-50" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas ${icon} text-3xl ${cardColor.split(' ')[2].replace('border-', 'text-')}"></i>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                            ${req.status}
+                        </span>
                     </div>
-                    <div class="flex mt-4 space-x-2">
-                        ${buttonHTML}
-                        <button class="text-indigo-500 text-sm hover:underline" onclick="viewDetails(${req.requestID})">Details</button>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2 capitalize" id="card-title-${req.requestID}">${req.Name} Department</h3>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4 capitalize">${req.Title}</h4>
+                    <div class="text-sm text-gray-600 space-y-2">
+                        <p><span class="font-medium text-gray-700">ID:</span> REQ-${req.requestID}</p>
+                        <p><span class="font-medium text-gray-700">Title:</span> ${req.requestTitle}</p>
+                        <p><span class="font-medium text-gray-700">Amount:</span> ${amountDisplay != null ? `₱${Number(amountDisplay).toLocaleString()}` : 'Waiting For Approved Amount'}</p>
+                        <p><span class="font-medium text-gray-700">Requested By:</span> ${req.Requested_by}</p>
+                    </div>
+                    <div class="flex mt-6 space-x-3">
+                        ${buttonHTML.replace(
+                            'py-2 px-4 rounded-md',
+                            'py-2 px-5 rounded-lg text-sm font-semibold tracking-wide transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                        )}
+                        <button class="text-indigo-600 text-sm font-medium hover:text-indigo-800 underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="viewDetails(${req.requestID})" aria-label="View details for request ${req.requestID}">
+                            Details
+                        </button>
                     </div>
                 </div>
             `;
@@ -112,9 +122,9 @@
         .then(data => {
             if (data.success) {
                 alert("Payment successfully released!");
-                window.location.reload(); // Reload the page to remove the paid card
+                window.location.reload();
             } else {
-                alert("Failed to confirm payment release.");
+                alert(data.error || "Failed to confirm payment release.");
             }
         })
         .catch(err => {
@@ -127,13 +137,14 @@
         const req = requests.find(r => Number(r.requestID) === Number(id));
         if (!req) return;
 
-        let amountToShow = req.status === "Approved" ? req.ApprovedAmount : req.Amount;
+        let amountToShow = req.status === "Approved" ? req.ApprovedAmount : null;
 
         modalContent.innerHTML = `
             <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
             <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
-            <p><span class="font-medium">Module:</span> ${req.Modules}</p>
-            <p><span class="font-medium">Amount:</span> ₱${Number(amountToShow).toLocaleString()}</p>
+            <p><span class="font-medium">Cost Allocation:</span> ${req.Title}</p>
+            <p><span class="font-medium">Department:</span> ${req.Name}</p>
+            <p><span class="font-medium">Amount:</span> ${amountToShow != null ? `₱${Number(amountToShow).toLocaleString()}` : 'Waiting For Approved Amount'}</p>
             <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
             <p><span class="font-medium">Due:</span> ${req.Due}</p>
             <p><span class="font-medium">Status:</span> ${req.status}</p>
