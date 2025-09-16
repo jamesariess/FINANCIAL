@@ -29,7 +29,7 @@
     <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>
     <?php include __DIR__ . '/../../table/disbursement/disbursement.html';?>
 </div>
-<script src="<?php echo '/financial/static/js/filter.js';?>"></script>
-<script src="<?php echo '/financial/static/js/modal.js'; ?>"></script>
+ <script src="<?php echo '/../static/js/filter.js';?>"></script>
+<script src="<?php echo '/../static/js/modal.js'; ?>"></script>
 </body>
 </html>
