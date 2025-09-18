@@ -1,8 +1,8 @@
+
 <div class="max-w-7xl mx-auto p-6">
   <form method="POST" id="adjustForm" class="bg-white border border-gray-200 rounded-2xl shadow-md p-8 space-y-6">
     <h2 class="text-2xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-6">Budget Allocation Adjustment</h2>
 
- 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
         <label>Department</label>
@@ -17,10 +17,6 @@
         <label>Year</label>
         <select id="year" name="year" class="w-full p-3 border rounded-lg" required>
           <option value="">--SELECT YEAR--</option>
-          <?php 
-          $years = $pdo->query("SELECT DISTINCT yearlybudget FROM costallocation ORDER BY yearlybudget DESC")->fetchAll(PDO::FETCH_COLUMN);
-          foreach($years as $y) echo "<option value='$y'>$y</option>";
-          ?>
         </select>
       </div>
     </div>
@@ -82,17 +78,42 @@ const newDecA = document.getElementById('new_amount_decrease');
 let totalBudget = 0;
 let allocationsData = [];
 
+// --- Fetch years for selected department ---
+function fetchYears() {
+    year.innerHTML = "<option value=''>--SELECT YEAR--</option>";
+    inc.innerHTML = "<option value=''>--SELECT TITLE--</option>";
+    dec.innerHTML = "<option value=''>--SELECT TITLE--</option>";
+    clearIncreaseFields();
+    clearDecreaseFields();
+
+    const d = dept.value;
+    if (!d) return;
+
+    fetch(`?dept=${d}`)
+        .then(res => res.json())
+        .then(years => {
+            years.forEach(y => {
+                const o = document.createElement('option');
+                o.value = y;
+                o.text = y;
+                year.appendChild(o);
+            });
+        });
+}
+
 // --- Fetch allocations ---
 function fetchTitles() {
     inc.innerHTML = "<option value=''>--SELECT TITLE--</option>";
     dec.innerHTML = "<option value=''>--SELECT TITLE--</option>";
+    clearIncreaseFields();
+    clearDecreaseFields();
 
     const d = dept.value;
     const y = year.value;
     totalBudget = parseFloat(dept.selectedOptions[0]?.dataset.total || 0);
-    if(!d || !y) return;
+    if (!d || !y) return;
 
-    fetch(`?dept=${d}&year=${y}`)
+    fetch(`../../crud/budget/adjustment.php?dept=${d}&year=${y}`)
         .then(res => res.json())
         .then(data => {
             allocationsData = data;
@@ -194,14 +215,16 @@ function handleNewPercentChange() {
         newDecP.value = newDec.toFixed(2);
         newDecA.value = (newDec / 100 * totalBudget).toFixed(2);
     } else {
-
         newDecP.value = currDec.toFixed(2);
         newDecA.value = (currDec / 100 * totalBudget).toFixed(2);
     }
 }
 
 // --- Event listeners ---
-dept.addEventListener('change', fetchTitles);
+dept.addEventListener('change', () => {
+    fetchYears();
+    fetchTitles();
+});
 year.addEventListener('change', fetchTitles);
 
 inc.addEventListener('change', () => {
@@ -239,5 +262,4 @@ newIncP.addEventListener('input', () => {
     }
     handleNewPercentChange();
 });
-
 </script>
