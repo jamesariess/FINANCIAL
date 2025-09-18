@@ -89,7 +89,7 @@
                         </span>
                     </div>
                     <h3 class="text-xl font-bold text-gray-900 mb-2 capitalize" id="card-title-${req.requestID}">${req.Name} Department</h3>
-                    <h4 class="text-lg font-semibold text-gray-800 mb-4 capitalize">${req.Title}</h4>
+                    <h4 class="text-lg font-semibold text-gray-800 mb-4 capitalize">${req.accountName}</h4>
                     <div class="text-sm text-gray-600 space-y-2">
                         <p><span class="font-medium text-gray-700">ID:</span> REQ-${req.requestID}</p>
                         <p><span class="font-medium text-gray-700">Title:</span> ${req.requestTitle}</p>
@@ -142,7 +142,7 @@
         modalContent.innerHTML = `
             <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
             <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
-            <p><span class="font-medium">Cost Allocation:</span> ${req.Title}</p>
+            <p><span class="font-medium">Cost Allocation:</span> ${req.accountName}</p>
             <p><span class="font-medium">Department:</span> ${req.Name}</p>
             <p><span class="font-medium">Amount:</span> ${amountToShow != null ? `₱${Number(amountToShow).toLocaleString()}` : 'Waiting For Approved Amount'}</p>
             <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
