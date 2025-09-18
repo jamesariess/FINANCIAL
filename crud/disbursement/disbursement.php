@@ -57,10 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 try {
       $sql = "SELECT r.* ,
-     c.Title,
+     ch.accountName,
     d.Name
     FROM request r
 JOIN costallocation c on r.allocationID = c.allocationID
+JOIN chartofaccount ch ON c.accountID = ch.accountID 
 JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
     
      WHERE r.Archive = 'NO'";
