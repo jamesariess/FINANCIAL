@@ -1,6 +1,10 @@
+<script>
+    const accounts = <?php echo json_encode($accounts); ?>;
+</script>
+
 <div id="allocationError" class="mb-4 hidden bg-red-200 text-red-800 p-3 rounded"></div>
 
-<div class=" bg-white p-6 rounded-2xl shadow-md">
+<div class="bg-white p-6 rounded-2xl shadow-md">
   <h1 class="text-2xl font-bold mb-4 text-indigo-700">Department Cost Allocation</h1>
 
   <form method="POST" id="allocationForm">
@@ -10,7 +14,7 @@
         <label class="block text-gray-700 mb-1">Select Department</label>
         <select id="department" name="department" class="w-full p-2 border rounded">
           <option value="">-- Choose Department --</option>
-          <?php foreach($departments as $d): ?>
+          <?php foreach ($departments as $d): ?>
             <option value="<?= $d['Deptbudget'] ?>" 
                     data-amount="<?= $d['Amount'] ?>" 
                     data-used="<?= $d['UsedBudget'] ?>" 
@@ -28,7 +32,6 @@
       </div>
     </div>
 
- 
     <div id="budgetInfo" class="mb-6 hidden bg-gray-50 p-4 rounded border">
       <p class="text-gray-700">Yearly Budget: <span id="yearlyBudget" class="font-bold text-indigo-600"></span></p>
       <p class="text-gray-700">Remaining Budget: <span id="remainingBudget" class="font-bold text-green-600"></span></p>
@@ -39,28 +42,27 @@
         <span>Total Percentage</span>
         <span id="totalPercent">0%</span>
       </div>
-    <div class="w-full bg-gray-200 rounded-full h-3">
+      <div class="w-full bg-gray-200 rounded-full h-3">
         <div id="progressBar" class="bg-indigo-500 h-3 rounded-full w-0"></div>
       </div>
-    
 
-    <div id="allocationRows" class="space-y-4"></div>
+      <div id="allocationRows" class="space-y-4"></div>
   
-    <button type="button" onclick="addRow()" 
-      class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Add Allocation</button>
-</div>
-
+      <button type="button" onclick="addRow()" 
+        class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Add Allocation</button>
+    </div>
 
     <button type="submit" 
       class="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-xl shadow hover:bg-indigo-700">Submit Allocation</button>
   </form>
 </div>
 
+
+
 <script>
 let yearlyBudget = 0;
 let remainingBudget = 0;
 let rowIndex = 0;
-
 
 function formatPeso(value) {
   return "₱" + Number(value).toLocaleString();
@@ -71,39 +73,104 @@ document.getElementById("department").addEventListener("change", function() {
   yearlyBudget = parseFloat(option.dataset.amount || 0);
   remainingBudget = yearlyBudget - parseFloat(option.dataset.used || 0);
 
-
   const yearSelect = document.getElementById("year");
-  yearSelect.innerHTML = "";
-  if(option.value && option.dataset.year) {
-    const opt = document.createElement("option");
-    opt.value = option.dataset.year;
-    opt.text = option.dataset.year;
-    yearSelect.appendChild(opt);
+  yearSelect.innerHTML = "<option value=''>-- Choose Year --</option>";
+
+  const deptbudget = option.value;
+  const deptname = option.textContent.split(' (')[0].trim();
+  console.log("Selected at " + new Date().toLocaleString() + ": Deptbudget:", deptbudget, "Deptname:", deptname);
+
+  if (deptname) {
+    fetch(`../../crud/budget/allocation.php?deptname=${encodeURIComponent(deptname)}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(years => {
+        console.log("Fetched years at " + new Date().toLocaleString() + ": ", years);
+        yearSelect.innerHTML = "<option value=''>-- Choose Year --</option>";
+        if (years.length > 0) {
+          years.forEach(y => {
+            const opt = document.createElement("option");
+            opt.value = y;
+            opt.text = y;
+            yearSelect.appendChild(opt);
+          });
+        } else {
+          console.log("No years found for this department at " + new Date().toLocaleString());
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.text = "No years available";
+          opt.disabled = true;
+          yearSelect.appendChild(opt);
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching years at ' + new Date().toLocaleString() + ':', error);
+        alert('Failed to load years for the selected department. Check console for details at ' + new Date().toLocaleString());
+      });
+  } else {
+    console.log("No department name found at " + new Date().toLocaleString());
   }
 
+  updateBudgetInfo();
+});
 
+document.getElementById("year").addEventListener("change", function() {
+  const deptSelect = document.getElementById("department");
+  const deptname = deptSelect.options[deptSelect.selectedIndex].text.split(' (')[0].trim();
+  const year = this.value;
+
+  if (deptname && year) {
+    fetch(`../../crud/budget/allocation.php?deptname=${encodeURIComponent(deptname)}&year=${year}`)
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        console.log("Fetched budget data at " + new Date().toLocaleString() + ": ", data);
+        yearlyBudget = data.yearlyBudget;
+        remainingBudget = data.remainingBudget;
+        updateBudgetInfo();
+      })
+      .catch(error => {
+        console.error('Error fetching budget data at ' + new Date().toLocaleString() + ':', error);
+        alert('Failed to load budget data for the selected year. Check console for details at ' + new Date().toLocaleString());
+        yearlyBudget = 0;
+        remainingBudget = 0;
+        updateBudgetInfo();
+      });
+  } else {
+    yearlyBudget = 0;
+    remainingBudget = 0;
+    updateBudgetInfo();
+  }
+});
+
+function updateBudgetInfo() {
   const budgetInfo = document.getElementById("budgetInfo");
-  if(remainingBudget > 0) {
+  if (remainingBudget > 0) {
     budgetInfo.classList.remove("hidden");
     document.getElementById("yearlyBudget").innerText = formatPeso(yearlyBudget);
     document.getElementById("remainingBudget").innerText = formatPeso(remainingBudget);
   } else {
     budgetInfo.classList.add("hidden");
   }
-
-
-  document.getElementById("allocationRows").innerHTML = "";
-  rowIndex = 0;
-  updateTotal();
-});
-
+  updateTotal(); // Recalculate totals based on new budget
+}
 
 function addRow() {
   const container = document.getElementById("allocationRows");
   const row = document.createElement("div");
   row.className = "grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded border";
   row.innerHTML = `
-    <input type="text" name="allocations[${rowIndex}][title]" placeholder="Title" class="col-span-3 p-2 border rounded">
+    <select name="allocations[${rowIndex}][accountID]" class="col-span-3 p-2 border rounded account-select" onchange="updateAccountSelections(this)">
+      <option value="">-- Select Account --</option>
+    </select>
     <input type="number" name="allocations[${rowIndex}][percentage]" placeholder="%" min="0" max="100" 
            class="col-span-2 p-2 border rounded percentage" oninput="recalculate(this)">
     <input type="text" name="allocations[${rowIndex}][amount]" readonly class="col-span-3 p-2 border rounded bg-gray-100 amount" placeholder="Yearly">
@@ -114,34 +181,88 @@ function addRow() {
     <button type="button" onclick="removeRow(this)" class="col-span-1 text-red-500 font-bold">-</button>
   `;
   container.appendChild(row);
+  const newSelect = row.querySelector('.account-select');
+  populateAccounts(newSelect);
+  updateAccountSelections(newSelect);
   rowIndex++;
 }
 
-
-function removeRow(btn) {
-  btn.parentElement.remove();
-  updateTotal();
+function populateAccounts(selectElement) {
+  selectElement.innerHTML = '<option value="">-- Select Account --</option>';
+  accounts.forEach(account => {
+    if (account.accounType === 'Expenses' || account.accounType === 'Liabilities') {
+      const opt = document.createElement("option");
+      opt.value = account.accountID;
+      opt.text = account.accountName;
+      selectElement.appendChild(opt);
+    }
+  });
 }
 
+function updateAccountSelections(changedSelect = null) {
+  const allSelects = document.querySelectorAll('.account-select');
+
+  allSelects.forEach(select => {
+    if (select.options.length <= 1) {
+      populateAccounts(select);
+    }
+  });
+
+  allSelects.forEach(select => {
+    const currentValue = select.value;
+    const excludedValues = new Set();
+
+    allSelects.forEach(otherSelect => {
+      if (otherSelect !== select && otherSelect.value) {
+        excludedValues.add(otherSelect.value);
+      }
+    });
+
+    Array.from(select.options).forEach(option => {
+      if (option.value && excludedValues.has(option.value)) {
+        option.disabled = true;
+      } else {
+        option.disabled = false;
+      }
+    });
+
+    if (changedSelect === select && currentValue && Array.from(select.options).find(opt => opt.value === currentValue)?.disabled) {
+      select.value = "";
+      const percentInput = select.closest('div').querySelector('.percentage');
+      if (percentInput) {
+        recalculate(percentInput);
+      }
+      alert('This account is already selected in another row. Please choose a different one.');
+    }
+  });
+}
+
+function removeRow(btn) {
+  const rowToRemove = btn.parentElement;
+  const selectToRemove = rowToRemove.querySelector('.account-select');
+  const removedValue = selectToRemove.value;
+  rowToRemove.remove();
+  updateAccountSelections();
+  updateTotal();
+  rowIndex--;
+}
 
 function recalculate(input) {
   let percent = parseFloat(input.value) || 0;
 
-
   const totalPercent = Array.from(document.querySelectorAll('.percentage'))
-                        .reduce((sum, p) => sum + (parseFloat(p.value)||0), 0);
+    .reduce((sum, p) => sum + (parseFloat(p.value) || 0), 0);
 
-const errorDiv = document.getElementById("allocationError");
-
-if(totalPercent > 100) {
+  const errorDiv = document.getElementById("allocationError");
+  if (totalPercent > 100) {
     errorDiv.innerText = "⚠ Total allocation cannot exceed 100%!";
     errorDiv.classList.remove("hidden");
     input.value = "";
     updateTotal();
     return;
-} else {
-    errorDiv.classList.add("hidden"); 
-}
+  } else {
+    errorDiv.classList.add("hidden");
+  }
 
   const parent = input.parentElement;
   const amountField = parent.querySelector(".amount");
@@ -159,7 +280,6 @@ if(totalPercent > 100) {
   updateTotal();
 }
 
-
 function updateTotal() {
   const percents = document.querySelectorAll(".percentage");
   const amounts = document.querySelectorAll(".amount");
@@ -168,7 +288,7 @@ function updateTotal() {
   let totalAmount = 0;
 
   percents.forEach(p => totalPercent += parseFloat(p.value) || 0);
-  amounts.forEach(a => totalAmount += parseFloat(a.value.replace(/,/g,"")) || 0);
+  amounts.forEach(a => totalAmount += parseFloat(a.value.replace(/,/g, "")) || 0);
 
   document.getElementById("totalPercent").innerText = totalPercent.toFixed(2) + "%";
   document.getElementById("progressBar").style.width = totalPercent + "%";
@@ -176,6 +296,6 @@ function updateTotal() {
   document.getElementById("progressBar").classList.toggle("bg-indigo-500", totalPercent <= 100);
 
   const remaining = remainingBudget - totalAmount;
-  document.getElementById("remainingBudget").innerText = formatPeso(remaining);
+  document.getElementById("remainingBudget").innerText = formatPeso(remaining < 0 ? 0 : remaining);
 }
 </script>
