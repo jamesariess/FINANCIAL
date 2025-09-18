@@ -39,14 +39,15 @@ try {
     $stmt = $pdo->query("
         SELECT 
             allocationID,
-            Title,
+            
             Amount,
             percentage,
             yearlybudget,
             AllocationCreate,
             Status,
             usedAllocation,
-            (SELECT Name FROM departmentbudget WHERE Deptbudget = c.Deptbudget LIMIT 1) as dept
+            (SELECT Name FROM departmentbudget WHERE Deptbudget = c.Deptbudget LIMIT 1) as dept,
+            (SELECT accountName FROM chartofaccount WHERE accountID = c.accountID  ) as Title
         FROM costallocation c 
         WHERE Status = 'Activate'
     ");
