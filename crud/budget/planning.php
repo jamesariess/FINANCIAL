@@ -6,11 +6,12 @@ date_default_timezone_set('Asia/Manila');
 // Fetch requests
 $sql = "SELECT
     r.requestID, r.requestTitle, r.ApprovedAmount, r.Requested_by, r.Due, r.status, r.date,r.Amount,
-    c.Title,
-    d.Name
-    FROM request r
-JOIN costallocation c on r.allocationID = c.allocationID
-JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
+            ch.accountName as Title, c.allocationID, 	
+         d.Name
+        FROM request r
+        JOIN costallocation c ON r.allocationID = c.allocationID
+        JOIN chartofaccount ch ON c.accountID = ch.accountID 
+        JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
 
 WHERE r.status IN ('Verified') AND r.Archive = 'NO'
 ORDER BY r.date DESC 
@@ -107,11 +108,13 @@ if (isset($_POST['update'])) {
 
 try {
     $sql = "SELECT r.* ,
-     c.Title,
+     ch.accountName AS Title,
     d.Name
     FROM request r
 JOIN costallocation c on r.allocationID = c.allocationID
+JOIN chartofaccount ch ON c.accountID = ch.accountID 
 JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
+
     
      WHERE r.Archive = 'NO'";
     $stmt = $pdo->query($sql);
