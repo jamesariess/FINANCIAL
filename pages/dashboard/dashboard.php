@@ -217,7 +217,8 @@
             }
         });
     </script>
-    <script src="<?php echo '/../static/js/filter.js';?>"></script>
-<script src="<?php echo '/../static/js/modal.js'; ?>"></script>
+<script src="<?php echo '../../static/js/filter.js';?>"></script>
+<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+
 </body>
 </html>

@@ -32,8 +32,9 @@
     <?php include __DIR__ . '/../../table/collection/collectiontable.html';?>
 
 </div>
-<script src="<?php echo '/../static/js/filter.js';?>"></script>
-<script src="<?php echo '/../static/js/modal.js'; ?>"></script>
+<script src="<?php echo '../../static/js/filter.js';?>"></script>
+<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+
 </body>
 
 </html>

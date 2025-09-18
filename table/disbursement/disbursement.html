@@ -56,7 +56,7 @@
             <tr>
                 <td><?php echo htmlspecialchars($row['requestID']);?></td>
                 <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
-                <td><?php echo htmlspecialchars($row['Title']);?></td>
+                <td><?php echo htmlspecialchars($row['accountName']);?></td>
                 <td>
                   ₱ <?php 
                  if (!empty($row['Amount'])) {
@@ -110,7 +110,7 @@
                        onclick="openViewModal(
                            '<?php echo $row['requestID'];?>',
                            '<?php echo htmlspecialchars($row['requestTiTle'], ENT_QUOTES);?>',
-                           '<?php echo htmlspecialchars($row['Title'], ENT_QUOTES);?>',
+                           '<?php echo htmlspecialchars($row['accountName'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Amount'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Requested_by'], ENT_QUOTES);?>',
                            '<?php echo htmlspecialchars($row['Due'], ENT_QUOTES);?>',
