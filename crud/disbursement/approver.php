@@ -107,7 +107,54 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     $statusStmt = $pdo->prepare($statusSql);
                     $statusStmt->execute([':status' => $newStatus, ':loanId' => $loanId]);
 
-                    $journal = "";
+                  if ($loanId) {
+
+    $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :amount WHERE LoanID = :loanId";
+    $updateStmt = $pdo->prepare($updateSql);
+    $updateStmt->execute([':amount' => $approvedAmount, ':loanId' => $loanId]);
+
+
+    $outstanding = getOutstandingForLoan($pdo, $loanId);
+    $newStatus = ($outstanding <= 0) ? 'Paid' : 'Partially Paid';
+    $statusSql = "UPDATE loan SET Status = :status WHERE LoanID = :loanId";
+    $statusStmt = $pdo->prepare($statusSql);
+    $statusStmt->execute([':status' => $newStatus, ':loanId' => $loanId]);
+
+    $entrySql = "
+        INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+        VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+    ";
+    $entryStmt = $pdo->prepare($entrySql);
+    $entryStmt->execute([
+        ':description' => "Loan Payment Request #{$requestID}",
+        ':ref' => 'Loan Payment',
+        ':createdBy' => 'System'
+    ]);
+    $journalID = $pdo->lastInsertId();
+
+    $detailSql = "
+        INSERT INTO details (journalID, accountID, debit, credit, Archive)
+        VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+    ";
+    $detailStmt = $pdo->prepare($detailSql);
+
+    
+    $detailStmt->execute([
+        ':journalID' => $journalID,
+        ':accountID' => 8,  
+        ':debit' => $approvedAmount,
+        ':credit' => 0
+    ]);
+
+   
+    $detailStmt->execute([
+        ':journalID' => $journalID,
+        ':accountID' => 1,  
+        ':debit' => 0,
+        ':credit' => $approvedAmount
+    ]);
+}
+
                 }
 
                 $pdo->commit();

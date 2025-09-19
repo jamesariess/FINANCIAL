@@ -1,3 +1,4 @@
+
 <script>
     const accounts = <?php echo json_encode($accounts); ?>;
 </script>
@@ -48,8 +49,8 @@
 
       <div id="allocationRows" class="space-y-4"></div>
   
-      <button type="button" onclick="addRow()" 
-        class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Add Allocation</button>
+      <button type="button" id="addAllocationBtn" onclick="addRow()" 
+        class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600" disabled>+ Add Allocation</button>
     </div>
 
     <button type="submit" 
@@ -57,15 +58,41 @@
   </form>
 </div>
 
-
-
 <script>
 let yearlyBudget = 0;
 let remainingBudget = 0;
 let rowIndex = 0;
+let excludedAccountsFromDB = [];
 
 function formatPeso(value) {
   return "₱" + Number(value).toLocaleString();
+}
+
+// Check if both department and year are selected
+function areDepartmentAndYearSelected() {
+  const deptSelect = document.getElementById("department");
+  const yearSelect = document.getElementById("year");
+  return deptSelect.value && yearSelect.value;
+}
+
+// Update the state of account selects and add allocation button
+function updateFormControls() {
+  const addBtn = document.getElementById("addAllocationBtn");
+  const accountSelects = document.querySelectorAll('.account-select');
+  const isValid = areDepartmentAndYearSelected();
+  
+  addBtn.disabled = !isValid;
+  accountSelects.forEach(select => {
+    select.disabled = !isValid;
+    if (!isValid) {
+      select.value = ""; // Reset account selection if conditions not met
+      const percentInput = select.closest('div').querySelector('.percentage');
+      if (percentInput) {
+        percentInput.value = "";
+        recalculate(percentInput);
+      }
+    }
+  });
 }
 
 document.getElementById("department").addEventListener("change", function() {
@@ -106,13 +133,16 @@ document.getElementById("department").addEventListener("change", function() {
           opt.disabled = true;
           yearSelect.appendChild(opt);
         }
+        updateFormControls(); // Update controls after fetching years
       })
       .catch(error => {
         console.error('Error fetching years at ' + new Date().toLocaleString() + ':', error);
         alert('Failed to load years for the selected department. Check console for details at ' + new Date().toLocaleString());
+        updateFormControls();
       });
   } else {
     console.log("No department name found at " + new Date().toLocaleString());
+    updateFormControls();
   }
 
   updateBudgetInfo();
@@ -135,19 +165,28 @@ document.getElementById("year").addEventListener("change", function() {
         console.log("Fetched budget data at " + new Date().toLocaleString() + ": ", data);
         yearlyBudget = data.yearlyBudget;
         remainingBudget = data.remainingBudget;
+        excludedAccountsFromDB = data.existing_accounts || [];
         updateBudgetInfo();
+        repopulateAllSelects();
+        updateFormControls();
       })
       .catch(error => {
         console.error('Error fetching budget data at ' + new Date().toLocaleString() + ':', error);
         alert('Failed to load budget data for the selected year. Check console for details at ' + new Date().toLocaleString());
         yearlyBudget = 0;
         remainingBudget = 0;
+        excludedAccountsFromDB = [];
         updateBudgetInfo();
+        repopulateAllSelects();
+        updateFormControls();
       });
   } else {
     yearlyBudget = 0;
     remainingBudget = 0;
+    excludedAccountsFromDB = [];
     updateBudgetInfo();
+    repopulateAllSelects();
+    updateFormControls();
   }
 });
 
@@ -161,9 +200,13 @@ function updateBudgetInfo() {
     budgetInfo.classList.add("hidden");
   }
   updateTotal(); // Recalculate totals based on new budget
+  updateFormControls(); // Ensure controls are updated
 }
 
 function addRow() {
+  if (!areDepartmentAndYearSelected()) {
+    return; // Prevent adding rows if conditions not met
+  }
   const container = document.getElementById("allocationRows");
   const row = document.createElement("div");
   row.className = "grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded border";
@@ -184,19 +227,39 @@ function addRow() {
   const newSelect = row.querySelector('.account-select');
   populateAccounts(newSelect);
   updateAccountSelections(newSelect);
+  updateFormControls(); // Ensure new select is enabled/disabled correctly
   rowIndex++;
 }
 
 function populateAccounts(selectElement) {
   selectElement.innerHTML = '<option value="">-- Select Account --</option>';
   accounts.forEach(account => {
-    if (account.accounType === 'Expenses' || account.accounType === 'Liabilities') {
+    if ((account.accounType === 'Expenses' || account.accounType === 'Liabilities') && !excludedAccountsFromDB.includes(account.accountID)) {
       const opt = document.createElement("option");
       opt.value = account.accountID;
       opt.text = account.accountName;
       selectElement.appendChild(opt);
     }
   });
+}
+
+function repopulateAllSelects() {
+  const allSelects = document.querySelectorAll('.account-select');
+  allSelects.forEach(select => {
+    const currentValue = select.value;
+    populateAccounts(select);
+    if (currentValue) {
+      const option = Array.from(select.options).find(opt => opt.value === currentValue);
+      if (option) {
+        select.value = currentValue;
+      } else {
+        select.value = "";
+        console.log('Previously selected account is now excluded due to existing allocation.');
+      }
+    }
+  });
+  updateAccountSelections();
+  updateFormControls();
 }
 
 function updateAccountSelections(changedSelect = null) {
@@ -222,7 +285,7 @@ function updateAccountSelections(changedSelect = null) {
       if (option.value && excludedValues.has(option.value)) {
         option.disabled = true;
       } else {
-        option.disabled = false;
+        option.disabled = !areDepartmentAndYearSelected();
       }
     });
 
@@ -244,6 +307,7 @@ function removeRow(btn) {
   rowToRemove.remove();
   updateAccountSelections();
   updateTotal();
+  updateFormControls();
   rowIndex--;
 }
 

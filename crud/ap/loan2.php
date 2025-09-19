@@ -84,10 +84,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $loanTitle = $loanData['LoanTitle'];
                 $startDate = $loanData['startDate'];
 
-                // Fetch allocationID from costallocation
-                $Loantitle = "Loan Payments";
+                
+                $Loantitle = 11;
                 $yearlybudget = date('Y');
-                $select = "SELECT allocationID FROM costallocation WHERE Title = :longtitle AND yearlybudget = :yearlybudget";
+                $select = "SELECT allocationID FROM costallocation WHERE accountID = :longtitle AND yearlybudget = :yearlybudget";
                 $allocStmt = $pdo->prepare($select);
                 $allocStmt->execute([
                     ':longtitle' => $Loantitle,
@@ -95,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $allocData = $allocStmt->fetch(PDO::FETCH_ASSOC);
                 $allocationID = $allocData ? $allocData['allocationID'] : null;
+
 
                 // Insert into request table
                 $requestSql = "INSERT INTO request (requestTitle, amount, Requested_by, Due, LoanID, Purpuse, allocationID) 

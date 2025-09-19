@@ -130,7 +130,7 @@
 
     if (!confirm(`Approve request with amount ₱${approvedAmount.toLocaleString()}?`)) return;
 
-    fetch(window.location.href, {
+    fetch('../../crud/budget/planning.php', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestID: id, status: "Approved", approvedAmount })
@@ -154,7 +154,7 @@
         const remarks = prompt("Enter rejection reason (optional):");
         if (!confirm("Are you sure you want to reject this request?")) return;
 
-        fetch("", {
+        fetch('../../crud/budget/planning.php', {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ requestID: id, status: "Rejected", remarks })
