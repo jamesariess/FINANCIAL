@@ -1,5 +1,5 @@
 <?php
-$dept = 'log2';
+$dept = 'Logistic1';
 //  eto nakabase to sa department na naka assign si user pero pansamantala ganyan muna
 ?>
 <!DOCTYPE html>

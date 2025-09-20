@@ -20,7 +20,6 @@ try {
     exit;
 }
 
-
 define("API_KEY", "FinancialMalakas");
 
 
@@ -40,10 +39,10 @@ header('Access-Control-Allow-Headers: Content-Type, X-API-KEY');
 
 
 $departmentMap = [
-    "H2"        => ["HR"],
-    "H3"        => ["HR"],
-    "log1"      => ["Maintenance", "Operations"],
-    "log2"      => ["Maintenance", "Operations"],
+    "HR2"        => ["HR"],
+    "HR3"        => ["HR"],
+    "Logistic1"      => ["Maintenance", "Operations"],
+    "Logistic2"      => ["Maintenance", "Operations"],
     "Financial" => ["Finance"],
 ];
 
