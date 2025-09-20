@@ -106,10 +106,10 @@ $dept = 'Logistic1';
     <tbody id="requestTableBody"></tbody>
 </table>
 <input type="hidden" id="deptInput" value="<?php echo htmlspecialchars($dept); ?>">
-
+<!-- https://finance.slatefreight-ph.com/api/ -->
 <script>
     const apikey = "FinancialMalakas";
-   const baseURL = "https://finance.slatefreight-ph.com/api/request.php";
+   const baseURL = "request.php";
 async function loadAllocations(dept) {
     try {
         const response = await fetch(`${baseURL}?action=get_allocations&dept=${encodeURIComponent(dept)}`, {

@@ -1,66 +1,138 @@
 <?php
 
-$host = 'localhost';
-$db   = 'fina_financial';
-$username = 'fina_finances';
-$pass = '7rO-@mwup07Io^g0';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE              => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE   => PDO::FETCH_ASSOC,
-];
-
-try {
-    $pdo = new PDO($dsn, $username, $pass, $options);
-} catch (\PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
-}
-
-define("API_KEY", "FinancialMalakas");
+define('API_KEY', 'FinancialMalakas');                   
+define('LOG_FILE', __DIR__ . '/api_access.log');         
+define('RATE_LIMIT', 100);                               
+define('RATE_WINDOW', 60);                               
+define('ALLOWED_ORIGIN', 'https://your-frontend-domain.com'); 
 
 
-$headers = getallheaders();
-if (!isset($headers['X-API-KEY']) || $headers['X-API-KEY'] !== API_KEY) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized: Invalid API Key']);
-    exit;
-}
+$dbHost = 'localhost';
+$dbName = 'fina_financial';
+$dbUser = 'fina_finances';
+$dbPass = '7rO-@mwup07Io^g0'; 
 
+//  $dbHost = 'localhost';
+// $dbName = 'financial';
+// $dbUser = 'root';
+// $dbPass = ''; 
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: https://your-frontend-domain.com');
-header('Access-Control-Allow-Methods: GET, POST');
+header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: ' . ALLOWED_ORIGIN);
+header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-KEY');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
 
+
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
+
+function logRequest($status, $message = '')
+{
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $time = date('Y-m-d H:i:s');
+    $uri = $_SERVER['REQUEST_URI'] ?? '';
+    $line = "[$time] IP:$ip STATUS:$status URI:$uri MSG:$message" . PHP_EOL;
+
+    @file_put_contents(LOG_FILE, $line, FILE_APPEND | LOCK_EX);
+}
+
+
+function get_header_value($name)
+{
+    $h = getallheaders() ?: [];
+    $nameLower = strtolower($name);
+    foreach ($h as $k => $v) {
+        if (strtolower($k) === $nameLower) return $v;
+    }
+    return null;
+}
+
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+$ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+if (!isset($_SESSION['rate'])) {
+    $_SESSION['rate'] = [];
+}
+if (!isset($_SESSION['rate'][$ip])) {
+    $_SESSION['rate'][$ip] = ['count' => 0, 'time' => time()];
+}
+$elapsed = time() - $_SESSION['rate'][$ip]['time'];
+if ($elapsed > RATE_WINDOW) {
+  
+    $_SESSION['rate'][$ip] = ['count' => 0, 'time' => time()];
+}
+$_SESSION['rate'][$ip]['count']++;
+if ($_SESSION['rate'][$ip]['count'] > RATE_LIMIT) {
+    http_response_code(429);
+    echo json_encode(['error' => 'Too many requests, slow down']);
+    logRequest(429, 'Rate limit exceeded');
+    exit;
+}
+
+
+$providedKey = get_header_value('X-API-KEY');
+if (!isset($providedKey) || $providedKey !== API_KEY) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Unauthorized']);
+    logRequest(401, 'Invalid API key');
+    exit;
+}
+
+
+$dsn = "mysql:host={$dbHost};dbname={$dbName};charset=utf8mb4";
+try {
+    $pdo = new PDO($dsn, $dbUser, $dbPass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+} catch (PDOException $e) {
+
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error']);
+    logRequest(500, "DB error: " . $e->getMessage());
+    exit;
+}
 
 
 $departmentMap = [
-    "HR2"        => ["HR"],
-    "HR3"        => ["HR"],
-    "Logistic1"      => ["Maintenance"],
-    "Logistic2"      => ["Maintenance"],
-    "Financial" => ["Finance"],
+    'HR2'      => ['HR'],
+    'HR3'      => ['HR'],
+    'Logistic1'=> ['Operations'],
+    'Logistic2'=> ['Maintenance'],
+    'Financial'=> ['Finance'],
 ];
 
-// --- MAIN LOGIC ---
-if (isset($_GET['action']) && isset($_GET['dept'])) {
-    $dept = $_GET['dept'];
-    if (!isset($departmentMap[$dept])) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Invalid department']);
-        exit;
-    }
 
-    $departments = $departmentMap[$dept];
-    $placeholders = str_repeat('?,', count($departments) - 1) . '?';
+$action = $_GET['action'] ?? null;
+$dept   = $_GET['dept'] ?? null;
 
-  
+if (!$action || !$dept) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Missing action or dept parameter']);
+    exit;
+}
+
+
+if (!array_key_exists($dept, $departmentMap)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Invalid department']);
+    exit;
+}
+$departments = $departmentMap[$dept];
+$placeholders = str_repeat('?,', count($departments) - 1) . '?';
+
+try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        if ($_GET['action'] === 'get_allocations') {
+        if ($action === 'get_allocations') {
             $sql = "SELECT 
                         ch.accountName AS title,
                         c.allocationID,
@@ -74,17 +146,12 @@ if (isset($_GET['action']) && isset($_GET['dept'])) {
                       AND ch.status = 'Active'
                       AND ch.accounType IN ('Liabilities','Expenses')";
 
-            try {
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($departments);
-                $results = $stmt->fetchAll();
-                echo json_encode($results);
-            } catch (\PDOException $e) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Database query failed']);
-            }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($departments);
+            $results = $stmt->fetchAll();
+            echo json_encode($results);
             exit;
-        } elseif ($_GET['action'] === 'get_requests') {
+        } elseif ($action === 'get_requests') {
             $sql = "SELECT
                         r.requestTitle AS title,
                         r.Amount AS ApprovedAmount,
@@ -102,23 +169,22 @@ if (isset($_GET['action']) && isset($_GET['dept'])) {
                       AND ch.Archive = 'NO'
                       AND ch.status = 'Active'";
 
-            try {
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute($departments);
-                $results = $stmt->fetchAll();
-                echo json_encode($results);
-            } catch (\PDOException $e) {
-                http_response_code(500);
-                echo json_encode(['error' => 'Database query failed']);
-            }
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($departments);
+            $results = $stmt->fetchAll();
+            echo json_encode($results);
+            exit;
+        } else {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid action']);
             exit;
         }
     }
 
-
-    elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && $_GET['action'] === 'insert_request') {
+ 
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && $action === 'insert_request') {
         $input = json_decode(file_get_contents('php://input'), true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($input)) {
             http_response_code(400);
             echo json_encode(['error' => 'Invalid JSON input']);
             exit;
@@ -126,14 +192,14 @@ if (isset($_GET['action']) && isset($_GET['dept'])) {
 
         $requiredFields = ['requestTitle', 'Amount', 'Requested_by', 'Due', 'Purpuse', 'allocationID'];
         foreach ($requiredFields as $field) {
-            if (!isset($input[$field]) || empty(trim($input[$field]))) {
+            if (!isset($input[$field]) || trim((string)$input[$field]) === '') {
                 http_response_code(400);
                 echo json_encode(['error' => "Missing or empty field: $field"]);
                 exit;
             }
         }
 
-        // --- Extra validation ---
+        
         if (!is_numeric($input['Amount']) || $input['Amount'] <= 0) {
             http_response_code(400);
             echo json_encode(['error' => 'Amount must be a positive number']);
@@ -146,50 +212,50 @@ if (isset($_GET['action']) && isset($_GET['dept'])) {
         }
 
        
-        $sql = "SELECT c.allocationID 
-                FROM costallocation c
-                JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
-                WHERE c.allocationID = ? AND d.Name IN ($placeholders)";
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute(array_merge([$input['allocationID']], $departments));
-            if (!$stmt->fetch()) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Invalid allocationID for the specified department']);
-                exit;
-            }
-        } catch (\PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Validation query failed']);
+        $validationSql = "SELECT c.allocationID
+                          FROM costallocation c
+                          JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
+                          WHERE c.allocationID = ? AND d.Name IN ($placeholders)";
+        $stmt = $pdo->prepare($validationSql);
+        $stmt->execute(array_merge([$input['allocationID']], $departments));
+        if (!$stmt->fetch()) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Invalid allocationID for the specified department']);
             exit;
         }
 
-        // Insert request into the database
-        $sql = "INSERT INTO request (requestTitle, Amount, Requested_by, Due, Purpuse, allocationID)
-                VALUES (?, ?, ?, ?, ?, ?)";
 
-        try {
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute([
-                $input['requestTitle'],
-                $input['Amount'],
-                $input['Requested_by'],
-                $input['Due'],
-                $input['Purpuse'],
-                $input['allocationID']
-            ]);
-            http_response_code(201);
-            echo json_encode(['message' => 'Request inserted successfully']);
-        } catch (\PDOException $e) {
-            http_response_code(500);
-            echo json_encode(['error' => 'Insert failed']);
-        }
+        $insertSql = "INSERT INTO request (requestTitle, Amount, Requested_by, Due, Purpuse, allocationID)
+                      VALUES (?, ?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($insertSql);
+        $stmt->execute([
+            $input['requestTitle'],
+            $input['Amount'],
+            $input['Requested_by'],
+            $input['Due'],
+            $input['Purpuse'],
+            $input['allocationID']
+        ]);
+
+        http_response_code(201);
+        echo json_encode(['message' => 'Request inserted successfully']);
         exit;
     }
 
-    // Invalid action
-    http_response_code(400);
-    echo json_encode(['error' => 'Invalid action']);
+    
+    http_response_code(405);
+    echo json_encode(['error' => 'Method not allowed']);
+    exit;
+} catch (PDOException $e) {
+    
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error']);
+    logRequest(500, 'PDOException: ' . $e->getMessage());
+    exit;
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal server error']);
+    logRequest(500, 'Exception: ' . $e->getMessage());
     exit;
 }
 ?>
