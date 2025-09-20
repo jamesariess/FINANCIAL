@@ -1,17 +1,17 @@
 <?php include __DIR__ . "/../sidebar.html"; ?>
-<?php include __DIR__ . '/../../crud/legder/balance.php';?>
+<?php include __DIR__ . '/../../crud/legder/trial.php';?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chart Of Acoount </title>
+    <title>Trial Balance </title>
     <link rel="stylesheet" href="/static/css/sidebar.css">
     
 </head>
 
 <body> 
-   <div class="content" id="mainContent">
+     <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
@@ -22,12 +22,11 @@
             <label class="theme-switch">
                 <input type="checkbox" id="themeToggle">
                 <span class="slider"></span>
-            </label> 
+            </label>
         </div>
     </div>
-        <?php include __DIR__ . '/../../cards/gl/balance.php';?>
-        
-    <?php include __DIR__ . '/../../table/general ledger/balancetable.html';?>
+
+    <?php include __DIR__ . '/../../table/general ledger/trialbalance.html';?>
 
 </div>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>

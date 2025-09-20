@@ -25,6 +25,7 @@
             </label>
         </div>
     </div>
+    <?php include __DIR__ . '/../../cards/gl/details.php'; ?>
 <?php include __DIR__ . '/../../filtering/generalledger/detail.html'; ?>
 <br>
    

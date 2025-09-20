@@ -9,6 +9,6 @@
       </div>
       <div class="bg-white shadow rounded-xl p-6 border-l-4 border-red-600">
         <p class="text-gray-500">Next Due</p>
-        <h2 class="text-2xl font-semibold mt-1"><?php echo getNextDueDate($pdo); ?></h2>
+        <h2 class="text-2xl font-semibold mt-1"><?php echo getNextDueDate($pdo); ?></h2>  
       </div>
     </div>

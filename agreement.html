@@ -3,401 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Loan Agreement</title>
+  <title>Period Control</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-    .floating-input {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 80%;
-      padding: 5px;
-      border: none;
-      background: transparent;
-      text-align: center;
-      font-weight: normal;
-    }
-    .floating-input:focus {
-      outline: none;
-    }
-  </style>
 </head>
-<body class="bg-gray-100 text-gray-900 font-serif">
-  <div class="max-w-4xl mx-auto my-10">
-    <div id="page1-content" style="padding: 40px; background: white;">
-      <!-- Header -->
-      <div class="text-center border-b-2 border-gray-300 pb-4 mb-6">
-        <h1 class="text-2xl font-bold uppercase tracking-wide">Loan Agreement</h1>
-        <p class="text-sm italic">Kasunduan sa Pautang</p>
-        <p class="text-sm italic">Republic of the Philippines / Republika ng Pilipinas</p>
-      </div>
+<body class="bg-gray-100 p-8">
 
-      <!-- Agreement Intro -->
-      <p class="mb-4 text-justify">
-        This Loan Agreement (“Agreement”) is made and entered into this ___ day of _______, 20__, by and between:
-        <br><span class="italic text-gray-600">(Ang Kasunduang ito (“Kasunduan”) ay ginawa at pinasok ngayong ika-___ ng _______, 20__, sa pagitan ng:) </span>
-      </p>
-
-      <!-- Parties -->
-      <div class="mb-6 space-y-4 text-justify">
-        <p><span class="font-semibold">LENDER:</span> ____________________________________________, a [corporation/individual] duly organized and existing under the laws of the Republic of the Philippines, with principal office at ____________________________________________ (hereinafter referred to as the “Lender”);</p>
-        <p class="italic text-gray-600">(Tagapagpautang: ____________________________________________, isang [korporasyon/indibidwal] na alinsunod sa mga batas ng Republika ng Pilipinas, na may pangunahing tanggapan sa ____________________________________________ (na tatawaging “Tagapagpautang”).)</p>
-
-        <p class="mt-2 font-semibold">AND / At</p>
-
-     <p><span class="font-semibold">BORROWER:</span> 
-          <span style="position: relative; display: inline-block;">
-            <span style="border-bottom: 1px solid black; width: 300px; display: inline-block;" class="pl-4">Slate Transportation Vehicle </span>
-            
-          </span>, a [corporation/individual] duly organized and existing under the laws of the Republic of the Philippines, with principal office at 
-            <span style="position: relative; display: inline-block;">
-            <span style="border-bottom: 1px solid black; width: 300px; display: inline-block; "class=" pl-4"> 123 Rotonda Street,Quezon City</span>
-            <input type="text" class="floating-input"  readonly>
-          </span> (hereinafter referred to as the “Borrower”).
-        </p>
-        <p class="italic text-gray-600">(Nanghihiram:Slate Transportation Vehicle, isang [korporasyon/indibidwal] na alinsunod sa mga batas ng Republika ng Pilipinas, na may pangunahing tanggapan sa 123 Random Street, Quezon City, Metro Manila (na tatawaging “Nanghihiram”).)</p>
-      </div>
-
-      <p class="mb-6 text-justify">
-        The Lender and Borrower may hereinafter be collectively referred to as the “Parties” and individually as a “Party.”
-        <br><span class="italic text-gray-600">(Ang Tagapagpautang at Nanghihiram ay maaaring tawagin na “Mga Panig” at paisa-isa bilang “Panig.”)</span>
-      </p>
-
-      <!-- Articles I and II -->
-      <div class="space-y-6">
-        <div>
-          <h2 class="font-bold uppercase">Article I – Loan Amount and Purpose</h2>
-          <p>1.1 The Lender agrees to extend to the Borrower a loan in the principal amount of __________________.(the “Loan”).</p>
-          <p class="italic text-gray-600">(1.1 Sumasang-ayon ang Tagapagpautang na magpahiram sa Nanghihiram ng halagang [Halaga sa Salita at Numero] (“Pautang”).)</p>
-
-          <p>1.2 The Loan shall be used exclusively for the purpose of ____________________________. The Borrower shall not divert the proceeds to any unlawful or unauthorized purpose.</p>
-          <p class="italic text-gray-600">(1.2 Ang Pautang ay gagamitin lamang para sa layunin ng ____________________________. Ipinagbabawal ang paggamit nito sa anumang ilegal o hindi pinahihintulutang layunin.)</p>
-        </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article II – Disbursement</h2>
-          <p>2.1 The Loan proceeds shall be disbursed on or before __________ via ____________________ , subject to the Borrower’s compliance with all conditions precedent.</p>
-          <p class="italic text-gray-600">(2.1 Ang halaga ng Pautang ay ibibigay sa o bago ang __________ sa pamamagitan ng [bank transfer / tseke / paghahatid ng kalakal], kung natugunan ng Nanghihiram ang lahat ng kinakailangan.)</p>
-
-          <p>2.2 The Lender reserves the right to withhold disbursement if the Borrower fails to submit required documents or collateral.</p>
-          <p class="italic text-gray-600">(2.2 May karapatan ang Tagapagpautang na ipagpaliban ang paglabas ng Pautang kung hindi naibigay ng Nanghihiram ang mga kinakailangang dokumento o kolateral.)</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="articles3-6-content" style="padding: 40px; background: white;">
-      <div class="space-y-6">
-        <div>
-          <h2 class="font-bold uppercase">Article III – Interest and Charges</h2>
-          <p>3.1 The Loan shall bear interest at the rate of ____% per annum, computed on the outstanding balance.</p>
-          <p class="italic text-gray-600">(3.1 Ang Pautang ay magkakaroon ng interes sa rate na ____% kada taon, na kinakalkula batay sa natitirang balanse.)</p>
-
-          <p>3.2 Interest shall accrue from the date of disbursement and be payable in accordance with the repayment schedule.</p>
-          <p class="italic text-gray-600">(3.2 Ang interes ay magsisimula mula sa petsa ng pagbibigay at babayaran ayon sa iskedyul ng pagbabayad.)</p>
-
-          <p>3.3 The Borrower shall be responsible for all ancillary charges, including documentary stamp tax, bank charges, and legal fees, if any.</p>
-          <p class="italic text-gray-600">(3.3 Ang Nanghihiram ang mananagot sa lahat ng karagdagang bayarin, kabilang ang documentary stamp tax, bayarin sa bangko, at bayarin sa legal, kung mayroon.)</p>
-        </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article IV – Repayment</h2>
-          <p>4.1 The Borrower shall repay the Loan in [number] equal installments of __________, due on the ___ day of each month, commencing on __________.</p>
-          <p class="italic text-gray-600">(4.1 Ang Nanghihiram ay magbabayad ng Pautang sa [bilang] na pantay na hulugan ng __________, na dapat bayaran sa ika-___ araw ng bawat buwan, simula sa __________.)</p>
-
-          <p>4.2 Payments shall be applied first to accrued interest, then to principal, and finally to penalties or other charges.</p>
-          <p class="italic text-gray-600">(4.2 Ang mga bayarin ay uunahin sa naipon na interes, pagkatapos sa prinsipal, at panghuli sa mga parusa o iba pang bayarin.)</p>
-
- </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article V – Security</h2>
-          <p>5.1 The Loan shall be secured by the following collateral: ____________________________.</p>
-          <p class="italic text-gray-600">(5.1 Ang Pautang ay sisiguruhin ng sumusunod na kolateral: ____________________________.)</p>
-
-          <p>5.2 The Borrower authorizes the Lender to enforce the security in case of default, without need of prior demand or judicial action, subject to applicable Philippine laws.</p>
-          <p class="italic text-gray-600">(5.2 Pinahintulutan ng Nanghihiram ang Tagapagpautang na ipatupad ang kolateral sa kaso ng default, nang walang pangangailangan ng paunang kahilingan o aksyong hudisyal, alinsunod sa naaangkop na batas ng Pilipinas.)</p>
-        </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article VI – Representations and Warranties</h2>
-          <p>The Borrower hereby represents and warrants that:</p>
-          <p class="italic text-gray-600">Ang Nanghihiram ay nagpapahayag at ginagarantiyahan na:</p>
-          <ul class="list-disc ml-6">
-            <li>It has full power, legal capacity, and authority to enter into and perform its obligations under this Agreement.</li>
-            <li class="italic text-gray-600">Ito ay may buong kapangyarihan, legal na kapasidad, at awtoridad na pumasok at tuparin ang mga obligasyon nito sa ilalim ng Kasunduang ito.</li>
-            <li>The execution of this Agreement has been duly authorized.</li>
-            <li class="italic text-gray-600">Ang pagpapatupad ng Kasunduang ito ay naaayon na awtorisado.</li>
-            <li>All information and documents provided are true, accurate, and complete.</li>
-            <li class="italic text-gray-600">Lahat ng impormasyon at dokumentong ibinigay ay totoo, tumpak, at kumpleto.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <div id="articles7-9-content" style="padding: 40px; background: white;">
-      <div class="space-y-6">
-        <div>
-          <h2 class="font-bold uppercase">Article VII – Events of Default</h2>
-          <p>The Borrower shall be deemed in default upon occurrence of any of the following:</p>
-          <p class="italic text-gray-600">Ang Nanghihiram ay ituturing na nasa default kapag nangyari ang alinman sa mga sumusunod:</p>
-          <ul class="list-disc ml-6">
-            <li>Failure to pay any installment when due.</li>
-            <li class="italic text-gray-600">Pagkabigo sa pagbabayad ng anumang hulugan kapag due na.</li>
-            <li>Breach of any representation, warranty, or obligation herein.</li>
-            <li class="italic text-gray-600">Paglabag sa anumang representasyon, garantiya, o obligasyon dito.</li>
-          </ul>
-          <p class="mt-2">Upon default, the Lender may, at its sole discretion:</p>
-          <p class="italic text-gray-600">Sa kaso ng default, ang Tagapagpautang ay maaaring, sa kanyang sariling pagpapasya:</p>
-          <ul class="list-disc ml-6">
-            <li>Declare the entire outstanding Loan immediately due and payable.</li>
-            <li class="italic text-gray-600">Ipahayag na ang buong natitirang Pautang ay agarang due at babayaran.</li>
-            <li>Enforce rights against the collateral.</li>
-            <li class="italic text-gray-600">Ipataw ang mga karapatan laban sa kolateral.</li>
-            <li>Impose penalty interest at the rate of ___% per month on overdue amounts.</li>
-            <li class="italic text-gray-600">Magpataw ng parusang interes sa rate na ___% kada buwan sa mga overdue na halaga.</li>
-          </ul>
-        </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article VIII – Penalties and Fees</h2>
-          <p>8.1 Late payments shall incur a penalty of __________.</p>
-          <p class="italic text-gray-600">8.1 Ang mga late na bayarin ay magkakaroon ng parusa na __________.</p>
-
-          <p>8.2 All expenses incurred in enforcing this Agreement, including attorney's fees and court costs, shall be charged to the Borrower.</p>
-          <p class="italic text-gray-600">8.2 Lahat ng gastusin sa pagpapatupad ng Kasunduang ito, kabilang ang bayarin sa abogado at gastos sa korte, ay sisingilin sa Nanghihiram.</p>
-        </div>
-
-        <div>
-          <h2 class="font-bold uppercase">Article IX – Governing Law and Dispute Resolution</h2>
-          <p>9.1 This Agreement shall be governed by and construed in accordance with the laws of the Republic of the Philippines.</p>
-          <p class="italic text-gray-600">9.1 Ang Kasunduang ito ay pamamahalaan at ipapaliwanag alinsunod sa mga batas ng Republika ng Pilipinas.</p>
-
-          <p>9.2 Any dispute shall be resolved through amicable settlement, failing which it shall be submitted to arbitration or to the exclusive jurisdiction of the courts of the Philippines.</p>
-          <p class="italic text-gray-600">9.2 Anumang hindi pagkakasundo ay lutasin sa pamamagitan ng maayos na pamamaraan, at kung hindi ito malutas, ito ay isusumite sa arbitrasyon o sa eksklusibong hurisdiksyon ng mga korte ng Pilipinas.</p>
-        </div>
-             <div>
-          <h2 class="font-bold uppercase">Article X – Miscellaneous</h2>
-          <p>10.1 Notices – All notices shall be in writing and delivered personally, by courier, or registered mail to the addresses provided herein.</p>
-          <p class="italic text-gray-600">10.1 Mga Abiso – Lahat ng abiso ay dapat nakasulat at ihahatid nang personal, sa pamamagitan ng courier, o rehistradong koreo sa mga address na ibinigay dito.</p>
-
-          <p>10.2 Severability – If any provision is held invalid, the remainder shall continue in effect.</p>
-          <p class="italic text-gray-600">10.2 Separabilidad – Kung ang anumang probisyon ay itinuring na hindi wasto, ang natitira ay mananatiling may bisa.</p>
-
-          <p>10.3 Amendments – Any modification must be in writing and signed by both Parties.</p>
-          <p class="italic text-gray-600">10.3 Mga Pagbabago – Anumang pagbabago ay dapat nakasulat at nilagdaan ng parehong Panig.</p>
-
-          <p>10.4 Entire Agreement – This Agreement embodies the entire understanding between the Parties.</p>
-          <p class="italic text-gray-600">10.4 Buong Kasunduan – Ang Kasunduang ito ay naglalaman ng buong pag-unawa sa pagitan ng mga Panig.</p>
-        </div>
-      </div>
-    </div>
-
-    <div id="articles10-signatures-content" style="padding: 40px; background: white;">
-      <div class="space-y-6">
-   
-
-        <!-- Signatures -->
-        <div class="mt-10">
-          <h2 class="font-bold uppercase mb-4">Signatures / Lagda</h2>
-          <p class="mb-6 text-justify">
-            IN WITNESS WHEREOF, the Parties have hereunto affixed their signatures on the date and place first above written.
-            <br><span class="italic text-gray-600">Bilang patunay, ang mga Panig ay lumagda sa kasunduang ito sa petsa at lugar na nakasaad sa itaas.</span>
-          </p>
-
-          <div class="grid grid-cols-2 gap-8 mt-10">
-            <div>
-              <p class="uppercase font-semibold">Lender / Tagapagpautang</p>
-              <div class="mt-12 border-t border-gray-400 w-full"></div>
-              <p class="mt-2">Signature / Lagda</p>
-              <p>Name / Pangalan: ______________________________</p>
-              <p>Designation / Katungkulan: _________________________</p>
-              <p>Date / Petsa: _______________________________</p>
-            </div>
-            <div>
-              <p class="uppercase font-semibold">Borrower / Nanghihiram</p>
-              <div class="mt-12 border-t border-gray-400 w-full"></div>
-              <p class="mt-2">Signature / Lagda</p>
-              <p>Name / Pangalan: ______________________________</p>
-              <p>Designation / Katungkulan: _________________________</p>
-              <p>Date / Petsa: _______________________________</p>
-            </div>
-          </div>
-
-          <!-- Witnesses -->
-          <div class="grid grid-cols-2 gap-8 mt-12">
-            <div>
-              <p class="uppercase font-semibold">Witness / Saksi</p>
-              <div class="mt-12 border-t border-gray-400 w-full"></div>
-              <p class="mt-2">Signature / Lagda</p>
-              <p>Name / Pangalan: ______________________________</p>
-            </div>
-            <div>
-              <p class="uppercase font-semibold">Witness / Saksi</p>
-              <div class="mt-12 border-t border-gray-400 w-full"></div>
-              <p class="mt-2">Signature / Lagda</p>
-              <p>Name / Pangalan: ______________________________</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Notarial Acknowledgment -->
-    <div id="acknowledgment" style="padding: 40px; background: white; border-top: 2px solid #d1d5db; margin-top: 4rem;">
-      <h2 class="font-bold uppercase mb-4">Acknowledgment / Pagpapatibay</h2>
-      <p>Republic of the Philippines / Republika ng Pilipinas )<br>
-      Province of _______________ / Lalawigan ng _______________ ) S.S.<br>
-      City/Municipality of _______ / Lungsod/Bayan ng _______ )</p>
-
-      <p class="mt-4 text-justify">
-        BEFORE ME, a Notary Public for and in the City/Municipality of _____________, this ___ day of __________ 20___, personally appeared:
-        <br><span class="italic text-gray-600">SA HARAP KO, isang Notary Public sa Lungsod/Bayan ng _____________, ngayong ika-___ ng __________ 20___, ay personal na humarap:</span>
-      </p>
-
-      <div class="mt-4">
-        <p>Name / Pangalan: ___________________________</p>
-        <p>Competent Evidence of Identity / Katibayan ng Pagkakakilanlan: __________________</p>
-        <p>Issued on / Inisyu noong: _______________________</p>
-        <p>Issued at / Inisyu sa: ________________________</p>
-      </div>
-
-      <div class="mt-6">
-        <p>Name / Pangalan: ___________________________</p>
-        <p>Competent Evidence of Identity / Katibayan ng Pagkakakilanlan: __________________</p>
-        <p>Issued on / Inisyu noong: _______________________</p>
-        <p>Issued at / Inisyu sa: ________________________</p>
-      </div>
-
-      <p class="mt-6 text-justify">
-        Known to me and to me known to be the same persons who executed the foregoing Loan Agreement consisting of ___ pages, including this page where this acknowledgment is written, and they acknowledged to me that the same is their free and voluntary act and deed.
-        <br><span class="italic text-gray-600">Na aking nakilala at kinilala na sila rin ang mga taong lumagda sa nasabing Kasunduan sa Pautang na binubuo ng ___ pahina, kabilang ang pahinang ito kung saan nakasulat ang pagpapatibay na ito, at kinilala nila sa akin na ito ay kanilang malaya at kusang-loob na gawa.</span>
-      </p>
-
-      <p class="mt-6 text-justify">
-        IN WITNESS WHEREOF, I have hereunto set my hand and affixed my notarial seal on the day, year, and place first above written.
-        <br><span class="italic text-gray-600">Bilang patunay, ako'y lumagda at naglagay ng aking notarial seal sa petsa, taon, at lugar na una nang binanggit.</span>
-      </p>
-
-      <div class="mt-10">
-        <p class="uppercase font-semibold">Notary Public / Notaryo Publiko</p>
-        <div class="mt-12 border-t border-gray-400 w-full"></div>
-        <p class="mt-2">Name / Pangalan: ___________________________</p>
-        <p>PTR No. __________ / Date / Petsa __________ / Place / Lugar __________</p>
-        <p>IBP No. __________ / Date / Petsa __________ / Place / Lugar __________</p>
-        <p>Roll No. __________</p>
-        <p>Commission No. __________</p>
-        <p>Until / Hanggang: __________</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- PDF Download Button -->
-  <div class="text-center mt-8">
-    <button onclick="downloadPDF()" class="bg-blue-700 hover:bg-blue-800 text-white px-6 py-3 rounded-lg shadow-md font-semibold">
-      Download as PDF
-    </button>
+  <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6">
+    <h2 class="text-2xl font-bold mb-6">📅 Period Control</h2>
+    <table class="w-full border-collapse border text-sm">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="border p-2">Year</th>
+          <th class="border p-2">Month</th>
+          <th class="border p-2">Start Date</th>
+          <th class="border p-2">End Date</th>
+          <th class="border p-2">Status</th>
+          <th class="border p-2">Action</th>
+        </tr>
+      </thead>
+      <tbody id="periodTable">
+        <!-- Rows will be injected by JS -->
+      </tbody>
+    </table>
   </div>
 
   <script>
-    async function calculatePages(doc, element, pageWidth, pageHeight) {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: element.offsetWidth,
-        height: element.offsetHeight
+    // Sample periods (you can load from DB later)
+    let periods = [
+      { id: 1, year: 2025, month: "September", start: "2025-09-01", end: "2025-09-30", status: "OPEN" },
+      { id: 2, year: 2025, month: "August", start: "2025-08-01", end: "2025-08-31", status: "CLOSED" },
+      { id: 3, year: 2025, month: "July", start: "2025-07-01", end: "2025-07-31", status: "CLOSED" }
+    ];
+
+    function renderTable() {
+      const tbody = document.getElementById("periodTable");
+      tbody.innerHTML = "";
+
+      periods.forEach(period => {
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+          <td class="border p-2">${period.year}</td>
+          <td class="border p-2">${period.month}</td>
+          <td class="border p-2">${period.start}</td>
+          <td class="border p-2">${period.end}</td>
+          <td class="border p-2 font-bold ${period.status === "OPEN" ? "text-green-600" : "text-gray-500"}">
+            ${period.status}
+          </td>
+          <td class="border p-2 text-center">
+            <button onclick="toggleStatus(${period.id})"
+              class="px-3 py-1 rounded text-white ${period.status === "OPEN" ? "bg-red-500" : "bg-green-500"}">
+              ${period.status === "OPEN" ? "Close" : "Reopen"}
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(row);
       });
-      const imgData = canvas.toDataURL('image/png');
-      const imgProps = doc.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
-      return Math.ceil(imgHeight / pageHeight) || 1;
     }
 
-    async function addSection(doc, element, pageWidth, pageHeight, margin, totalPages, currentPageNumberRef) {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        width: element.offsetWidth,
-        height: element.offsetHeight
-      });
-      const imgData = canvas.toDataURL('image/png');
-      const imgProps = doc.getImageProperties(imgData);
-      const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
-      let heightLeft = imgHeight;
-      let position = 0;
-      let localPageNumber = currentPageNumberRef.value;
-      const isFirstSection = localPageNumber === 1 && position === 0;
-      while (heightLeft > 0) {
-        if (localPageNumber > 1 || position > 0) {
-          doc.addPage();
-        }
-        const yPos = margin - position;
-        doc.addImage(
-          imgData,
-          'PNG',
-          margin,
-          yPos,
-          pageWidth,
-          imgHeight,
-          undefined,
-          'FAST'
-        );
-        doc.setFontSize(10);
-        doc.text(
-          `Page ${localPageNumber} of ${totalPages}`,
-          doc.internal.pageSize.getWidth() / 2,
-          doc.internal.pageSize.getHeight() - 20,
-          { align: 'center' }
-        );
-        position += pageHeight;
-        heightLeft -= pageHeight;
-        localPageNumber++;
-      }
-      currentPageNumberRef.value = localPageNumber;
-    }
-
-    async function downloadPDF() {
-      try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-          orientation: 'portrait',
-          unit: 'pt',
-          format: 'a4'
-        });
-
-        const margin = 40;
-        const pageWidth = doc.internal.pageSize.getWidth() - 2 * margin;
-        const pageHeight = doc.internal.pageSize.getHeight() - 2 * margin - 50;
-        const sections = ['page1-content', 'articles3-6-content', 'articles7-9-content', 'articles10-signatures-content'];
-
-        let totalPages = 0;
-        for (const sectionId of sections) {
-          const element = document.getElementById(sectionId);
-          totalPages += await calculatePages(doc, element, pageWidth, pageHeight);
-        }
-        const ackElement = document.getElementById('acknowledgment');
-        totalPages += await calculatePages(doc, ackElement, pageWidth, pageHeight);
-
-        let currentPageNumber = { value: 1 };
-
-        for (const sectionId of sections) {
-          const element = document.getElementById(sectionId);
-          await addSection(doc, element, pageWidth, pageHeight, margin, totalPages, currentPageNumber);
-        }
-
-        // Add acknowledgment
-        await addSection(doc, ackElement, pageWidth, pageHeight, margin, totalPages, currentPageNumber);
-
-        doc.save('Loan_Agreement.pdf');
-      } catch (error) {
-        console.error('Error generating PDF:', error);
-        alert('Failed to generate PDF. Please try again or check the console for details.');
+    function toggleStatus(id) {
+      const period = periods.find(p => p.id === id);
+      if (period) {
+        period.status = (period.status === "OPEN") ? "CLOSED" : "OPEN";
+        renderTable();
       }
     }
+
+    // Initial render
+    renderTable();
   </script>
 </body>
 </html>

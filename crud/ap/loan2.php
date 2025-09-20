@@ -20,7 +20,7 @@ function getOutstandingForLoan($pdo, $loanId) {
     $sql = "
         SELECT LoanAmount, interestRate, paidAmount
         FROM loan
-        WHERE LoanID = :loanId
+        WHERE LoanID = :loanId 
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->bindParam(':loanId', $loanId, PDO::PARAM_INT);
@@ -64,17 +64,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         VALUES (:loanId, :paymentDate, :amount, :method, :remarks, NOW(), 'NO')";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
-                    ':loanId' => $loanId,
-                    ':paymentDate' => $paymentDate,
-                    ':amount' => $amount,
-                    ':method' => $method,
-                    ':remarks' => $remarks
+                    'loanId' => $loanId,
+                    'paymentDate' => $paymentDate,
+                    'amount' => $amount,
+                    'method' => $method,
+                    'remarks' => $remarks
                 ]);
 
                 // Fetch LoanTitle and startDate from loan
                 $getSql = "SELECT LoanTitle, startDate FROM loan WHERE LoanID = :loanId";
                 $getStmt = $pdo->prepare($getSql);
-                $getStmt->execute([':loanId' => $loanId]);
+                $getStmt->execute(['loanId' => $loanId]);
                 $loanData = $getStmt->fetch(PDO::FETCH_ASSOC);
                 if (!$loanData) {
                     $pdo->rollBack();
@@ -87,11 +87,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $Loantitle = 11;
                 $yearlybudget = date('Y');
-                $select = "SELECT allocationID FROM costallocation WHERE accountID = :longtitle AND yearlybudget = :yearlybudget";
+                $select = "SELECT allocationID FROM costallocation WHERE accountID = :accountID AND yearlybudget = :yearlybudget";
                 $allocStmt = $pdo->prepare($select);
                 $allocStmt->execute([
-                    ':longtitle' => $Loantitle,
-                    ':yearlybudget' => $yearlybudget
+                    'accountID' => $Loantitle,
+                    'yearlybudget' => $yearlybudget
                 ]);
                 $allocData = $allocStmt->fetch(PDO::FETCH_ASSOC);
                 $allocationID = $allocData ? $allocData['allocationID'] : null;
@@ -102,12 +102,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                               VALUES (:title, :amount, :requested, :due, :loanId, 'Loan Payment', :allocationID)";
                 $requestStmt = $pdo->prepare($requestSql);
                 $requestStmt->execute([
-                    ':title' => $loanTitle,
-                    ':amount' => $amount,
-                    ':requested' => $requested,
-                    ':due' => $startDate,
-                    ':loanId' => $loanId,
-                    ':allocationID' => $allocationID
+                    'title' => $loanTitle,
+                    'amount' => $amount,
+                    'requested' => $requested,
+                    'due' => $startDate,
+                    'loanId' => $loanId,
+                    'allocationID' => $allocationID
                 ]);
 
                 $pdo->commit();
@@ -151,11 +151,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     if (move_uploaded_file($fileTmpPath, $uploadPath)) {
                         $pdo->beginTransaction();
+
+                        // 1. Update Loan Remarks
                         $sql = "UPDATE loan SET Remarks = 'Approved', pdf_filename = :pdf_filename WHERE LoanID = :loanId AND Archive = 'NO'";
                         $stmt = $pdo->prepare($sql);
                         $stmt->execute(['pdf_filename' => $relativePath, 'loanId' => $loanId]);
+
+                        // 2. Get Loan Data (amount + interest)
+                        $loanSql = "SELECT LoanAmount, interestRate, LoanTitle, startDate,paymentMehod FROM loan WHERE LoanID = :loanId";
+                        $loanStmt = $pdo->prepare($loanSql);
+                        $loanStmt->execute(['loanId' => $loanId]);
+                        $loanData = $loanStmt->fetch(PDO::FETCH_ASSOC);
+
+                    
+ 
+
+
+                        $loanAmount = (float)$loanData['LoanAmount'];
+                        $interestRate = (float)$loanData['interestRate'];
+                        $interest = $loanAmount * ($interestRate / 100);
+                        $totalAmount = $loanAmount + $interest;
+                        $loanTitle = $loanData['LoanTitle'];
+                        $startDate = $loanData['startDate'];
+                        $paymentmethod = $loanData['paymentMehod'];
+                          
+                        if($paymentmethod === 'Cash'){
+                            $accountID = 1;
+                        } else{
+                            $accountID = 2;
+                        }
+
+                        // 3. Insert into entries (journal header)
+                        $entrySql = "INSERT INTO entries (date, description, referenceType, createdBy, Archive) 
+                                     VALUES (NOW(), :desc, 'Loan Approval', 'system', 'NO')";
+                        $entryStmt = $pdo->prepare($entrySql);
+                        $entryStmt->execute(['desc' => 'Loan Approved: ' . $loanTitle]);
+                        $journalID = $pdo->lastInsertId();
+
+                        // 4. Insert into details (journal lines)
+                        // Debit Cash (1)
+                        $detailSql = "INSERT INTO details (journalID, accountID, debit, credit, Archive) 
+                                      VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
+                        $detailStmt = $pdo->prepare($detailSql);
+
+                        // Cash ↑
+                        $detailStmt->execute([
+                            'journalID' => $journalID,
+                            'accountID' => $accountID,
+                            'debit' => $totalAmount,
+                            'credit' => 0
+                        ]);
+
+                        // Loan Payable ↑
+                        $detailStmt->execute([
+                            'journalID' => $journalID,
+                            'accountID' => 11, // Loan Payable
+                            'debit' => 0,
+                            'credit' => $totalAmount
+                        ]);
+
                         $pdo->commit();
-                        echo json_encode(['success' => true, 'message' => 'Loan approved and document uploaded successfully']);
+                        echo json_encode(['success' => true, 'message' => 'Loan approved, journal entries created, and document uploaded successfully']);
                     } else {
                         echo json_encode(['success' => false, 'message' => 'Error uploading file']);
                     }
@@ -163,9 +219,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     echo json_encode(['success' => false, 'message' => 'No file uploaded or upload error']);
                 }
                 exit;
-            } catch (PDOException $e) {
-                if (isset($pdo)) $pdo->rollBack();
-                if (isset($uploadPath) && file_exists($uploadPath)) unlink($uploadPath);
+            } catch (Exception $e) {
+                if (isset($pdo)) {
+                    try {
+                        $pdo->rollBack();
+                    } catch (PDOException $pe) {
+                        // Ignore rollback error if no transaction was started
+                    }
+                }
                 echo json_encode(['success' => false, 'message' => 'Error approving loan: ' . $e->getMessage()]);
                 exit;
             }

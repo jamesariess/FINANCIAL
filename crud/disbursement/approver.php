@@ -120,6 +120,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $statusStmt = $pdo->prepare($statusSql);
     $statusStmt->execute([':status' => $newStatus, ':loanId' => $loanId]);
 
+                      $payment = "SELECT method FROM ap_payments WHERE LoanID = :loanId";
+                        $paymentsmt= $pdo->prepare($payment);
+                        $paymentsmt ->execute(['loanId' => $loanId]);
+                        $paymendata = $paymentsmt->fetch(PDO::FETCH_ASSOC); 
+                           $paymentmethod = $paymendata['method'];
+                          
+                        if($paymentmethod === 'Cash'){
+                            $accountID = 1;
+                        } else{
+                            $accountID = 2;
+                        }
+
+
     $entrySql = "
         INSERT INTO entries (date, description, referenceType, createdBy, Archive)
         VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
@@ -141,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     
     $detailStmt->execute([
         ':journalID' => $journalID,
-        ':accountID' => 8,  
+        ':accountID' => 11,  
         ':debit' => $approvedAmount,
         ':credit' => 0
     ]);
@@ -149,7 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
    
     $detailStmt->execute([
         ':journalID' => $journalID,
-        ':accountID' => 1,  
+        ':accountID' => $accountID,  
         ':debit' => 0,
         ':credit' => $approvedAmount
     ]);

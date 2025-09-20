@@ -1,7 +1,7 @@
 <?php include __DIR__ . "/../sidebar.html"; ?>
 <?php include __DIR__ . '/../../crud/ap/loan.php'; ?>
 <?php include __DIR__ . '/../../crud/ap/loan2.php'; ?>
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
     <meta charset="UTF-8">

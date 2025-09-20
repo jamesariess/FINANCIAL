@@ -274,7 +274,7 @@
         </form>
     </div>
 </div>
-
+ 
 <script>
     const modal = document.getElementById('paymentModal');
     const form = document.getElementById('paymentForm');

@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     }
 }
 ?>
-
+<?php include __DIR__ . "/../sidebar.html"; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -69,8 +69,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Freight Finance — Invoice Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/sidebar.css">
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body >
+       <div class="content" id="mainContent">
+    <div class="header">
+        <div class="hamburger" id="hamburger">☰</div>
+        <div>
+            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+        </div>
+        <div class="theme-toggle-container">
+            <span class="theme-label">Dark Mode</span>
+            <label class="theme-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+            </label> 
+        </div>
+    </div>
     <div class="container mx-auto p-6 max-w-2xl">
         <h1 class="text-3xl font-bold text-center mb-6">Create Invoice</h1>
 
@@ -166,6 +181,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
                 </table>
             </div>
         </div>
-    </div>
+    </div>    </div>
+    <script src="<?php echo '../../static/js/filter.js';?>"></script>
+<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
 </body>
 </html>

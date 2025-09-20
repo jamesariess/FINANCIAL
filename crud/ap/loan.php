@@ -53,7 +53,7 @@ function getActiveLoans($pdo) {
 }
 
 function getTotalActiveLoans($pdo) {
-    $sql = "SELECT COUNT(*) as count FROM loan WHERE Archive = 'NO' AND Status != 'Paid'";
+    $sql = "SELECT COUNT(*) as count FROM loan WHERE Archive = 'NO' AND Status != 'Paid' AND Remarks = 'Approved' ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $row = $stmt->fetch();
@@ -64,7 +64,7 @@ function getTotalOutstanding($pdo) {
     $sql = "
         SELECT SUM(l.LoanAmount + (l.LoanAmount * l.interestRate / 100) - COALESCE(l.paidAmount, 0)) as total
         FROM loan l
-        WHERE l.Archive = 'NO' AND l.Status != 'Paid'
+        WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND 	Remarks = 'Approved'
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
@@ -76,12 +76,14 @@ function getNextDueDate($pdo) {
     $sql = "
         SELECT MIN(EndDate) as nextDue
         FROM loan
-        WHERE Archive = 'NO' AND Status != 'Paid'
+        WHERE Archive = 'NO' AND Status != 'Paid' AND Remarks = 'Approved'
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $row = $stmt->fetch();
-    return date('M d, Y', strtotime($row['nextDue'] ?? '2025-09-30'));
+    return !empty($row['nextDue']) 
+    ? date('M d, Y', strtotime($row['nextDue'])) 
+    : 'No Active Loan';
 }
 
 class LoanPDF extends FPDF {
