@@ -41,8 +41,8 @@ header('Access-Control-Allow-Headers: Content-Type, X-API-KEY');
 $departmentMap = [
     "HR2"        => ["HR"],
     "HR3"        => ["HR"],
-    "Logistic1"      => ["Maintenance", "Operations"],
-    "Logistic2"      => ["Maintenance", "Operations"],
+    "Logistic1"      => ["Maintenance"],
+    "Logistic2"      => ["Maintenance"],
     "Financial" => ["Finance"],
 ];
 
