@@ -2,10 +2,10 @@
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
-// Function to update loan (reused from loan2.php logic)
+// Function to get the current outstanding principal balance for a loan
 function getOutstandingForLoan($pdo, $loanId) {
     $sql = "
-        SELECT LoanAmount, interestRate, paidAmount
+        SELECT LoanAmount, paidAmount
         FROM loan
         WHERE LoanID = :loanId
     ";
@@ -15,10 +15,10 @@ function getOutstandingForLoan($pdo, $loanId) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($row) {
         $principal = $row['LoanAmount'];
-        $rate = $row['interestRate'];
         $paid = $row['paidAmount'] ?? 0;
-        $interest = $principal * ($rate / 100);
-        return ($principal + $interest) - $paid;
+        
+        // Return the remaining principal balance
+        return $principal - $paid;
     }
     return 0;
 }
@@ -52,14 +52,14 @@ $stmt->execute();
 $data["newRequest"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
 $sql = "SELECT
-         r.requestID, r.requestTitle, r.ApprovedAmount, r.Requested_by, r.Due, r.status, r.date,
-         ch.accountName, c.allocationID, 	
-         d.Name
+          r.requestID, r.requestTitle, r.ApprovedAmount, r.Requested_by, r.Due, r.status, r.date,
+          ch.accountName, c.allocationID, c.accountID,  
+          d.Name
         FROM request r
         JOIN costallocation c ON r.allocationID = c.allocationID
         JOIN chartofaccount ch ON c.accountID = ch.accountID 
         JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
-        WHERE r.status IN ('Approved', 'Verified') AND r.Archive = 'NO'
+        WHERE r.status IN ('Approved', 'Pending') AND r.Archive = 'NO'
         ORDER BY r.date DESC 
         LIMIT 12";
 $stmt = $pdo->prepare($sql);
@@ -73,8 +73,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         try {
             $pdo->beginTransaction();
 
-          
-            $sql = "SELECT ApprovedAmount, allocationID, LoanID FROM request WHERE requestID = :id AND status = 'Approved' AND Archive = 'NO'";
+            $sql = "
+                SELECT r.ApprovedAmount, r.allocationID, r.LoanID, ca.accountID
+                FROM request r
+                JOIN costallocation c ON r.allocationID = c.allocationID
+                JOIN chartofaccount ca ON c.accountID = ca.accountID
+                WHERE r.requestID = :id AND r.status = 'Approved' AND r.Archive = 'NO'
+            ";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([":id" => $requestID]);
             $request = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -83,93 +88,185 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 $approvedAmount = $request['ApprovedAmount'];
                 $allocationID = $request['allocationID'];
                 $loanId = $request['LoanID'];
+                $allocationAccountID = $request['accountID'];
 
-             
                 $updateRequest = $pdo->prepare("UPDATE request SET status = 'Paid' WHERE requestID = :id");
                 $updateRequest->execute([":id" => $requestID]);
 
-               
                 $updateAllocation = $pdo->prepare("UPDATE costallocation SET usedAllocation = COALESCE(usedAllocation, 0) + :amount WHERE allocationID = :allocationID");
                 $updateAllocation->execute([
-                    ":amount" => $approvedAmount,                    
+                    ":amount" => $approvedAmount,
                     ":allocationID" => $allocationID
                 ]);
-                
+
                 if ($loanId) {
-                    $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :amount WHERE LoanID = :loanId";
+                    
+                    $interestAccountSql = "SELECT accountID FROM chartofaccount WHERE accountName = 'Interest'";
+                    $interestAccountStmt = $pdo->prepare($interestAccountSql);
+                    $interestAccountStmt->execute();
+                    $interestAccount = $interestAccountStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$interestAccount) {
+                         
+                         $lastExpenseCodeSql = "SELECT accountCode FROM chartofaccount WHERE accounType = 'Expenses' ORDER BY accountCode DESC LIMIT 1";
+                         $lastExpenseCodeStmt = $pdo->prepare($lastExpenseCodeSql);
+                         $lastExpenseCodeStmt->execute();
+                         $lastCode = $lastExpenseCodeStmt->fetch(PDO::FETCH_ASSOC);
+
+                         $newCodeNumber = 1;
+                         if ($lastCode) {
+                             $lastCodeNumber = (int)substr($lastCode['accountCode'], 3);
+                             $newCodeNumber = $lastCodeNumber + 1;
+                         }
+                         $newAccountCode = 'EX-' . str_pad($newCodeNumber, 3, '0', STR_PAD_LEFT);
+                         
+                         $insertSql = "INSERT INTO chartofaccount (accountCode, accountName, accountType, Archive, status) VALUES (:code, 'Interest', 'Expenses', 'NO', 'Active')";
+                         $insertStmt = $pdo->prepare($insertSql);
+                         $insertStmt->execute([':code' => $newAccountCode]);
+                         $interestAccountID = $pdo->lastInsertId();
+                    } else {
+                         $interestAccountID = $interestAccount['accountID'];
+                    }
+
+                    // Fetch loan details and current outstanding principal balance
+                    $loanSql = "SELECT LoanAmount, interestRate, paidAmount FROM loan WHERE LoanID = :loanId";
+                    $loanStmt = $pdo->prepare($loanSql);
+                    $loanStmt->execute([':loanId' => $loanId]);
+                    $loanData = $loanStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if (!$loanData) {
+                         throw new Exception("Loan data not found for LoanID: " . $loanId);
+                    }
+                    
+                    // --- CORRECTED AMORTIZATION CALCULATION ---
+                    // The interest is calculated on the current outstanding principal.
+                    $currentPrincipalBalance = $loanData['LoanAmount'] - ($loanData['paidAmount'] ?? 0);
+                    $interestRateDecimal = $loanData['interestRate'] / 100;
+                    
+                    // Calculate the interest portion of the payment for one month
+                    $interestPaid = $currentPrincipalBalance * ($interestRateDecimal / 12); 
+                    
+                    // The remaining portion of the payment goes to the principal
+                    $principalPaid = $approvedAmount - $interestPaid;
+                    
+                    // Ensure that the principal paid is not more than the outstanding principal
+                    if ($principalPaid > $currentPrincipalBalance) {
+                        $principalPaid = $currentPrincipalBalance;
+                        $interestPaid = $approvedAmount - $principalPaid;
+                    }
+
+                    // Update loan's paid amount (principal only)
+                    $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :principalPaid WHERE LoanID = :loanId";
                     $updateStmt = $pdo->prepare($updateSql);
-                    $updateStmt->execute([':amount' => $approvedAmount, ':loanId' => $loanId]);
-          
-                   
+                    $updateStmt->execute([':principalPaid' => $principalPaid, ':loanId' => $loanId]);
+
                     $outstanding = getOutstandingForLoan($pdo, $loanId);
                     $newStatus = ($outstanding <= 0) ? 'Paid' : 'Partially Paid';
                     $statusSql = "UPDATE loan SET Status = :status WHERE LoanID = :loanId";
                     $statusStmt = $pdo->prepare($statusSql);
                     $statusStmt->execute([':status' => $newStatus, ':loanId' => $loanId]);
 
-                  if ($loanId) {
+                    // Fetch the 'method' string from ap_payments
+                    $paymentMethodSql = "SELECT method FROM ap_payments WHERE LoanID = :loanId";
+                    $paymentsmt = $pdo->prepare($paymentMethodSql);
+                    $paymentsmt->execute([':loanId' => $loanId]);
+                    $paymendata = $paymentsmt->fetch(PDO::FETCH_ASSOC);
 
-    $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :amount WHERE LoanID = :loanId";
-    $updateStmt = $pdo->prepare($updateSql);
-    $updateStmt->execute([':amount' => $approvedAmount, ':loanId' => $loanId]);
+                    if (!$paymendata) {
+                         throw new Exception("Payment method not found for LoanID: " . $loanId);
+                    }
+                    $paymentMethod = $paymendata['method'];
 
+                    $paymentAccountID = null;
+                    if ($paymentMethod === 'Cash') {
+                        $paymentAccountID = 1;
+                    } else if ($paymentMethod === 'Bank Transfer' || $paymentMethod === 'Check') {
+                        $paymentAccountID = 2;
+                    }
 
-    $outstanding = getOutstandingForLoan($pdo, $loanId);
-    $newStatus = ($outstanding <= 0) ? 'Paid' : 'Partially Paid';
-    $statusSql = "UPDATE loan SET Status = :status WHERE LoanID = :loanId";
-    $statusStmt = $pdo->prepare($statusSql);
-    $statusStmt->execute([':status' => $newStatus, ':loanId' => $loanId]);
+                    if ($paymentAccountID === null) {
+                         throw new Exception("Account not found for payment method: " . $paymentMethod);
+                    }
 
-                      $payment = "SELECT method FROM ap_payments WHERE LoanID = :loanId";
-                        $paymentsmt= $pdo->prepare($payment);
-                        $paymentsmt ->execute(['loanId' => $loanId]);
-                        $paymendata = $paymentsmt->fetch(PDO::FETCH_ASSOC); 
-                           $paymentmethod = $paymendata['method'];
-                          
-                        if($paymentmethod === 'Cash'){
-                            $accountID = 1;
-                        } else{
-                            $accountID = 2;
-                        }
+                    // Create journal entry for loan payment
+                    $entrySql = "
+                         INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+                         VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+                    ";
+                    $entryStmt = $pdo->prepare($entrySql);
+                    $entryStmt->execute([
+                         ':description' => "Loan Payment Request #{$requestID}",
+                         ':ref' => 'Loan Payment',
+                         ':createdBy' => 'System'
+                    ]);
+                    $journalID = $pdo->lastInsertId();
 
+                    $detailSql = "
+                         INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                         VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+                    ";
+                    $detailStmt = $pdo->prepare($detailSql);
 
-    $entrySql = "
-        INSERT INTO entries (date, description, referenceType, createdBy, Archive)
-        VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
-    ";
-    $entryStmt = $pdo->prepare($entrySql);
-    $entryStmt->execute([
-        ':description' => "Loan Payment Request #{$requestID}",
-        ':ref' => 'Loan Payment',
-        ':createdBy' => 'System'
-    ]);
-    $journalID = $pdo->lastInsertId();
+                    // Debit the Interest Expense account
+                    $detailStmt->execute([
+                         ':journalID' => $journalID,
+                         ':accountID' => $interestAccountID,
+                         ':debit' => $interestPaid,
+                         ':credit' => 0
+                    ]);
 
-    $detailSql = "
-        INSERT INTO details (journalID, accountID, debit, credit, Archive)
-        VALUES (:journalID, :accountID, :debit, :credit, 'NO')
-    ";
-    $detailStmt = $pdo->prepare($detailSql);
+                    // Debit the Loan Payable account for the principal portion
+                    $detailStmt->execute([
+                         ':journalID' => $journalID,
+                         ':accountID' => $allocationAccountID,
+                         ':debit' => $principalPaid,
+                         ':credit' => 0
+                    ]);
 
-    
-    $detailStmt->execute([
-        ':journalID' => $journalID,
-        ':accountID' => 11,  
-        ':debit' => $approvedAmount,
-        ':credit' => 0
-    ]);
+                    // Credit the cash/bank account for the full payment amount
+                    $detailStmt->execute([
+                         ':journalID' => $journalID,
+                         ':accountID' => $paymentAccountID,
+                         ':debit' => 0,
+                         ':credit' => $approvedAmount
+                    ]);
 
-   
-    $detailStmt->execute([
-        ':journalID' => $journalID,
-        ':accountID' => $accountID,  
-        ':debit' => 0,
-        ':credit' => $approvedAmount
-    ]);
-}
+                } else {
+                    // This is a GENERAL EXPENSE
+                    $entrySql = "
+                         INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+                         VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+                    ";
+                    $entryStmt = $pdo->prepare($entrySql);
+                    $entryStmt->execute([
+                         ':description' => "Expense Request #{$requestID}",
+                         ':ref' => 'General Expense',
+                         ':createdBy' => 'System'
+                    ]);
+                    $journalID = $pdo->lastInsertId();
 
+                    $detailSql = "
+                         INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                         VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+                    ";
+                    $detailStmt = $pdo->prepare($detailSql);
+
+                    $detailStmt->execute([
+                         ':journalID' => $journalID,
+                         ':accountID' => $allocationAccountID,
+                         ':debit' => $approvedAmount,
+                         ':credit' => 0
+                    ]);
+
+                    $cashOrBankID = 1;
+                    $detailStmt->execute([
+                         ':journalID' => $journalID,
+                         ':accountID' => $cashOrBankID,
+                         ':debit' => 0,
+                         ':credit' => $approvedAmount
+                    ]);
                 }
-
+                
                 $pdo->commit();
                 echo json_encode(["success" => true]);
             } else {
@@ -183,5 +280,4 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
 }
-
 ?>

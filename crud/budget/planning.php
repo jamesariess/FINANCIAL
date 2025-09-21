@@ -13,7 +13,7 @@ $sql = "SELECT
         JOIN chartofaccount ch ON c.accountID = ch.accountID 
         JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
 
-WHERE r.status IN ('Verified') AND r.Archive = 'NO'
+WHERE r.status IN ('Pending') AND r.Archive = 'NO'
 ORDER BY r.date DESC 
 LIMIT 12";
 try {

@@ -68,7 +68,7 @@
             }
 
             let buttonHTML = "";
-            if (req.status === "Verified") {
+            if (req.status === "Pending") {
                 buttonHTML = `
                 <div class="mt-4 space-y-3">
                     <label class="block text-sm text-gray-700">Change Amount</label>

@@ -7,8 +7,13 @@ date_default_timezone_set('Asia/Manila');
 $successMessage = '';
 $errorMessage = '';
 
-// Function to generate a unique reference number
-function generateReferenceNo($pdo) {    
+/**
+ * Generates a unique reference number.
+ *
+ * @param PDO $pdo The PDO database connection object.
+ * @return string The unique reference number.
+ */
+function generateReferenceNo($pdo) {
     $prefix = 'INV-' . date('Ymd') . '-';
     $characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $randomString = '';
@@ -17,7 +22,7 @@ function generateReferenceNo($pdo) {
     }
     $referenceNo = $prefix . $randomString;
 
-    // Optional: Check if reference number already exists
+    // Check if reference number already exists
     $sqlCheck = "SELECT COUNT(*) FROM ar_invoices WHERE reference_no = :referenceNo";
     $stmtCheck = $pdo->prepare($sqlCheck);
     $stmtCheck->bindParam(':referenceNo', $referenceNo);
@@ -30,20 +35,21 @@ function generateReferenceNo($pdo) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
-   
+    
     $invoiceDate = filter_input(INPUT_POST, 'invoiceDate', FILTER_SANITIZE_STRING);
     $dueDate = filter_input(INPUT_POST, 'dueDate', FILTER_SANITIZE_STRING);
     $description = filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING);
     $amount = filter_input(INPUT_POST, 'amount', FILTER_VALIDATE_FLOAT);
 
-
     if (!$invoiceDate || !$dueDate || !$description || $amount === false) {
         $errorMessage = "All fields are required and amount must be a valid number.";
     } else {
         try {
+            $pdo->beginTransaction();
 
             $referenceNo = generateReferenceNo($pdo);
 
+            // Insert into ar_invoices table
             $sql = "INSERT INTO ar_invoices (customer_id, invoice_date, due_date, description, amount, reference_no, created_at)
                     VALUES (:custumerID, :invoiceDate, :dueDate, :description, :amount, :referenceNo, NOW())";
             $stmt = $pdo->prepare($sql);
@@ -54,8 +60,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
             $stmt->bindParam(':amount', $amount);
             $stmt->bindParam(':referenceNo', $referenceNo);
             $stmt->execute();
-            $successMessage = "✅ Invoice added successfully with Reference No: $referenceNo.";
+            $invoiceID = $pdo->lastInsertId(); // Get the ID of the new invoice
+
+            // Insert journal entries (debit/credit)
+            $sqlEntries = "
+                INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+                VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+            ";
+            $stmtEntries = $pdo->prepare($sqlEntries);
+            $stmtEntries->bindParam(':description', $description);
+            $stmtEntries->bindValue(':ref', $referenceNo);
+            $stmtEntries->bindValue(':createdBy', 'System');
+            $stmtEntries->execute();
+            $journalID = $pdo->lastInsertId();
+
+            $detailSqlDebit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtDetailsDebit = $pdo->prepare($detailSqlDebit);
+            $stmtDetailsDebit->bindParam(':journalID', $journalID);
+            $stmtDetailsDebit->bindValue(':accountID', 3);
+            $stmtDetailsDebit->bindParam(':debit', $amount);
+            $stmtDetailsDebit->bindValue(':credit', 0);
+            $stmtDetailsDebit->execute();
+
+            $detailSqlCredit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtDetailsCredit = $pdo->prepare($detailSqlCredit);
+            $stmtDetailsCredit->bindParam(':journalID', $journalID);
+            $stmtDetailsCredit->bindValue(':accountID', 15);
+            $stmtDetailsCredit->bindValue(':debit', 0);
+            $stmtDetailsCredit->bindParam(':credit', $amount);
+            $stmtDetailsCredit->execute();
+
+            // Logic to create a SINGLE follow-up reminder
+            $followUpMessage = "No automated reminders created.";
+            try {
+                // Fetch all active plans
+                $sqlPlans = "SELECT planID, remaining_days FROM collection_plan WHERE status = 'Active' AND Archive = 'NO'";
+                $stmtPlans = $pdo->prepare($sqlPlans);
+                $stmtPlans->execute();
+                $collectionPlans = $stmtPlans->fetchAll(PDO::FETCH_ASSOC);
+
+                if ($collectionPlans) {
+                    $bestPlan = null;
+                    $bestPlanRemainingDays = -1;
+
+                    // Find the best plan to use for the reminder
+                    foreach ($collectionPlans as $plan) {
+                        $remainingDays = $plan['remaining_days'];
+                        $calculatedFollowUpDate = date('Y-m-d', strtotime($dueDate . ' -' . $remainingDays . ' days'));
+                        
+                        // Check if the calculated follow-up date is between the invoice date and due date
+                        if ($calculatedFollowUpDate > $invoiceDate) { 
+                            // Prioritize the plan with the most remaining days
+                            if ($remainingDays > $bestPlanRemainingDays) {
+                                $bestPlanRemainingDays = $remainingDays;
+                                $bestPlan = $plan;
+                                $bestFollowUpDate = $calculatedFollowUpDate;
+                            }
+                        }
+                    }
+
+                    // If a suitable plan was found, create the single reminder
+                    if ($bestPlan) {
+                        $sqlFollow = "INSERT INTO follow (planID, InvoiceID, FollowUpDate, Contactinfo, Remarks, paymentstatus, Archive)
+                                      VALUES (:planID, :invoiceID, :followUpDate, :contactInfo, :remarks, :paymentStatus, 'NO')";
+                        $stmtFollow = $pdo->prepare($sqlFollow);
+                        $stmtFollow->bindParam(':planID', $bestPlan['planID']);
+                        $stmtFollow->bindParam(':invoiceID', $invoiceID);
+                        $stmtFollow->bindParam(':followUpDate', $bestFollowUpDate);
+                        $stmtFollow->bindValue(':contactInfo', 'Email'); // Placeholder
+                        $stmtFollow->bindValue(':remarks', 'To Be Sent');
+                        $stmtFollow->bindValue(':paymentStatus', 'Not Paid');
+                        $stmtFollow->execute();
+
+                        $followUpMessage = "Successfully created a single automated follow-up reminder.";
+                    } else {
+                        $followUpMessage = "No suitable reminder plan was found for this invoice.";
+                    }
+                }
+            } catch (PDOException $e) {
+                // Do not roll back the whole transaction for this part, just set an error message
+                $errorMessage .= " Error scheduling follow-up reminders: " . $e->getMessage();
+            }
+
+            // Commit the transaction if all queries were successful
+            $pdo->commit();
+
+            $successMessage = "✅ Invoice added successfully with Reference No: $referenceNo. <br>" . $followUpMessage;
+
         } catch (PDOException $e) {
+            $pdo->rollBack();
             $errorMessage = "❌ Error: " . $e->getMessage();
         }
     }
@@ -71,8 +170,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/static/css/sidebar.css">
 </head>
-<body >
-       <div class="content" id="mainContent">
+<body>
+    <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
@@ -89,7 +188,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     <div class="container mx-auto p-6 max-w-2xl">
         <h1 class="text-3xl font-bold text-center mb-6">Create Invoice</h1>
 
-        <!-- Display success or error messages -->
         <?php if ($successMessage): ?>
             <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
                 <p><?php echo $successMessage; ?></p>
@@ -101,7 +199,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
             </div>
         <?php endif; ?>
 
-        <!-- Invoice Form -->
         <form method="POST" class="bg-white shadow-md rounded-lg p-6">
             <input type="hidden" name="insert" value="1">
             <div class="mb-4">
@@ -133,7 +230,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
             </div>
         </form>
 
-        <!-- Display Recent Invoices -->
         <div class="mt-8">
             <h2 class="text-2xl font-semibold mb-4">Recent Invoices</h2>
             <div class="overflow-x-auto">
@@ -181,7 +277,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
                 </table>
             </div>
         </div>
-    </div>    </div>
+    </div>
+    </div>
     <script src="<?php echo '../../static/js/filter.js';?>"></script>
 <script src="<?php echo '../../static/js/modal.js'; ?>"></script>
 </body>

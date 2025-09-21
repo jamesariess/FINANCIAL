@@ -11,7 +11,7 @@
         }
 
         .content {
-            margin-left: 220px; /* space for sidebar */
+            margin-left: 220px;
             padding: 20px;
         }
 
@@ -77,7 +77,7 @@
 
         textarea {
             min-height: 120px;
-            grid-column: span 2; /* make purpose stretch across full width */
+            grid-column: span 2;
         }
 
         input[type="submit"] {
@@ -96,10 +96,23 @@
             background-color: #4338ca;
         }
 
-        p {
-            color: #d9534f;
+        .message {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
             text-align: center;
-            margin-top: 10px;
+        }
+
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #34d399;
+        }
+
+        .error {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #ef4444;
         }
     </style>
 </head>
@@ -108,7 +121,7 @@
     <div class="content" id="mainContent">
         <div class="header">
             <div class="hamburger" id="hamburger">☰</div>
-            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+            <h1>Disbursement Dashboard <span class="system-title">| Finance</span></h1>
             <div class="theme-toggle-container">
                 <span class="theme-label">Dark Mode</span>
                 <label class="theme-switch">
@@ -119,38 +132,8 @@
         </div>
 
         <div class="form-container">
-            <?php
-            $conn = new mysqli("localhost","root", "", "financial");
-            if ($conn->connect_error) {
-                die("Connection failed: " . $conn->connect_error);
-            }
-
-            if ($_SERVER["REQUEST_METHOD"] == "POST") {
-                $requestTitle = $conn->real_escape_string($_POST['requestTitle']);
-                $allocationID = (int)$_POST['allocationID'];
-                $amount = (int)$_POST['amount'];
-                $requestedBy = $conn->real_escape_string($_POST['requestedBy']);
-                $due = $conn->real_escape_string($_POST['due']);
-                $purpose = $conn->real_escape_string($_POST['purpose']);
-
-                $sql = "INSERT INTO request (requestTitle, allocationID, Amount, Requested_by, Due, Purpose)
-                        VALUES ('$requestTitle', $allocationID, $amount, '$requestedBy', '$due', '$purpose')";
-
-                if ($conn->query($sql) === TRUE) {
-                    echo "<p>New record created successfully</p>";
-                } else {
-                    echo "<p>Error: " . $sql . "<br>" . $conn->error . "</p>";
-                }
-            }
-
-            $allocations = $conn->query("
-                SELECT ch.accountName AS title, c.allocationID
-                FROM costallocation c
-                JOIN chartofaccount ch ON c.accountID = ch.accountID
-            ");
-            ?>
-
-            <form method="POST">
+            <div id="message" class="message hidden"></div>
+            <form id="requestForm">
                 <div>
                     <label for="requestTitle">Request Title:</label>
                     <input type="text" id="requestTitle" name="requestTitle" maxlength="500" required>
@@ -160,15 +143,12 @@
                     <label for="allocationID">Title</label>
                     <select name="allocationID" id="allocationID" required>
                         <option value="">SELECT TITLE ON ALLOCATION ID</option>
-                        <?php while ($row = $allocations->fetch_assoc()) {
-                            echo "<option value='" . $row['allocationID'] . "'>" . $row['title'] . "</option>";
-                        } ?>
                     </select>
                 </div>
 
                 <div>
                     <label for="amount">Amount:</label>
-                    <input type="number" id="amount" name="amount" required>
+                    <input type="number" id="amount" name="amount" min="0" required>
                 </div>
 
                 <div>
@@ -188,10 +168,106 @@
 
                 <input type="submit" value="Submit Request">
             </form>
-            <?php $conn->close(); ?>
         </div>
     </div>
     <script src="<?php echo '../../static/js/filter.js';?>"></script>
     <script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+    <script>
+        const API_KEY = 'FinancialMalakas';
+        const API_URL = '../../api/request.php'; 
+        const DEPARTMENT = 'HR3'; 
+
+   
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAllocations();
+            document.getElementById('requestForm').addEventListener('submit', handleSubmit);
+        });
+
+        function fetchAllocations() {
+            fetch(`${API_URL}?action=get_allocations&dept=${encodeURIComponent(DEPARTMENT)}`, {
+                headers: {
+                    'X-API-KEY': API_KEY
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const select = document.getElementById('allocationID');
+                select.innerHTML = '<option value="">SELECT TITLE ON ALLOCATION ID</option>';
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.allocationID;
+                    option.textContent = `${item.title} (${item.department})`;
+                    select.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching allocations:', error);
+                showMessage('Failed to load allocations. Please try again.', 'error');
+            });
+        }
+
+        function handleSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = {
+                requestTitle: formData.get('requestTitle'),
+                allocationID: formData.get('allocationID'),
+                Amount: parseFloat(formData.get('amount')),
+                Requested_by: formData.get('requestedBy'),
+                Due: formData.get('due'),
+                Purpuse: formData.get('purpose')
+            };
+
+            
+            if (!data.requestTitle || !data.allocationID || !data.Amount || !data.Requested_by || !data.Due || !data.Purpuse) {
+                showMessage('Please fill in all required fields.', 'error');
+                return;
+            }
+            if (data.Amount <= 0) {
+                showMessage('Amount must be a positive number.', 'error');
+                return;
+            }
+
+            fetch(`${API_URL}?action=insert_request&dept=${encodeURIComponent(DEPARTMENT)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-API-KEY': API_KEY
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || `HTTP error! Status: ${response.status}`); });
+                }
+                return response.json();
+            })
+            .then(result => {
+                showMessage(result.message || 'Request Sent successfully', 'success');
+                form.reset();
+                fetchAllocations(); 
+            })
+            .catch(error => {
+                console.error('Error submitting request:', error);
+                showMessage(error.message || 'Failed to submit request. Please try again.', 'error');
+            });
+        }
+
+        function showMessage(message, type) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.classList.remove('hidden');
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+    </script>
 </body>
 </html>

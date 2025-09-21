@@ -72,10 +72,8 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
     return "uploads/receipt/" . $fileName;
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
- 
     if (isset($_POST['archive'])) {
         $custumerID = $_POST['archive_collectionID'];
 
@@ -99,11 +97,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = $_POST['update_remarks'];
 
         $sql = "UPDATE ar_collections SET 
-                    invoice_id = :custumerName,
-                    amount = :contactNumber,
-                    method = :email,
-                    remarks = :address
-                WHERE collection_id = :custumerID";
+                        invoice_id = :custumerName,
+                        amount = :contactNumber,
+                        method = :email,
+                        remarks = :address
+                    WHERE collection_id = :custumerID";
 
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':custumerName', $custumerName);
@@ -120,14 +118,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-  if (isset($_POST['create'])) {
+    if (isset($_POST['create'])) {
         $invoiceID = $_POST['Invoice'];
         $amount = $_POST['Amount'];
         $method = $_POST['paymethod'];
-        $remarks = $_POST['Remarks'];
+       
         $issuedBy = "Admin";
 
         try {
+            // Start a transaction
+            $pdo->beginTransaction();
+
             // Insert collection
             $sql = "INSERT INTO ar_collections (invoice_id, amount, method, remarks, payment_date, created_at) 
                     VALUES (:invoiceID, :amount, :method, :remarks, NOW(), NOW())";
@@ -138,16 +139,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':remarks', $remarks);
             $stmt->execute();
             $paymentID = $pdo->lastInsertId();
-           
-            $stmtInvoice = $pdo->prepare("SELECT reference_no FROM ar_invoices WHERE invoice_id  = :id");
-              $stmtInvoice->bindParam(':id', $invoiceID);
-             $stmtInvoice->execute();
-               $invoiceRef = $stmtInvoice->fetchColumn();
-     
-            $receiptNumber = "RCP-" . date("Y") . "-" . str_pad($paymentID, 5, "0", STR_PAD_LEFT);
+            
+            // Get invoice data
+            $stmtInvoice = $pdo->prepare("SELECT reference_no, amount, stat FROM ar_invoices WHERE invoice_id = :id");
+            $stmtInvoice->bindParam(':id', $invoiceID);
+            $stmtInvoice->execute();
+            $invoiceData = $stmtInvoice->fetch(PDO::FETCH_ASSOC);
 
+            if (!$invoiceData) {
+                throw new Exception("Invoice not found.");
+            }
+
+            $invoiceRef = $invoiceData['reference_no'];
+            $invoiceAmount = $invoiceData['amount'];
+
+            // Calculate total paid amount for the invoice, including the current payment
+            $stmtPaidAmount = $pdo->prepare("SELECT SUM(amount) FROM ar_collections WHERE invoice_id = :invoiceID");
+            $stmtPaidAmount->bindParam(':invoiceID', $invoiceID);
+            $stmtPaidAmount->execute();
+            $totalPaid = $stmtPaidAmount->fetchColumn();
+
+            // Determine payment status and remarks
+            $newInvoiceStat = 'Unpaid';
+            $newRemarks = 'Partial Payment';
+
+            if ($totalPaid >= $invoiceAmount) {
+                $newInvoiceStat = 'Paid';
+                $newRemarks = 'Full Payment';
+            } else {
+                $newInvoiceStat = 'Partially Paid';
+                $newRemarks = 'Partial Payment';
+            }
+            
+            // Update the ar_collections table with the new remarks
+            $sql = "UPDATE ar_collections SET remarks = :remarks WHERE collection_id = :paymentID";
+            $stmt = $pdo->prepare($sql);
+            $stmt->bindParam(':remarks', $newRemarks);
+            $stmt->bindParam(':paymentID', $paymentID);
+            $stmt->execute();
+
+            // Update ar_invoices stat column
+            $sqlInvoiceUpdate = "UPDATE ar_invoices SET stat = :stat WHERE invoice_id = :invoiceID";
+            $stmtInvoiceUpdate = $pdo->prepare($sqlInvoiceUpdate);
+            $stmtInvoiceUpdate->bindParam(':stat', $newInvoiceStat);
+            $stmtInvoiceUpdate->bindParam(':invoiceID', $invoiceID);
+            $stmtInvoiceUpdate->execute();
+            
+            // Update follow table's paymentstatus column
+            $sqlFollowUpdate = "UPDATE follow SET paymentstatus = :paymentstatus WHERE InvoiceID = :invoiceID AND Archive = 'NO'";
+            $stmtFollowUpdate = $pdo->prepare($sqlFollowUpdate);
+            $stmtFollowUpdate->bindParam(':paymentstatus', $newInvoiceStat);
+            $stmtFollowUpdate->bindParam(':invoiceID', $invoiceID);
+            $stmtFollowUpdate->execute();
+
+            // Generate and store receipt
+            $receiptNumber = "RCP-" . date("Y") . "-" . str_pad($paymentID, 5, "0", STR_PAD_LEFT);
             $sqlReceipt = "INSERT INTO receipt (paymentID, receiptNumber, receiptsdate, issueBy, receiptImage) 
-                           VALUES (:paymentID, :receiptNumber, NOW(), :issuedBy, '')";
+                            VALUES (:paymentID, :receiptNumber, NOW(), :issuedBy, '')";
             $stmtReceipt = $pdo->prepare($sqlReceipt);
             $stmtReceipt->bindParam(':paymentID', $paymentID);
             $stmtReceipt->bindParam(':receiptNumber', $receiptNumber);
@@ -162,13 +210,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':imagePath', $imagePath);
             $stmt->bindParam(':id', $receiptID);
             $stmt->execute();
+            
+            // Log to journal entries
+            $sqlEntries = "
+                INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+                VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+            ";
+            $stmtEntries = $pdo->prepare($sqlEntries);
+            $stmtEntries->bindValue(':description', 'Collection for Invoice #' . $invoiceRef);
+            $stmtEntries->bindValue(':ref', 'INV-' . $invoiceRef);
+            $stmtEntries->bindValue(':createdBy', $issuedBy);
+            $stmtEntries->execute();
+            $journalID = $pdo->lastInsertId();
+
+            // Log details to journal details
+            $detailSqlDebit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtDetailsDebit = $pdo->prepare($detailSqlDebit);
+            $stmtDetailsDebit->bindParam(':journalID', $journalID);
+            $stmtDetailsDebit->bindValue(':accountID', 1); 
+            $stmtDetailsDebit->bindParam(':debit', $amount);
+            $stmtDetailsDebit->bindValue(':credit', 0);
+            $stmtDetailsDebit->execute();
+
+            $detailSqlCredit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtDetailsCredit = $pdo->prepare($detailSqlCredit);
+            $stmtDetailsCredit->bindParam(':journalID', $journalID);
+            $stmtDetailsCredit->bindValue(':accountID', 3); 
+            $stmtDetailsCredit->bindValue(':debit', 0);
+            $stmtDetailsCredit->bindParam(':credit', $amount);
+            $stmtDetailsCredit->execute();
+
+            // If all queries were successful, commit the transaction
+            $pdo->commit();
 
             echo "✅ Collection & Receipt created successfully. <br><a href='{$imagePath}' target='_blank'>View Receipt</a>";
 
         } catch (PDOException $e) {
+            $pdo->rollBack();
+            die("❌ Error: " . $e->getMessage());
+        } catch (Exception $e) {
+            $pdo->rollBack();
             die("❌ Error: " . $e->getMessage());
         }
-    }
+    } 
 
 }
 
@@ -180,3 +270,4 @@ try {
     die("❌ Error fetching collections: " . $e->getMessage());
 }
 ?>
+

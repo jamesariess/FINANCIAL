@@ -23,30 +23,81 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } catch (PDOException $e) {
             echo "❌ Error: " . $e->getMessage();
         }
-    }
-    if(isset($_POST['update'])){
-        $paymentID = $_POST['paymentID'];
-        $remarks = $_POST['remarks'];
-   
+    }if (isset($_POST['update'])) {
+    $paymentID = $_POST['paymentID'];
+    $remarks = $_POST['remarks'];
 
-        if (empty($remarks)) {
-            echo "Don't Leave Empty.";
-            exit;
-        } else {
+    if (empty($remarks)) {
+        echo "Don't Leave Empty.";
+        exit;
+    } else {
+        try {
+      
+            $pdo->beginTransaction();
+
+       
             $sql = "UPDATE payment SET remarks = :remarks WHERE paymentID = :paymentID";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':remarks', $remarks);
             $stmt->bindParam(':paymentID', $paymentID);
-     
+            $stmt->execute();
 
-            try {
-                $stmt->execute();
-                echo "✅ Remarks updated successfully.";
-            } catch (PDOException $e) {
-                echo "❌ Error: " . $e->getMessage();
-            }
+
+            $sqlPaymentDetails = "SELECT amount FROM payment WHERE paymentID = :paymentID";
+            $stmtPaymentDetails = $pdo->prepare($sqlPaymentDetails);
+            $stmtPaymentDetails->bindParam(':paymentID', $paymentID);
+            $stmtPaymentDetails->execute();
+            $paymentDetails = $stmtPaymentDetails->fetch(PDO::FETCH_ASSOC);
+            $amount = $paymentDetails['amount'];
+
+   
+            $sqlEntries = "
+                INSERT INTO entries (date, description, referenceType, createdBy, Archive)
+                VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
+            ";
+            $stmtEntries = $pdo->prepare($sqlEntries);
+            $stmtEntries->bindValue(':description', 'Customer Payment Received');
+            $stmtEntries->bindValue(':ref', 'Payment-' . $paymentID);
+            $stmtEntries->bindValue(':createdBy', 'User'); 
+            $stmtEntries->execute();
+
+            $journalID = $pdo->lastInsertId();
+
+
+            $sqlDebit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtDebit = $pdo->prepare($sqlDebit);
+            $stmtDebit->bindParam(':journalID', $journalID);
+            $stmtDebit->bindValue(':accountID', 1); 
+            $stmtDebit->bindParam(':debit', $amount);
+            $stmtDebit->bindValue(':credit', 0);
+            $stmtDebit->execute();
+
+
+            $sqlCredit = "
+                INSERT INTO details (journalID, accountID, debit, credit, Archive)
+                VALUES (:journalID, :accountID, :debit, :credit, 'NO')
+            ";
+            $stmtCredit = $pdo->prepare($sqlCredit);
+            $stmtCredit->bindParam(':journalID', $journalID);
+            $stmtCredit->bindValue(':accountID', 3); 
+            $stmtCredit->bindValue(':debit', 0);
+            $stmtCredit->bindParam(':credit', $amount);
+            $stmtCredit->execute();
+
+           
+            $pdo->commit();
+
+            echo "✅ Remarks updated successfully and journal entries created.";
+        } catch (PDOException $e) {
+       
+            $pdo->rollBack();
+            echo "❌ Error: " . $e->getMessage();
         }
     }
+}
     
    
 }

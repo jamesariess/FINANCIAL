@@ -5,10 +5,7 @@
                 <i class="fas fa-bell text-indigo-500"></i>
                 Reminders | Follow Up
             </h2>
-            <h3 class="text-gray-600 mt-2">
-                New Invoice Need for Reminder:
-                <span id="newInvoiceCount" class="text-xl font-bold text-indigo-600 ml-2"><?= $data["request"] ?></span>
-            </h3>
+          
         </div>
         <div class="mt-4 md:mt-0">
             <button id="toggleFormBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl shadow-md flex items-center gap-2 transition">

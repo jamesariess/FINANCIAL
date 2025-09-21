@@ -1,4 +1,3 @@
-
 <script>
     const accounts = <?php echo json_encode($accounts); ?>;
 </script>
@@ -9,7 +8,6 @@
   <h1 class="text-2xl font-bold mb-4 text-indigo-700">Department Cost Allocation</h1>
 
   <form method="POST" id="allocationForm">
-    <!-- Department & Year -->
     <div class="grid grid-cols-2 gap-4 mb-6">
       <div>
         <label class="block text-gray-700 mb-1">Select Department</label>
@@ -63,19 +61,18 @@ let yearlyBudget = 0;
 let remainingBudget = 0;
 let rowIndex = 0;
 let excludedAccountsFromDB = [];
+let restrictedAccountsFromDB = [];
 
 function formatPeso(value) {
   return "₱" + Number(value).toLocaleString();
 }
 
-// Check if both department and year are selected
 function areDepartmentAndYearSelected() {
   const deptSelect = document.getElementById("department");
   const yearSelect = document.getElementById("year");
   return deptSelect.value && yearSelect.value;
 }
 
-// Update the state of account selects and add allocation button
 function updateFormControls() {
   const addBtn = document.getElementById("addAllocationBtn");
   const accountSelects = document.querySelectorAll('.account-select');
@@ -85,14 +82,14 @@ function updateFormControls() {
   accountSelects.forEach(select => {
     select.disabled = !isValid;
     if (!isValid) {
-      select.value = ""; // Reset account selection if conditions not met
+      select.value = "";
       const percentInput = select.closest('div').querySelector('.percentage');
       if (percentInput) {
         percentInput.value = "";
         recalculate(percentInput);
       }
     }
-  });
+  }); 
 }
 
 document.getElementById("department").addEventListener("change", function() {
@@ -133,7 +130,7 @@ document.getElementById("department").addEventListener("change", function() {
           opt.disabled = true;
           yearSelect.appendChild(opt);
         }
-        updateFormControls(); // Update controls after fetching years
+        updateFormControls();
       })
       .catch(error => {
         console.error('Error fetching years at ' + new Date().toLocaleString() + ':', error);
@@ -166,6 +163,7 @@ document.getElementById("year").addEventListener("change", function() {
         yearlyBudget = data.yearlyBudget;
         remainingBudget = data.remainingBudget;
         excludedAccountsFromDB = data.existing_accounts || [];
+        restrictedAccountsFromDB = data.restricted_accounts || [];
         updateBudgetInfo();
         repopulateAllSelects();
         updateFormControls();
@@ -176,6 +174,7 @@ document.getElementById("year").addEventListener("change", function() {
         yearlyBudget = 0;
         remainingBudget = 0;
         excludedAccountsFromDB = [];
+        restrictedAccountsFromDB = [];
         updateBudgetInfo();
         repopulateAllSelects();
         updateFormControls();
@@ -184,6 +183,7 @@ document.getElementById("year").addEventListener("change", function() {
     yearlyBudget = 0;
     remainingBudget = 0;
     excludedAccountsFromDB = [];
+    restrictedAccountsFromDB = [];
     updateBudgetInfo();
     repopulateAllSelects();
     updateFormControls();
@@ -199,13 +199,13 @@ function updateBudgetInfo() {
   } else {
     budgetInfo.classList.add("hidden");
   }
-  updateTotal(); // Recalculate totals based on new budget
-  updateFormControls(); // Ensure controls are updated
+  updateTotal();
+  updateFormControls();
 }
 
 function addRow() {
   if (!areDepartmentAndYearSelected()) {
-    return; // Prevent adding rows if conditions not met
+    return;
   }
   const container = document.getElementById("allocationRows");
   const row = document.createElement("div");
@@ -227,19 +227,52 @@ function addRow() {
   const newSelect = row.querySelector('.account-select');
   populateAccounts(newSelect);
   updateAccountSelections(newSelect);
-  updateFormControls(); // Ensure new select is enabled/disabled correctly
+  updateFormControls();
   rowIndex++;
+}
+
+function isAccountAllocatedToDept(accountID, deptname) {
+  if (!deptname) return Promise.resolve(false);
+  
+  return fetch(`../../crud/budget/allocation.php?check_allocation=true&accountID=${accountID}&deptname=${encodeURIComponent(deptname)}`)
+    .then(res => {
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`);
+      }
+      return res.json();
+    })
+    .then(data => data.isAllocated)
+    .catch(error => {
+      console.error('Error checking account allocation:', error);
+      return false;
+    });
 }
 
 function populateAccounts(selectElement) {
   selectElement.innerHTML = '<option value="">-- Select Account --</option>';
-  accounts.forEach(account => {
-    if ((account.accounType === 'Expenses' || account.accounType === 'Liabilities') && !excludedAccountsFromDB.includes(account.accountID)) {
-      const opt = document.createElement("option");
-      opt.value = account.accountID;
-      opt.text = account.accountName;
-      selectElement.appendChild(opt);
-    }
+  const deptSelect = document.getElementById("department");
+  const deptname = deptSelect.options[deptSelect.selectedIndex]?.text.split(' (')[0].trim();
+  
+  Promise.all(accounts.map(account => {
+    return isAccountAllocatedToDept(account.accountID, deptname).then(isAllocated => ({
+      account,
+      isAllocated
+    }));
+  })).then(results => {
+    results.forEach(({ account, isAllocated }) => {
+      const isRestricted = restrictedAccountsFromDB.includes(account.accountID);
+      const isExcluded = excludedAccountsFromDB.includes(account.accountID);
+      const isValidType = account.accounType === 'Expenses' || account.accounType === 'Assets';
+      
+      if (isValidType && !isExcluded && (!isRestricted || isAllocated)) {
+        const opt = document.createElement("option");
+        opt.value = account.accountID;
+        opt.text = account.accountName;
+        selectElement.appendChild(opt);
+      }
+    });
+  }).catch(error => {
+    console.error('Error populating accounts:', error);
   });
 }
 
@@ -254,7 +287,12 @@ function repopulateAllSelects() {
         select.value = currentValue;
       } else {
         select.value = "";
-        console.log('Previously selected account is now excluded due to existing allocation.');
+        console.log('Previously selected account is now excluded or restricted.');
+        const percentInput = select.closest('div').querySelector('.percentage');
+        if (percentInput) {
+          percentInput.value = "";
+          recalculate(percentInput);
+        }
       }
     }
   });
@@ -264,6 +302,8 @@ function repopulateAllSelects() {
 
 function updateAccountSelections(changedSelect = null) {
   const allSelects = document.querySelectorAll('.account-select');
+  const deptSelect = document.getElementById("department");
+  const deptname = deptSelect.options[deptSelect.selectedIndex]?.text.split(' (')[0].trim();
 
   allSelects.forEach(select => {
     if (select.options.length <= 1) {
@@ -271,7 +311,7 @@ function updateAccountSelections(changedSelect = null) {
     }
   });
 
-  allSelects.forEach(select => {
+  Promise.all(Array.from(allSelects).map(select => {
     const currentValue = select.value;
     const excludedValues = new Set();
 
@@ -281,22 +321,38 @@ function updateAccountSelections(changedSelect = null) {
       }
     });
 
-    Array.from(select.options).forEach(option => {
-      if (option.value && excludedValues.has(option.value)) {
-        option.disabled = true;
-      } else {
-        option.disabled = !areDepartmentAndYearSelected();
+    return Promise.all(Array.from(select.options).map(option => {
+      if (!option.value) return Promise.resolve({ option, disabled: !areDepartmentAndYearSelected() });
+      
+      const isRestricted = restrictedAccountsFromDB.includes(option.value);
+      const isExcluded = excludedAccountsFromDB.includes(option.value);
+      
+      if (isRestricted && !isExcluded) {
+        return isAccountAllocatedToDept(option.value, deptname).then(isAllocated => ({
+          option,
+          disabled: excludedValues.has(option.value) || isExcluded || (isRestricted && !isAllocated)
+        }));
+      }
+      return Promise.resolve({
+        option,
+        disabled: excludedValues.has(option.value) || isExcluded
+      });
+    })).then(options => {
+      options.forEach(({ option, disabled }) => {
+        option.disabled = disabled;
+      });
+
+      if (changedSelect === select && currentValue && Array.from(select.options).find(opt => opt.value === currentValue)?.disabled) {
+        select.value = "";
+        const percentInput = select.closest('div').querySelector('.percentage');
+        if (percentInput) {
+          recalculate(percentInput);
+        }
+        alert('This account is already selected or restricted. Please choose a different one.');
       }
     });
-
-    if (changedSelect === select && currentValue && Array.from(select.options).find(opt => opt.value === currentValue)?.disabled) {
-      select.value = "";
-      const percentInput = select.closest('div').querySelector('.percentage');
-      if (percentInput) {
-        recalculate(percentInput);
-      }
-      alert('This account is already selected in another row. Please choose a different one.');
-    }
+  })).then(() => {
+    updateFormControls();
   });
 }
 

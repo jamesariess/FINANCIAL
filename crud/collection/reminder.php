@@ -8,23 +8,11 @@ $data = [
     "totalAmountRelease" => 0,
     "rejectedRequest" => 0,
     "newRequest" => 0,
-    "request"=>0
+    
 ];
 
 
-$sql = "
-    SELECT COUNT(*) as total
-    FROM ar_invoices i
-    WHERE (i.Archive IS NULL OR UPPER(TRIM(i.Archive))='NO')
-      AND NOT EXISTS (
-          SELECT 1 
-          FROM follow f
-          WHERE f.InvoiceID = i.invoice_id
-            AND (f.Archive IS NULL OR UPPER(TRIM(f.Archive))='NO')
-      )
-";
-$stmt = $pdo->query($sql);
-$data["request"] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
 
 
 $sql = "SELECT COUNT(*) as total FROM follow WHERE Archive='NO'";
@@ -304,7 +292,7 @@ $sql = "SELECT i.reference_no,i.amount,i.due_date,f.paymentstatus,f.Contactinfo,
         WHERE paymentstatus='Not Paid'
           AND i.due_date < :now
           AND f.Archive='NO'";
-
+ 
 $stmt = $pdo->prepare($sql);
 $stmt->execute(['now' => $now]);
 $overdue = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -2,6 +2,26 @@
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
+// Handle check_allocation request
+if (isset($_GET['check_allocation']) && isset($_GET['accountID']) && isset($_GET['deptname'])) {
+    $accountID = $_GET['accountID'];
+    $deptname = trim($_GET['deptname']);
+    
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*) 
+        FROM costallocation c
+        JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
+        WHERE c.accountID = :accountID AND TRIM(d.Name) = :deptname
+    ");
+    $stmt->execute([':accountID' => $accountID, ':deptname' => $deptname]);
+    $count = $stmt->fetchColumn();
+    
+    header('Content-Type: application/json');
+    echo json_encode(['isAllocated' => $count > 0]);
+    exit;
+}
+
+// Handle deptname and year request
 if (isset($_GET['deptname']) && isset($_GET['year'])) {
     $deptname = trim($_GET['deptname']);
     $year = $_GET['year'];
@@ -15,11 +35,18 @@ if (isset($_GET['deptname']) && isset($_GET['year'])) {
     $stmt->execute([':deptname' => $deptname, ':year' => $year]);
     $deptData = $stmt->fetch(PDO::FETCH_ASSOC);
     
+    $response = [
+        'remainingBudget' => 0,
+        'yearlyBudget' => 0,
+        'usedBudget' => 0,
+        'existing_accounts' => [],
+        'restricted_accounts' => []
+    ];
+    
     if ($deptData) {
         $initialBudget = $deptData['Amount'];
         $usedBudgetFromDept = $deptData['UsedBudget'];
         
-        // Fetch total used budget from costallocation for this year
         $stmt = $pdo->prepare("
             SELECT COALESCE(SUM(Amount), 0) AS totalUsed 
             FROM costallocation 
@@ -34,38 +61,40 @@ if (isset($_GET['deptname']) && isset($_GET['year'])) {
         
         $remainingBudget = $initialBudget - $totalUsed;
         
-        $response = [
-            'remainingBudget' => $remainingBudget,
-            'yearlyBudget' => $initialBudget,
-            'usedBudget' => $totalUsed
-        ];
+        $response['remainingBudget'] = $remainingBudget;
+        $response['yearlyBudget'] = $initialBudget;
+        $response['usedBudget'] = $totalUsed;
         
-        // Fetch existing accountIDs for the year, across all departments
         $stmt = $pdo->prepare("
             SELECT DISTINCT accountID 
             FROM costallocation 
-            WHERE yearlybudget = :year
+            WHERE Deptbudget = (
+                SELECT Deptbudget 
+                FROM departmentbudget 
+                WHERE TRIM(Name) = :deptname AND DateValid = :year
+            ) AND yearlybudget = :year
         ");
-        $stmt->execute([':year' => $year]);
-        $existing = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $response['existing_accounts'] = $existing;
+        $stmt->execute([':deptname' => $deptname, ':year' => $year]);
+        $response['existing_accounts'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
         
-        header('Content-Type: application/json');
-        echo json_encode($response);
-        exit;
+        $stmt = $pdo->prepare("
+            SELECT DISTINCT c.accountID 
+            FROM costallocation c
+            JOIN departmentbudget d ON c.Deptbudget = d.Deptbudget
+            WHERE TRIM(d.Name) != :deptname
+        ");
+        $stmt->execute([':deptname' => $deptname]);
+        $response['restricted_accounts'] = $stmt->fetchAll(PDO::FETCH_COLUMN);
     } else {
         error_log("No budget data found for Deptname: $deptname, Year: $year");
-        header('Content-Type: application/json');
-        echo json_encode([
-            'remainingBudget' => 0,
-            'yearlyBudget' => 0,
-            'usedBudget' => 0,
-            'existing_accounts' => []
-        ]);
-        exit;
     }
+    
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
 }
 
+// Handle deptname request for years
 if (isset($_GET['deptname'])) {
     $deptname = trim($_GET['deptname']);
     error_log("Fetching years for Deptname: $deptname at " . date('Y-m-d H:i:s'));
@@ -94,7 +123,7 @@ if (isset($_GET['deptname'])) {
     exit;
 }
 
-// Fetch departments with unique names
+// Fetch departments
 $departments = $pdo->query("
     SELECT DISTINCT Name, MAX(Deptbudget) AS Deptbudget, MAX(Amount) AS Amount, COALESCE(MAX(UsedBudget), 0) AS UsedBudget, MAX(DateValid) AS DateValid
     FROM departmentbudget 
@@ -103,6 +132,7 @@ $departments = $pdo->query("
     HAVING (MAX(Amount) - COALESCE(MAX(UsedBudget), 0)) > 0
 ")->fetchAll(PDO::FETCH_ASSOC);
 
+// Handle POST request
 $remaining = 0;
 $errors = [];
 
@@ -126,7 +156,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
     
     if (empty($errors)) {
-        // Fetch department data for the specific year
         $stmt = $pdo->prepare("
             SELECT Amount, COALESCE(UsedBudget, 0) AS UsedBudget 
             FROM departmentbudget 
@@ -173,7 +202,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ]);
         }
         
-        // Update UsedBudget for the specific year
         $update = $pdo->prepare("
             UPDATE departmentbudget 
             SET UsedBudget = COALESCE(UsedBudget, 0) + :used 
@@ -185,19 +213,38 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             ':year' => $year
         ]);
         
-        echo  '<div class="mb-4 p-3 rounded-lg bg-green-100 border border-green-400 text-green-700 flex items-center">
+        echo '<div class="mb-4 p-3 rounded-lg bg-green-100 border border-green-400 text-green-700 flex items-center">
             <span class="mr-2">✅</span> Allocation saved successfully!
           </div>';
-    } 
+    }
 }
 
+// Fetch accounts
+$exclude = ['Cash On Hand', 'Cash On Bank', 'Account Receivable'];
+$placeholders = str_repeat('?,', count($exclude) - 1) . '?';
+$sql = "SELECT accountID, accountName, accounType 
+        FROM chartofaccount 
+        WHERE accountName NOT IN ($placeholders)";
+$stmt = $pdo->prepare($sql);
+$stmt->execute($exclude);
+$accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Display errors
+if (!empty($errors)) {
+    foreach ($errors as $err) {
+        echo '<div class="mb-2 p-3 rounded-lg bg-red-100 border border-red-400 text-red-700 flex items-center">
+                <span class="mr-2">⚠</span> ' . htmlspecialchars($err) . '
+              </div>';
+    }
+}
+
+// Fetch allocations for display
 $years = $pdo->query("
     SELECT DISTINCT yearlybudget 
     FROM costallocation 
     ORDER BY yearlybudget DESC
 ")->fetchAll(PDO::FETCH_COLUMN);
 $selectedYear = isset($_GET['year']) ? $_GET['year'] : ($years[0] ?? null);
-
 
 $allocationsByDept = [];
 if ($selectedYear) {
@@ -216,20 +263,4 @@ if ($selectedYear) {
         $allocationsByDept[$row['deptName']][] = $row;
     }
 }
-
-$stmt = $pdo->query("
-    SELECT accountID, accountName, accounType 
-    FROM chartofaccount
-");
-$accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
-if (empty($errors)) {
-  
-} else {
-    foreach ($errors as $err) {
-        echo '<div class="mb-2 p-3 rounded-lg bg-red-100 border border-red-400 text-red-700 flex items-center">
-                <span class="mr-2">⚠</span> ' . htmlspecialchars($err) . '
-              </div>';
-    }
-}
-
 ?>

@@ -3,8 +3,8 @@
     <table id="employeesTable">
         <thead>
             <tr>
-                <th>Vendor ID</th>
-                <th>Vendor Name</th>
+                <th>Company ID</th>
+                <th>Company Name</th>
                 <th>Contact Info</th>
                 <th>Address</th>
                 <th>Email</th>

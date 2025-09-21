@@ -1,4 +1,3 @@
-
 <div class="container w-full">
     <div id="notificationContainer" class="mx-auto mt-4"></div>
 
@@ -24,7 +23,7 @@
                 <th class="px-6 py-3">Principal</th>
                 <th class="px-6 py-3">Outstanding</th>
                 <th class="px-6 py-3">Interest Rate</th>
-                <th class="px-6 py-3">Monthly Due</th>
+                
                 <th class="px-6 py-3">Due Date</th>
                 <th class="px-6 py-3">Remarks</th>
                 <th class="px-6 py-3">Status</th>
@@ -37,7 +36,8 @@
             if (empty($loans)) {
                 echo '<tr><td colspan="11" class="px-6 py-4 text-center text-gray-500">No active loans available.</td></tr>';
             } else {
-                foreach ($loans as $loan): ?>
+                foreach ($loans as $loan): 
+                ?>
                 <tr>
                     <td class="px-6 py-4 font-semibold"><?php echo htmlspecialchars($loan['id']); ?></td>
                     <td class="px-6 py-4"><?php echo htmlspecialchars($loan['lender']); ?></td>
@@ -45,7 +45,7 @@
                     <td class="px-6 py-4"><?php echo $loan['principal']; ?></td>
                     <td class="px-6 py-4"><?php echo $loan['outstanding']; ?></td>
                     <td class="px-6 py-4"><?php echo $loan['rate']; ?></td>
-                    <td class="px-6 py-4"><?php echo $loan['monthlyDue']; ?></td>
+                    
                     <td class="px-6 py-4"><?php echo $loan['dueDate']; ?></td>
                     <td class="px-6 py-4"><?php echo htmlspecialchars($loan['remarks']); ?></td>
                     <td class="px-6 py-4">
@@ -150,8 +150,8 @@
                 </div>
             </div>
             <div>
-                <label class="block text-sm text-gray-600 mb-1">Payment Amount</label>
-                <input type="number" id="amount" name="amount" step="0.01" class="w-full border rounded p-2" required>
+                <label class="block text-sm text-gray-600 mb-1">Payment Amount (Monthly Due)</label>
+                <input type="number" id="amount" name="amount" step="0.01" class="w-full border rounded p-2" placeholder="Monthly due amount" required>
             </div>
             <div>
                 <label class="block text-sm text-gray-600 mb-1">Payment Method</label>
@@ -274,7 +274,7 @@
         </form>
     </div>
 </div>
- 
+
 <script>
     const modal = document.getElementById('paymentModal');
     const form = document.getElementById('paymentForm');
@@ -285,6 +285,8 @@
     const notificationContainer = document.getElementById('notificationContainer');
     const approvalModal = document.getElementById('approvalModal');
     const approvalForm = document.getElementById('approvalForm');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const cancelBtn = document.getElementById('cancelBtn');
 
     function showNotification(message, isSuccess) {
         const bgClass = isSuccess ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700';
@@ -333,12 +335,12 @@
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `action=reject_loan&loanId=${loanId}`
                 });
-                const text = await response.text(); // Get raw response for debugging
-                console.log('Reject response:', text); // Log raw response
+                const text = await response.text();
+                console.log('Reject response:', text);
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
-                const result = JSON.parse(text); // Parse JSON
+                const result = JSON.parse(text);
                 showNotification(result.message, result.success);
                 if (result.success) {
                     setTimeout(() => location.reload(), 2000);
@@ -358,12 +360,12 @@
                 method: 'POST',
                 body: formData
             });
-            const text = await response.text(); // Get raw response for debugging
-            console.log('Approve response:', text); // Log raw response
+            const text = await response.text();
+            console.log('Approve response:', text);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const result = JSON.parse(text); // Parse JSON
+            const result = JSON.parse(text);
             showNotification(result.message, result.success);
             if (result.success) {
                 closeApprovalModal();
@@ -375,10 +377,36 @@
         }
     });
 
-    function openPaymentForm(loanId, balance) {
-        document.getElementById('loanId').value = loanId;
-        document.getElementById('loanIdDisplay').value = 'LN-' + loanId;
-        document.getElementById('balanceDisplay').value = "₱" + balance.toLocaleString();
+    async function openPaymentForm(loanId, balance) {
+        try {
+            const response = await fetch('../../crud/ap/loan2.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `action=get_loan_details&loanId=${loanId}`
+            });
+            const text = await response.text();
+            console.log('Loan details response:', text);
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            const result = JSON.parse(text);
+
+            if (result.success) {
+                const loanData = result.data;
+                document.getElementById('loanId').value = loanData.loanId;
+                document.getElementById('loanIdDisplay').value = 'LN-' + loanData.loanId;
+                document.getElementById('balanceDisplay').value = "₱" + parseFloat(loanData.outstanding).toLocaleString();
+                document.getElementById('amount').value = parseFloat(loanData.amountPerMonth).toFixed(2);
+            } else {
+                showNotification(result.message, false);
+                return;
+            }
+        } catch (error) {
+            console.error('Error fetching loan details:', error);
+            showNotification('Error fetching loan details: ' + error.message, false);
+            return;
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         switchTab('payment');
@@ -413,12 +441,12 @@
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: `action=get_history&loanId=${loanId}`
             });
-            const text = await response.text(); // Get raw response for debugging
-            console.log('History response:', text); // Log raw response
+            const text = await response.text();
+            console.log('History response:', text);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const result = JSON.parse(text); // Parse JSON
+            const result = JSON.parse(text);
             historyBody.innerHTML = '';
             if (!result.success) {
                 showNotification(result.message, false);
@@ -454,12 +482,12 @@
                 method: 'POST',
                 body: formData
             });
-            const text = await response.text(); // Get raw response for debugging
-            console.log('Payment response:', text); // Log raw response
+            const text = await response.text();
+            console.log('Payment response:', text);
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            const result = JSON.parse(text); // Parse JSON
+            const result = JSON.parse(text);
             showNotification(result.message, result.success);
             if (result.success) {
                 closePaymentForm();
@@ -491,4 +519,4 @@
         }
     });
 </script>
-<?php ob_end_flush(); ?>
+

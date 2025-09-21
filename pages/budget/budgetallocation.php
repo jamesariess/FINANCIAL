@@ -9,7 +9,7 @@
     
 </head>
 
-<body> 
+<body>  
 <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>

@@ -3,6 +3,7 @@ ob_start();
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
+// Function to get the payment history for a loan
 function getPaymentHistory($pdo, $loanId) {
     $sql = "
         SELECT payment_date, amount, method, remarks
@@ -16,9 +17,10 @@ function getPaymentHistory($pdo, $loanId) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+// Function to get the current outstanding principal balance for a loan
 function getOutstandingForLoan($pdo, $loanId) {
     $sql = "
-        SELECT LoanAmount, interestRate, paidAmount
+        SELECT LoanAmount, paidAmount, interestRate
         FROM loan
         WHERE LoanID = :loanId 
     ";
@@ -28,10 +30,13 @@ function getOutstandingForLoan($pdo, $loanId) {
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($row) {
         $principal = $row['LoanAmount'];
-        $rate = $row['interestRate'];
+        $interestRate = $row['interestRate'];
+        $totalInterest = $principal * ($interestRate / 100);
+        $totalRepayable = $principal + $totalInterest;
         $paid = $row['paidAmount'] ?? 0;
-        $interest = $principal * ($rate / 100);
-        return ($principal + $interest) - $paid;
+        
+        // Return the remaining balance including interest
+        return $totalRepayable - $paid;
     }
     return 0;
 }
@@ -40,7 +45,6 @@ header('Content-Type: application/json');
 ob_end_clean();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Ensure no unexpected output
     if (isset($_POST['action'])) {
         if ($_POST['action'] === 'submit_payment') {
             try {
@@ -71,6 +75,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'remarks' => $remarks
                 ]);
 
+                // Update paidAmount in loan
+                $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :amount WHERE LoanID = :loanId";
+                $updateStmt = $pdo->prepare($updateSql);
+                $updateStmt->execute([
+                    'amount' => $amount,
+                    'loanId' => $loanId
+                ]);
+
                 // Fetch LoanTitle and startDate from loan
                 $getSql = "SELECT LoanTitle, startDate FROM loan WHERE LoanID = :loanId";
                 $getStmt = $pdo->prepare($getSql);
@@ -84,7 +96,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $loanTitle = $loanData['LoanTitle'];
                 $startDate = $loanData['startDate'];
 
-                
                 $Loantitle = 11;
                 $yearlybudget = date('Y');
                 $select = "SELECT allocationID FROM costallocation WHERE accountID = :accountID AND yearlybudget = :yearlybudget";
@@ -95,7 +106,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ]);
                 $allocData = $allocStmt->fetch(PDO::FETCH_ASSOC);
                 $allocationID = $allocData ? $allocData['allocationID'] : null;
-
 
                 // Insert into request table
                 $requestSql = "INSERT INTO request (requestTitle, amount, Requested_by, Due, LoanID, Purpuse, allocationID) 
@@ -152,20 +162,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (move_uploaded_file($fileTmpPath, $uploadPath)) {
                         $pdo->beginTransaction();
 
-                        // 1. Update Loan Remarks
-                        $sql = "UPDATE loan SET Remarks = 'Approved', pdf_filename = :pdf_filename WHERE LoanID = :loanId AND Archive = 'NO'";
+                        $sql = "UPDATE loan SET Remarks = 'Approved', pdf_filename = :pdf_filename, paidAmount = 0 WHERE LoanID = :loanId AND Archive = 'NO'";
                         $stmt = $pdo->prepare($sql);
                         $stmt->execute(['pdf_filename' => $relativePath, 'loanId' => $loanId]);
 
-                        // 2. Get Loan Data (amount + interest)
-                        $loanSql = "SELECT LoanAmount, interestRate, LoanTitle, startDate,paymentMehod FROM loan WHERE LoanID = :loanId";
+                        $loanSql = "SELECT LoanAmount, interestRate, LoanTitle, startDate, paymentMethod FROM loan WHERE LoanID = :loanId";
                         $loanStmt = $pdo->prepare($loanSql);
                         $loanStmt->execute(['loanId' => $loanId]);
                         $loanData = $loanStmt->fetch(PDO::FETCH_ASSOC);
-
-                    
- 
-
 
                         $loanAmount = (float)$loanData['LoanAmount'];
                         $interestRate = (float)$loanData['interestRate'];
@@ -173,25 +177,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $totalAmount = $loanAmount + $interest;
                         $loanTitle = $loanData['LoanTitle'];
                         $startDate = $loanData['startDate'];
-                        $paymentmethod = $loanData['paymentMehod'];
-                          
-                        if($paymentmethod === 'Cash'){
+                        $paymentmethod = $loanData['paymentMethod'];
+
+                        if ($paymentmethod === 'Cash') {
                             $accountID = 1;
-                        } else{
+                        } else {
                             $accountID = 2;
                         }
 
-                        // 3. Insert into entries (journal header)
+                        // Insert into entries (journal header)
                         $entrySql = "INSERT INTO entries (date, description, referenceType, createdBy, Archive) 
-                                     VALUES (NOW(), :desc, 'Loan Approval', 'system', 'NO')";
+                                    VALUES (NOW(), :desc, 'Loan Approval', 'system', 'NO')";
                         $entryStmt = $pdo->prepare($entrySql);
                         $entryStmt->execute(['desc' => 'Loan Approved: ' . $loanTitle]);
                         $journalID = $pdo->lastInsertId();
 
-                        // 4. Insert into details (journal lines)
-                        // Debit Cash (1)
+                        // Insert into details (journal lines)
                         $detailSql = "INSERT INTO details (journalID, accountID, debit, credit, Archive) 
-                                      VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
+                                     VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
                         $detailStmt = $pdo->prepare($detailSql);
 
                         // Cash ↑
@@ -245,6 +248,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['success' => false, 'message' => 'Error rejecting loan: ' . $e->getMessage()]);
                 exit;
             }
+        } elseif ($_POST['action'] === 'get_loan_details') {
+            try {
+                $loanId = (int)$_POST['loanId'];
+                $sql = "
+                    SELECT LoanID, LoanAmount, paidAmount, AmountperMonth, interestRate
+                    FROM loan
+                    WHERE LoanID = :loanId AND Archive = 'NO'
+                ";
+                $stmt = $pdo->prepare($sql);
+                $stmt->bindParam(':loanId', $loanId, PDO::PARAM_INT);
+                $stmt->execute();
+                $loanData = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($loanData) {
+                    $principal = $loanData['LoanAmount'];
+                    $interestRate = $loanData['interestRate'];
+                    $totalInterest = $principal * ($interestRate / 100);
+                    $totalRepayable = $principal + $totalInterest;
+                    $paid = $loanData['paidAmount'] ?? 0;
+                    $outstanding = $totalRepayable - $paid;
+                    echo json_encode([
+                        'success' => true,
+                        'message' => 'Loan details retrieved successfully',
+                        'data' => [
+                            'loanId' => $loanData['LoanID'],
+                            'outstanding' => $outstanding,
+                            'amountPerMonth' => $loanData['AmountperMonth'] ?? 0
+                        ]
+                    ]);
+                } else {
+                    echo json_encode(['success' => false, 'message' => 'Loan not found']);
+                }
+                exit;
+            } catch (Exception $e) {
+                echo json_encode(['success' => false, 'message' => 'Error fetching loan details: ' . $e->getMessage()]);
+                exit;
+            }
         } else {
             echo json_encode(['success' => false, 'message' => 'Invalid action']);
             exit;
@@ -255,3 +295,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+<?php ob_end_flush(); ?>

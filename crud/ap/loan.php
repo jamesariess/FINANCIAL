@@ -3,6 +3,7 @@ ob_start();
 include_once __DIR__ . '/../../utility/connection.php';
 require_once __DIR__ . '/../../fpdf186/fpdf.php';
 date_default_timezone_set('Asia/Manila');
+
 function getActiveLoans($pdo) {
     $sql = "
         SELECT 
@@ -29,9 +30,14 @@ function getActiveLoans($pdo) {
         $principal = $row['LoanAmount'];
         $rate = $row['interestRate'];
         $paid = $row['paidAmount'] ?? 0;
-        $interest = $principal * ($rate / 100); 
-        $outstanding = ($principal + $interest) - $paid;
-        $monthlyDue = $outstanding / 12; 
+        
+        // --- CORRECTED CALCULATION ---
+        // Outstanding is the remaining principal balance.
+        $outstandingPrincipal = $principal - $paid; 
+        
+        // Monthly payment is for an entire term, but for display, we can show a general monthly due.
+        // It's better to show remaining principal outstanding.
+        $monthlyDue = ($outstandingPrincipal > 0) ? ($outstandingPrincipal + ($outstandingPrincipal * $rate / 100)) / 12 : 0;
         $dueDate = date('Y-m-d', strtotime($row['EndDate'])); 
 
         $loans[] = [
@@ -40,7 +46,7 @@ function getActiveLoans($pdo) {
             'lender' => $row['lender'],
             'title' => $row['LoanTitle'],
             'principal' => '₱' . number_format($principal),
-            'outstanding' => '₱' . number_format($outstanding),
+            'outstanding' => '₱' . number_format($outstandingPrincipal, 2), // Show the actual remaining principal
             'rate' => $rate . '%',
             'monthlyDue' => '₱' . number_format($monthlyDue, 0),
             'dueDate' => $dueDate,
@@ -62,13 +68,14 @@ function getTotalActiveLoans($pdo) {
 
 function getTotalOutstanding($pdo) {
     $sql = "
-        SELECT SUM(l.LoanAmount + (l.LoanAmount * l.interestRate / 100) - COALESCE(l.paidAmount, 0)) as total
+        SELECT SUM(l.LoanAmount - COALESCE(l.paidAmount, 0)) as total
         FROM loan l
-        WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND 	Remarks = 'Approved'
+        WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND Remarks = 'Approved'
     ";
     $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $row = $stmt->fetch();
+    // Return the sum of the remaining principal balances
     return '₱' . number_format($row['total'] ?? 0);
 }
 
