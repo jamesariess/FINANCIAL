@@ -4,7 +4,7 @@ define('API_KEY', 'FinancialMalakas');
 define('LOG_FILE', __DIR__ . '/api_access.log');         
 define('RATE_LIMIT', 100);                               
 define('RATE_WINDOW', 60);                               
-define('ALLOWED_ORIGIN', 'https://finance.slatefreight-ph.com'); 
+
 
 
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
