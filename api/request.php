@@ -4,13 +4,8 @@ define('API_KEY', 'FinancialMalakas');
 define('LOG_FILE', __DIR__ . '/api_access.log');         
 define('RATE_LIMIT', 100);                               
 define('RATE_WINDOW', 60);                               
+define('ALLOWED_ORIGIN', '*'); 
 
-
-
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, $allowedOrigins)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
 
 $dbHost = 'localhost';
 $dbName = 'fina_financial';
@@ -21,18 +16,9 @@ $dbPass = '7rO-@mwup07Io^g0';
 // $dbName = 'financial';
 // $dbUser = 'root';
 // $dbPass = ''; 
-$allowedOrigins = [
-    'https://finance.slatefreight-ph.com',
-    'http://localhost',
-    'http://127.0.0.1'
-];
-
-$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-if (in_array($origin, $allowedOrigins)) {
-    header("Access-Control-Allow-Origin: $origin");
-}
 
 header('Content-Type: application/json; charset=UTF-8');
+header('Access-Control-Allow-Origin: *' );
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-API-KEY');
 header('X-Content-Type-Options: nosniff');
