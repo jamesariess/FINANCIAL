@@ -7,15 +7,15 @@ define('RATE_WINDOW', 60);
 define('ALLOWED_ORIGIN', 'https://finance.slatefreight-ph.com'); 
 
 
-// $dbHost = 'localhost';
-// $dbName = 'fina_financial';
-// $dbUser = 'fina_finances';
-// $dbPass = '7rO-@mwup07Io^g0'; 
+$dbHost = 'localhost';
+$dbName = 'fina_financial';
+$dbUser = 'fina_finances';
+$dbPass = '7rO-@mwup07Io^g0'; 
 
- $dbHost = 'localhost';
-$dbName = 'financial';
-$dbUser = 'root';
-$dbPass = ''; 
+//  $dbHost = 'localhost';
+// $dbName = 'financial';
+// $dbUser = 'root';
+// $dbPass = ''; 
 
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: ' . ALLOWED_ORIGIN);

@@ -208,7 +208,7 @@
                 renderCostAllocationTable(filteredGraphBudgets());
                 return;
             }
-
+ 
             const totalBudget = filtered.reduce((sum, item) => sum + item.amount, 0);
             const totalSpent = filtered.reduce((sum, item) => sum + item.usedBudget, 0);
             const remaining = Math.max(0, totalBudget - totalSpent);

@@ -28,7 +28,7 @@ $data = [
     "totalAmountRelease" => 0,
     "rejectedRequest" => 0,
     "newRequest" => 0
-];
+]; 
 
 // Existing queries for dashboard data
 $sql = "SELECT COUNT(*) as total FROM request WHERE Archive = 'NO'";

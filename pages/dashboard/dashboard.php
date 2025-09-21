@@ -1,3 +1,180 @@
+<?php
+include_once __DIR__ . '/../../utility/connection.php';
+date_default_timezone_set('Asia/Manila');
+
+
+
+ 
+
+ 
+function formatShortNumber($n) {
+    if ($n < 1000) {
+        return number_format($n);
+    } else if ($n < 1000000) {
+        return number_format($n / 1000, 1) . 'K';
+    } else if ($n < 1000000000) {
+        return number_format($n / 1000000, 1) . 'M';
+    } else if ($n < 1000000000000) {
+        return number_format($n / 1000000000, 1) . 'B';
+    } else if ($n < 1000000000000000) {
+        return number_format($n / 1000000000000, 1) . 'T';
+    } else {
+        return number_format($n / 1000000000000000, 1) . 'Q';
+    }
+}
+
+function getTotalDisburseAmount($pdo) {
+    $sql = "SELECT IFNULL(SUM(ApprovedAmount), 0) as total FROM request WHERE status IN ('Paid') AND Archive = 'NO'";
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total = $result['total'];
+        return '₱' . formatShortNumber($total);
+    } catch (PDOException $e) {
+        error_log("Error in getTotalDisburseAmount: " . $e->getMessage());
+        return '₱0'; 
+    }
+}
+
+
+function getTotalOutstanding($pdo) {
+    $sql = "
+        SELECT l.LoanAmount, COALESCE(l.paidAmount, 0) as paidAmount, l.interestRate
+        FROM loan l
+        WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND Remarks = 'Approved'
+    ";
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $totalOutstanding = 0;
+        while ($row = $stmt->fetch()) {
+            $principal = $row['LoanAmount'];
+            $interestRate = $row['interestRate'];
+            $paid = $row['paidAmount'];
+            $totalInterest = $principal * ($interestRate / 100);
+            $totalRepayable = $principal + $totalInterest;
+            $outstanding = $totalRepayable - $paid;
+            $totalOutstanding += $outstanding;
+        }
+        return '₱' . formatShortNumber($totalOutstanding);
+    } catch (PDOException $e) {
+        error_log("Error in getTotalOutstanding: " . $e->getMessage());
+        return '₱0';
+    }
+}
+
+
+function getTotalPayment($pdo) {
+    $sql = "SELECT SUM(amount) AS total_amount FROM ar_collections WHERE Archive = 'NO'";
+    
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total = $result['total_amount'];
+        return '₱' . formatShortNumber($total);
+    } catch (PDOException $e) {
+        error_log("Error in getTotalPayment: " . $e->getMessage());
+        return '₱0';
+    }
+}
+
+function getFollowUp($pdo){
+    $sql = "SELECT COUNT(*) as total FROM follow WHERE paymentstatus='Not Paid' AND Archive='NO'";
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute();
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $data['total'];
+    } catch (PDOException $e) {
+        error_log("Error in getFollowUp: " . $e->getMessage());
+        return 0;
+    }
+}
+
+function getUtilization($pdo) {
+    $sql = "SELECT SUM(Amount) as total_budget, SUM(UsedBudget) as total_used FROM departmentbudget WHERE DateValid = :year AND status = 'Proceed'";
+    $params = [':year' => date('Y')];
+    try {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        $totalBudget = (int)$data['total_budget'];
+        $totalUsed = (int)$data['total_used'];
+        $utilization = 0;
+        if ($totalBudget > 0) {
+            $utilization = min(100, round(($totalUsed / $totalBudget) * 100));
+        }
+        return $utilization . '%';
+    } catch (PDOException $e) {
+        error_log("Error in getUtilization: " . $e->getMessage());
+        return '0%';
+    }
+}
+
+function getTotalEntires($pdo) {
+    try {
+        $sql = "SELECT COUNT(*) as total FROM details WHERE Archive = 'NO'";
+        $stmt = $pdo->query($sql);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    } catch (PDOException $e) {
+        error_log("Error in getTotalEntires: " . $e->getMessage());
+        return 0; 
+    }
+}
+
+
+try {
+    $chartDataStmt = $pdo->query("
+        SELECT p.year, p.month, 
+               SUM(CASE WHEN LOWER(c.accounType) IN ('revenue','income') THEN jd.credit - jd.debit ELSE 0 END) as total_revenue,
+               SUM(CASE WHEN LOWER(c.accounType) IN ('expense','expenses') THEN jd.debit - jd.credit ELSE 0 END) as total_expenses
+        FROM periods p
+        LEFT JOIN entries e ON p.period_id = e.periodID
+        LEFT JOIN details jd ON e.journalID = jd.journalID
+        LEFT JOIN chartofaccount c ON jd.accountID = c.accountID
+        GROUP BY p.year, p.month
+        ORDER BY p.year, p.month
+    ");
+    $chartData = $chartDataStmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    $chartData = [];
+    error_log("Error fetching chart data: " . $e->getMessage());
+}
+
+$chartLabels = [];
+$chartRevenue = [];
+$chartExpenses = [];
+foreach ($chartData as $row) {
+    $chartLabels[] = date('M Y', mktime(0, 0, 0, $row['month'], 1, $row['year']));
+    $chartRevenue[] = (float)$row['total_revenue'];
+    $chartExpenses[] = (float)$row['total_expenses'];
+}
+
+
+try {
+      $sql = "SELECT r.* ,
+     ch.accountName,
+    d.Name
+    FROM request r
+JOIN costallocation c on r.allocationID = c.allocationID
+JOIN chartofaccount ch ON c.accountID = ch.accountID 
+JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
+    
+     WHERE r.Archive = 'NO' 
+     LIMIT 6";
+    $stmt = $pdo->query($sql);
+    $disbursementReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "❌ Error fetching plans: " . $e->getMessage();
+}
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,20 +196,21 @@
 <body class="bg-slate-950 flex min-h-screen text-slate-200">
 
 <?php include __DIR__ . "/../sidebar.html"; ?>
+<div class="overlay" id="overlay"></div>
 <div class="content" id="mainContent">
-    <div class="header">
-        <div class="hamburger" id="hamburger">☰</div>
-        <div>
-            <h1>Approver Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+        <div class="header">
+            <div class="hamburger" id="hamburger">☰</div>
+            <div>
+                <h1>Approver Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+            </div>
+            <div class="theme-toggle-container">
+                <span class="theme-label">Dark Mode</span>
+                <label class="theme-switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
         </div>
-        <div class="theme-toggle-container">
-            <span class="theme-label">Dark Mode</span>
-            <label class="theme-switch">
-                <input type="checkbox" id="themeToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
  
         <div class="w-full max-w-7xl space-y-8">
             <header>
@@ -51,7 +229,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down icon"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$45,231</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getTotalDisburseAmount($pdo); ?></p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -62,7 +240,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text icon"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="21" y2="21"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$12,450</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getTotalOutstanding($pdo); ?></p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -73,7 +251,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-receipt icon"><path d="M4 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v20l-2-2-2 2-2-2-2 2-2-2-2 2-2-2-2 2-2-2-2 2V2z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$23,760</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getTotalPayment($pdo);?></p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -84,8 +262,8 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coins icon"><path d="M9.8 19.95 2.15 15.8a1 1 0 0 1 0-1.6L9.8 10.05a1 1 0 0 1 1.4.15L18.4 14.8a1 1 0 0 1 0 1.6l-7.25 4.05a1 1 0 0 1-1.4-.15z"/><path d="m15 10-8.6 4.86a1 1 0 0 0 0 1.76L15 21l8.6-4.86a1 1 0 0 0 0-1.76L15 10z"/><path d="m7 7 8.6 4.86a1 1 0 0 0 0 1.76L7 18l-8.6-4.86a1 1 0 0 0 0-1.76L7 7z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">$50,112</p>
-                        <p class="text-xs text-slate-500">View Data</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getFollowUp($pdo);?></p>
+                        <p class="text-xs text-slate-500">Need To follow Up</p>
                     </div>
                     
                     <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 transition-all duration-300 hover:scale-105 hover:border-purple-500">
@@ -95,7 +273,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart icon"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10Z"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">85%</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getUtilization($pdo);?></p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -106,7 +284,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-book-text icon"><path d="M2 11h20M12 2v20M2 15h20M2 19h20M2 7h20"/><path d="M2 3v18M22 3v18"/></svg>
                             </div>
                         </div>
-                        <p class="text-3xl font-bold text-var(--text-light) mb-1">1.2M Entries</p>
+                        <p class="text-3xl font-bold text-var(--text-light) mb-1"><?php echo getTotalEntires($pdo);?> Entries</p>
                         <p class="text-xs text-slate-500">View Data</p>
                     </div>
 
@@ -117,47 +295,38 @@
                 <div class="lg:col-span-2">
                     <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80">
                         <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Financial Overview</h2>
-                        <canvas id="financialChart" class="w-full h-full"></canvas>
+                      
+                    
+                            <canvas id="financialChart" class="w-full h-full"></canvas>
+                          
+
                     </div>
                 </div>
 
                 <div>
-                    <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80 overflow-y-auto">
-                        <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Recent Transactions</h2>
+                    <div class="bg-slate-900 p-2 rounded-xl shadow-lg border border-slate-800 h-80 overflow-y-auto">
+                        <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">New Request Transactions</h2>
                         <table class="w-full text-sm text-left">
-                            <thead class="text-xs uppercase bg-slate-800">
+                            <thead class="text-xs uppercase ">
                                 <tr>
-                                    <th scope="col" class="py-3 px-4">Date</th>
-                                    <th scope="col" class="py-3 px-4">Description</th>
+                                    <th scope="col" class="py-3 px-4">Title</th>
+                                    <th scope="col" class="py-3 px-4">Account Name</th>
                                     <th scope="col" class="py-3 px-4 text-right">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="border-b border-slate-800">
-                                    <td class="py-4 px-4 font-medium whitespace-nowrap">2024-09-01</td>
-                                    <td class="py-4 px-4">Office Supplies</td>
-                                    <td class="py-4 px-4 text-right text-red-400">-$250.00</td>
-                                </tr>
-                                <tr class="border-b border-slate-800">
-                                    <td class="py-4 px-4 font-medium whitespace-nowrap">2024-08-30</td>
-                                    <td class="py-4 px-4">Client Payment (Project Alpha)</td>
-                                    <td class="py-4 px-4 text-right text-green-400">+$1,500.00</td>
-                                </tr>
-                                <tr class="border-b border-slate-800">
-                                    <td class="py-4 px-4 font-medium whitespace-nowrap">2024-08-28</td>
-                                    <td class="py-4 px-4">Software Subscription</td>
-                                    <td class="py-4 px-4 text-right text-red-400">-$89.99</td>
-                                </tr>
-                                <tr class="border-b border-slate-800">
-                                    <td class="py-4 px-4 font-medium whitespace-nowrap">2024-08-25</td>
-                                    <td class="py-4 px-4">Consulting Fee</td>
-                                    <td class="py-4 px-4 text-right text-green-400">+$2,000.00</td>
-                                </tr>
-                                <tr class="border-b border-slate-800">
-                                    <td class="py-4 px-4 font-medium whitespace-nowrap">2024-08-22</td>
-                                    <td class="py-4 px-4">Utility Bill</td>
-                                    <td class="py-4 px-4 text-right text-red-400">-$150.75</td>
-                                </tr>
+                                 <?php if(!empty($disbursementReports)):
+                                 foreach($disbursementReports as $row): 
+                                 $amount = htmlspecialchars($row['Amount']);
+                                 $hala = formatShortNumber($amount);?>
+                              <tr>
+                             <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
+                             <td><?php echo htmlspecialchars($row['accountName']);?></td>
+                             <td>₱ <?php echo $hala;?></td>
+                             <td>
+                                <?php endforeach; else:?>
+                         <tr><td colspan="9" class="text-center p-4">NO Records Found.</td></tr>
+                          <?php endif;?>
                             </tbody>
                         </table>
                     </div>
@@ -165,58 +334,57 @@
             </section>
         </div>
     </div>
-
-    <script>
-        const ctx = document.getElementById('financialChart').getContext('2d');
-        const financialChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: [12000, 19000, 13000, 17000, 15000, 22000],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.3,
-                    fill: false,
-                }, {
-                    label: 'Expenses',
-                    data: [8000, 10000, 9000, 11000, 10500, 14000],
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.3,
-                    fill: false,
-                }]
+<script>
+    const ctx = document.getElementById('financialChart').getContext('2d');
+    const financialChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?php echo json_encode($chartLabels); ?>,
+            datasets: [{
+                label: 'Revenue',
+                data: <?php echo json_encode($chartRevenue); ?>,
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.3,
+                fill: false,
+            }, {
+                label: 'Expenses',
+                data: <?php echo json_encode($chartExpenses); ?>,
+                borderColor: 'rgb(255, 99, 132)',
+                tension: 0.3,
+                fill: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        color: '#e2e8f0' // Light text color for labels
+                    }
+                }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#e2e8f0' // Light text color for labels
-                        }
+            scales: {
+                x: {
+                    ticks: {
+                        color: '#94a3b8' // Slate 400 for x-axis labels
+                    },
+                    grid: {
+                        color: '#334155' // Slate 700 for grid lines
                     }
                 },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: '#94a3b8' // Slate 400 for x-axis labels
-                        },
-                        grid: {
-                            color: '#334155' // Slate 700 for grid lines
-                        }
+                y: {
+                    ticks: {
+                        color: '#94a3b8' // Slate 400 for y-axis labels
                     },
-                    y: {
-                        ticks: {
-                            color: '#94a3b8' // Slate 400 for y-axis labels
-                        },
-                        grid: {
-                            color: '#334155' // Slate 700 for grid lines
-                        }
+                    grid: {
+                        color: '#334155' // Slate 700 for grid lines
                     }
                 }
             }
-        });
-    </script>
+        }
+    });
+</script>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
 <script src="<?php echo '../../static/js/modal.js'; ?>"></script>
 

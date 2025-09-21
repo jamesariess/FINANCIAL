@@ -41,6 +41,103 @@ function getOutstandingForLoan($pdo, $loanId) {
     return 0;
 }
 
+function getActiveLoans($pdo) {
+    $sql = "
+        SELECT 
+            l.LoanID,
+            l.LoanTitle,
+            l.LoanAmount,
+            l.interestRate,
+            l.paidAmount,
+            l.startDate,
+            l.EndDate,
+            l.Status,
+            l.pdf_filename,
+            l.Remarks,
+            v.vendor_name as lender
+        FROM loan l
+        LEFT JOIN vendor v ON l.VendorID = v.vendor_id
+        WHERE l.Archive = 'NO' AND l.Status != 'Paid'
+        ORDER BY l.LoanID
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $loans = [];
+    while ($row = $stmt->fetch()) {
+        $principal = $row['LoanAmount'];
+        $interestRate = $row['interestRate'];
+        $paid = $row['paidAmount'] ?? 0;
+        
+        // Calculate total repayable amount including interest
+        $totalInterest = $principal * ($interestRate / 100);
+        $totalRepayable = $principal + $totalInterest;
+        $outstanding = $totalRepayable - $paid;
+        
+        // Monthly due based on remaining outstanding
+        $monthlyDue = ($outstanding > 0) ? ($outstanding + ($outstanding * $interestRate / 100)) / 12 : 0;
+        $dueDate = date('Y-m-d', strtotime($row['EndDate'])); 
+
+        $loans[] = [
+            'id' => 'LN-' . date('Y') . '-' . str_pad($row['LoanID'], 3, '0', STR_PAD_LEFT),
+            'rawId' => $row['LoanID'], 
+            'lender' => $row['lender'],
+            'title' => $row['LoanTitle'],
+            'principal' => '₱' . number_format($principal),
+            'outstanding' => '₱' . number_format($outstanding, 2),
+            'rate' => $interestRate . '%',
+            'monthlyDue' => '₱' . number_format($monthlyDue, 0),
+            'dueDate' => $dueDate,
+            'status' => $row['Status'],
+            'pdf_filename' => $row['pdf_filename'],
+            'remarks' => $row['Remarks'] ?? 'Draft'
+        ];
+    }
+    return $loans;
+}
+
+function getTotalActiveLoans($pdo) {
+    $sql = "SELECT COUNT(*) as count FROM loan WHERE Archive = 'NO' AND Status != 'Paid' AND Remarks = 'Approved' ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    return $row['count'];
+}
+ 
+function getTotalOutstanding($pdo) {
+    $sql = "
+        SELECT l.LoanID, l.LoanAmount, COALESCE(l.paidAmount, 0) as paidAmount, l.interestRate
+        FROM loan l
+        WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND Remarks = 'Approved'
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $totalOutstanding = 0;
+    while ($row = $stmt->fetch()) {
+        $principal = $row['LoanAmount'];
+        $interestRate = $row['interestRate'];
+        $paid = $row['paidAmount'];
+        $totalInterest = $principal * ($interestRate / 100);
+        $totalRepayable = $principal + $totalInterest;
+        $outstanding = $totalRepayable - $paid;
+        $totalOutstanding += $outstanding;
+    }
+    return '₱' . number_format($totalOutstanding, 2);
+}
+
+function getNextDueDate($pdo) {
+    $sql = "
+        SELECT MIN(EndDate) as nextDue
+        FROM loan
+        WHERE Archive = 'NO' AND Status != 'Paid' AND Remarks = 'Approved'
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    $row = $stmt->fetch();
+    return !empty($row['nextDue']) 
+    ? date('M d, Y', strtotime($row['nextDue'])) 
+    : 'No Active Loan';
+}
+
 header('Content-Type: application/json');
 ob_end_clean();
 
