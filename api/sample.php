@@ -109,7 +109,7 @@ $dept = 'Logistic1';
 <!-- https://finance.slatefreight-ph.com/api/ -->
 <script>
     const apikey = "FinancialMalakas";
-   const baseURL = "request.php";
+   const baseURL = "https://finance.slatefreight-ph.com/api/request.php";
 async function loadAllocations(dept) {
     try {
         const response = await fetch(`${baseURL}?action=get_allocations&dept=${encodeURIComponent(dept)}`, {
