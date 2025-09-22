@@ -269,43 +269,71 @@ try {
             </div>
         </section>
 
-   
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80">
+                    <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Financial Overview</h2>
+                    <canvas id="financialChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <div>
+                <div class="bg-slate-900 p-2 rounded-xl shadow-lg border border-slate-800 h-80 overflow-y-auto">
+                    <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">New Request Transactions</h2>
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs uppercase ">
+                            <tr>
+                                <th scope="col" class="py-3 px-4">Title</th>
+                                <th scope="col" class="py-3 px-4">Account Name</th>
+                                <th scope="col" class="py-3 px-4 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(!empty($disbursementReports)):
+                            foreach($disbursementReports as $row): 
+                            $amount = htmlspecialchars($row['Amount']);
+                            $hala = formatShortNumber($amount);?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
+                                <td><?php echo htmlspecialchars($row['accountName']);?></td>
+                                <td>₱ <?php echo $hala;?></td>
+                            </tr>
+                            <?php endforeach; else:?>
+                            <tr><td colspan="9" class="text-center p-4">NO Records Found.</td></tr>
+                            <?php endif;?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
 
 <script>
-    // Theme toggle logic
-    const themeToggle = document.getElementById('themeToggle');
+   const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('change', function() {
       document.body.classList.toggle('dark-mode', this.checked);
+      // Update chart colors when theme changes
+      updateChartColors();
     });
 
-   // ... existing code ...
+    const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('overlay');
 
-const sidebar = document.getElementById('sidebar');
-const mainContent = document.getElementById('mainContent');
-const hamburger = document.getElementById('hamburger');
-const overlay = document.getElementById('overlay');
+    // Sidebar toggle logic
+    hamburger.addEventListener('click', function() {
+      if (window.innerWidth <= 992) {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+      } else {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+      }
+    });
 
-// Sidebar toggle logic
-hamburger.addEventListener('click', function() {
-  if (window.innerWidth <= 992) {
-    sidebar.classList.toggle('show');
-    overlay.classList.toggle('show');
-  } else {
-    // This is the key change for desktop
-    sidebar.classList.toggle('collapsed');
-    mainContent.classList.toggle('expanded'); 
-  }
-});
-
-// Close sidebar on overlay click
-overlay.addEventListener('click', function() {
-  sidebar.classList.remove('show');
-  overlay.classList.remove('show');
-});
-
-// ... rest of your code ...
-
-    // Close sidebar when clicking overlay
+    // Close sidebar on overlay click
     overlay.addEventListener('click', function() {
       sidebar.classList.remove('show');
       overlay.classList.remove('show');
@@ -321,56 +349,92 @@ overlay.addEventListener('click', function() {
         });
     });
 
-    // Chart.js initialization
-    const ctx = document.getElementById('financialChart').getContext('2d');
-    const financialChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: <?php echo json_encode($chartLabels); ?>,
-            datasets: [{
-                label: 'Revenue',
-                data: <?php echo json_encode($chartRevenue); ?>,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.3,
-                fill: false,
-            }, {
-                label: 'Expenses',
-                data: <?php echo json_encode($chartExpenses); ?>,
-                borderColor: 'rgb(255, 99, 132)',
-                tension: 0.3,
-                fill: false,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    labels: {
-                        color: '#e2e8f0' // Light text color for labels
-                    }
-                }
+    // Function to get CSS variable value
+    function getCssVariable(name) {
+        return getComputedStyle(document.body).getPropertyValue(name).trim();
+    }
+
+    // Function to create/update the chart
+    let financialChart;
+    function createChart() {
+        const ctx = document.getElementById('financialChart').getContext('2d');
+        const textColor = getCssVariable('--text-light');
+        const gridColor = getCssVariable('--text-dark');
+        const legendColor = getCssVariable('--text-light'); // Assuming legend color is also light text
+
+        const chartConfig = {
+            type: 'line',
+            data: {
+                labels: <?php echo json_encode($chartLabels); ?>,
+                datasets: [{
+                    label: 'Revenue',
+                    data: <?php echo json_encode($chartRevenue); ?>,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.3,
+                    fill: false,
+                }, {
+                    label: 'Expenses',
+                    data: <?php echo json_encode($chartExpenses); ?>,
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.3,
+                    fill: false,
+                }]
             },
-            scales: {
-                x: {
-                    ticks: {
-                        color: '#94a3b8' // Slate 400 for x-axis labels
-                    },
-                    grid: {
-                        color: '#334155' // Slate 700 for grid lines
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: legendColor // Use the dynamically fetched color
+                        }
                     }
                 },
-                y: {
-                    ticks: {
-                        color: '#94a3b8' // Slate 400 for y-axis labels
+                scales: {
+                    x: {
+                        ticks: {
+                            color: textColor // Use the dynamically fetched color
+                        },
+                        grid: {
+                            color: gridColor // Use the dynamically fetched color
+                        }
                     },
-                    grid: {
-                        color: '#334155' 
+                    y: {
+                        ticks: {
+                            color: textColor // Use the dynamically fetched color
+                        },
+                        grid: {
+                            color: gridColor // Use the dynamically fetched color
+                        }
                     }
                 }
             }
+        };
+
+        if (financialChart) {
+            financialChart.destroy();
         }
-    });
+        financialChart = new Chart(ctx, chartConfig);
+    }
+    
+    // Function to update chart colors
+    function updateChartColors() {
+        const textColor = getCssVariable('--text-light');
+        const gridColor = getCssVariable('--text-dark');
+        const legendColor = getCssVariable('--text-light');
+        
+        if (financialChart) {
+            financialChart.options.plugins.legend.labels.color = legendColor;
+            financialChart.options.scales.x.ticks.color = textColor;
+            financialChart.options.scales.x.grid.color = gridColor;
+            financialChart.options.scales.y.ticks.color = textColor;
+            financialChart.options.scales.y.grid.color = gridColor;
+            financialChart.update();
+        }
+    }
+
+    // Initialize the chart on page load
+    window.onload = createChart;
 </script>
 
 </body>
