@@ -269,45 +269,7 @@ try {
             </div>
         </section>
 
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="lg:col-span-2">
-                <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80">
-                    <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Financial Overview</h2>
-                    <canvas id="financialChart" class="w-full h-full"></canvas>
-                </div>
-            </div>
-
-            <div>
-                <div class="bg-slate-900 p-2 rounded-xl shadow-lg border border-slate-800 h-80 overflow-y-auto">
-                    <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">New Request Transactions</h2>
-                    <table class="w-full text-sm text-left">
-                        <thead class="text-xs uppercase ">
-                            <tr>
-                                <th scope="col" class="py-3 px-4">Title</th>
-                                <th scope="col" class="py-3 px-4">Account Name</th>
-                                <th scope="col" class="py-3 px-4 text-right">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if(!empty($disbursementReports)):
-                            foreach($disbursementReports as $row): 
-                            $amount = htmlspecialchars($row['Amount']);
-                            $hala = formatShortNumber($amount);?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($row['requestTiTle']);?></td>
-                                <td><?php echo htmlspecialchars($row['accountName']);?></td>
-                                <td>₱ <?php echo $hala;?></td>
-                            </tr>
-                            <?php endforeach; else:?>
-                            <tr><td colspan="9" class="text-center p-4">NO Records Found.</td></tr>
-                            <?php endif;?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-    </div>
-</div>
+   
 
 <script>
     // Theme toggle logic
