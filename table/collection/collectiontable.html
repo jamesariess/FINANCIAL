@@ -24,9 +24,9 @@
         border: 1px solid #d1d5db;
     }
 </style>
-<div class="table-section" id="invoiceTableSection">
+<div class="table-section" id="disbursementTableSection">
       <h3>Plan Report</h3>
-      <table id="employeesTable">
+      <table id="employeesTable"> 
           <thead>
       <tr>
         <th>ID</th>
@@ -38,7 +38,7 @@
         <th>Action</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="employeesTableBody">
       <?php if (!empty($plans)): ?>
         <?php foreach ($plans as $row): 
             $date = date('F j, Y \a\t g:i A', strtotime($row['Date'])); 
@@ -171,7 +171,7 @@
       </div>
    
       <div class="flex justify-end space-x-3">
-        <button type="button" onclick="closeModal('updateModal')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+        <button type="button" onclick="closeModal('updateModal')" class="px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600">Cancel</button>
         <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700" name="update">Save Changes</button>
       </div>
     </form>

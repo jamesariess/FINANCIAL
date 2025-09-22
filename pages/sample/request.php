@@ -114,10 +114,32 @@
             color: #dc2626;
             border: 1px solid #ef4444;
         }
+   
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+     
+        .dropdown.active .dropdown-menu {
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <?php include __DIR__ . "/../sidebar.html"; ?>
+  <?php include __DIR__ . "/../sidebar.html"; ?>  
+<div class="overlay" id="overlay"></div>
+    
     <div class="content" id="mainContent">
         <div class="header">
             <div class="hamburger" id="hamburger">☰</div>
@@ -171,10 +193,49 @@
         </div>
     </div>
     <script src="<?php echo '../../static/js/filter.js';?>"></script>
-    <script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+    <script>
+      const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', function() {
+      document.body.classList.toggle('dark-mode', this.checked);
+    });
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const hamburger = document.getElementById('hamburger');
+const overlay = document.getElementById('overlay');
+
+// Sidebar toggle logic
+hamburger.addEventListener('click', function() {
+  if (window.innerWidth <= 992) {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  } else {
+    // This is the key change for desktop
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded'); 
+  }
+});
+
+// Close sidebar on overlay click
+overlay.addEventListener('click', function() {
+  sidebar.classList.remove('show');
+  overlay.classList.remove('show');
+});
+
+
+    // Dropdown toggle logic
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            const parentDropdown = this.closest('.dropdown');
+            parentDropdown.classList.toggle('active');
+        });
+    });
+
+</script>
     <script>
         const API_KEY = 'FinancialMalakas';
-        const API_URL = '../../api/request.php'; 
+        const API_URL = 'https://finance.slatefreight-ph.com/api/request.php'; 
         const DEPARTMENT = 'HR3'; 
 
    

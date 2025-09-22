@@ -106,8 +106,8 @@ try {
 $departmentMap = [
     'HR2'      => ['HR'],
     'HR3'      => ['HR'],
-    'Logistic1'=> ['Operations'],
-    'Logistic2'=> ['Maintenance'],
+    'Logistic2'=> ['Operations'],
+    'Logistic1'=> ['Maintenance'],
     'Financial'=> ['Finance'],
 ];
 

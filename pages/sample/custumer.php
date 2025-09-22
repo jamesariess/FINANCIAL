@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     }
 }
 ?>
-<?php include __DIR__ . "/../sidebar.html"; ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -168,9 +168,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Freight Finance — Invoice Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/static/css/sidebar.css">
+ 
+ <style>
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            display: block;
+        }
+     
+        .dropdown.active .dropdown-menu {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+  <?php include __DIR__ . "/../sidebar.html"; ?>  
+<div class="overlay" id="overlay"></div>
     <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
@@ -280,6 +303,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['insert'])) {
     </div>
     </div>
     <script src="<?php echo '../../static/js/filter.js';?>"></script>
-<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+<script>
+      const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', function() {
+      document.body.classList.toggle('dark-mode', this.checked);
+    });
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const hamburger = document.getElementById('hamburger');
+const overlay = document.getElementById('overlay');
+
+// Sidebar toggle logic
+hamburger.addEventListener('click', function() {
+  if (window.innerWidth <= 992) {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  } else {
+    // This is the key change for desktop
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded'); 
+  }
+});
+
+// Close sidebar on overlay click
+overlay.addEventListener('click', function() {
+  sidebar.classList.remove('show');
+  overlay.classList.remove('show');
+});
+
+
+    // Dropdown toggle logic
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            const parentDropdown = this.closest('.dropdown');
+            parentDropdown.classList.toggle('active');
+        });
+    });
+
+</script>
 </body>
 </html>

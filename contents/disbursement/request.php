@@ -1,110 +1,196 @@
+<?php
+// Assuming $pdo is your PDO connection
+try {
+    $stmt = $pdo->query("
+        SELECT c.Name, GROUP_CONCAT(DISTINCT ch.accountName SEPARATOR ', ') AS accountNames, c.Details
+        FROM departmentbudget c
+        LEFT JOIN costallocation ca ON c.Deptbudget = ca.Deptbudget
+        LEFT JOIN chartofaccount ch ON ca.accountID = ch.accountID
+        WHERE ca.Status = 'Activate' AND ch.Status = 'Active' AND c.DateValid = 2025
+        GROUP BY c.Name
+    ");
+    $departments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
+?>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+ 
+
+
+        .container {
+            padding: 1rem;
+          
+            margin: 0 auto;
+        }
+
+        .department-list {
+            margin-top: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            background: white;
+            box-shadow: var(--shadow);
+        }
+
+        .department-item {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background 0.2s;
+        }
+
+        .department-item:last-child {
+            border-bottom: none;
+        }
+
+        .department-item:hover {
+            background: #f9fafb;
+        }
+
+        .dept-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .dept-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .dept-summary {
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+
+        .dept-details {
+            font-size: 0.85rem;
+            color: #374151;
+            margin-top: 0.5rem;
+        }
+
+        .account-badges {
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .account-badge {
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+
+        .account-badge:hover {
+            background: var(--primary-color);
+            color: var(--text-light);
+        }
+
+ 
+        body.dark-mode .section-header h2 {
+            color: var(--text-light);
+        }
+
+        body.dark-mode .section-header p {
+            color: #9ca3af;
+        }
+
+        body.dark-mode .department-list {
+            background: var(--dark-card);
+            border-color: #3a4b6e;
+        }
+
+        body.dark-mode .department-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        body.dark-mode .dept-name {
+            color: var(--text-light);
+        }
+
+        body.dark-mode .dept-summary,
+        body.dark-mode .dept-details {
+            color: #9ca3af;
+        }
+
+        body.dark-mode .account-badge {
+            background: rgba(243, 244, 246, 0.1);
+            color: #9ca3af;
+        }
+
+        body.dark-mode .account-badge:hover {
+            background: var(--primary-color);
+            color: var(--text-light);
+        }
+
+  .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .section-header p {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+        
+
+    </style>
 
   
-  <main class="max-w-6xl mx-auto px-4 py-4">
-     <div class="mb-4">
-    <h2 class="text-lg font-bold text-slate-700">
-      Request Type Category
-    </h2>
-    <p class="text-sm text-slate-500">
-      Select which department your request belongs to
-    </p>
-  </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-  
-      <article class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-lg transition">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-indigo-50 rounded-lg">
-            <!-- building icon -->
-            <svg class="w-6 h-6 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M5 21V8a2 2 0 012-2h10a2 2 0 012 2v13"/></svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-semibold">General Services</h3>
-            <p class="text-sm text-slate-500 mt-1">Office & company-wide support</p>
-            <ul class="mt-3 text-sm text-slate-600 space-y-1 opacity-80 group-hover:opacity-100 transition">
-              <li>Office rent, utilities (internet, electricity)</li>
-              <li>Office supplies, laptops, furniture</li>
-              <li>IT systems & software licenses</li>
-              <li>Security, janitorial contracts</li>
-            </ul>
-          </div>
+    <div class="container">
+        <div class="section-header">
+            <h2>Request Type Categories</h2>
+            <p>Select the department your request belongs to</p>
         </div>
-      </article>
 
-
-      <article class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-lg transition">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-rose-50 rounded-lg">
-            <svg class="w-6 h-6 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5.121 17.804A7 7 0 0112 15a7 7 0 016.879 2.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-semibold">HR (Human Resources)</h3>
-            <p class="text-sm text-slate-500 mt-1">Employees & workforce management</p>
-            <ul class="mt-3 text-sm text-slate-600 space-y-1 opacity-80 group-hover:opacity-100 transition">
-              <li>Salaries, wages, allowances, bonuses</li>
-              <li>Benefits: insurance, retirement</li>
-              <li>Recruitment, training & seminars</li>
-              <li>Employee reimbursements (HR-related)</li>
-            </ul>
-          </div>
+        <div class="department-list">
+            <?php foreach ($departments as $dept): ?>
+                <?php
+                $deptName = $dept['Name'];
+                $iconColors = [
+                    'Finance' => 'Money, funding & reporting',
+                    'General Services' => 'Office & company-wide support',
+                    'HR' => 'Employees & workforce management',
+                    'Maintenance' => 'Fleet, equipment & facility upkeep',
+                    'Operations' => 'Running freight & logistics activities'
+                ];
+                $summary = $iconColors[$deptName] ?? '';
+                ?>
+                <div class="department-item">
+                    <div class="dept-header">
+                        <span class="dept-name"><?php echo htmlspecialchars($deptName); ?></span>
+                        <span class="dept-summary"><?php echo htmlspecialchars($summary); ?></span>
+                    </div>
+                    <div class="dept-details">
+                        <?php echo htmlspecialchars($dept['Details']); ?>
+                    </div>
+                    <div class="account-badges">
+                        <?php
+                        if (!empty($dept['accountNames'])) {
+                            $detailsArray = explode(', ', $dept['accountNames']);
+                            foreach ($detailsArray as $detail) {
+                                echo "<span class='account-badge'>" . trim(htmlspecialchars($detail)) . "</span>";
+                            }
+                        } else {
+                            echo "<span class='account-badge'>No accounts assigned</span>";
+                        }
+                        ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
         </div>
-      </article>
-      <article class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-lg transition">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-emerald-50 rounded-lg">
-            <svg class="w-6 h-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 1v4M6 5v4M18 5v4M3 13h18M3 21h18"/></svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-semibold">Maintenance</h3>
-            <p class="text-sm text-slate-500 mt-1">Fleet, equipment & facility upkeep</p>
-            <ul class="mt-3 text-sm text-slate-600 space-y-1 opacity-80 group-hover:opacity-100 transition">
-              <li>Repairs & spare parts (tires, engines)</li>
-              <li>Preventive maintenance & inspections</li>
-              <li>Workshop tools, service contracts</li>
-              <li>Warehouse & port facility maintenance</li>
-            </ul>
-          </div>
-        </div>
-      </article>
-
-
-      <article class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-lg transition">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-sky-50 rounded-lg">
-            <svg class="w-6 h-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.104 0-2 .672-2 1.5S10.896 11 12 11s2-.672 2-1.5S13.104 8 12 8zM12 13v6"/></svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-semibold">Finance</h3>
-            <p class="text-sm text-slate-500 mt-1">Money, funding & reporting</p>
-            <ul class="mt-3 text-sm text-slate-600 space-y-1 opacity-80 group-hover:opacity-100 transition">
-              <li>Loans & interest expense</li>
-              <li>Budget planning & approvals</li>
-              <li>AP / AR, general ledger & reporting</li>
-              <li>Taxes & compliance</li>
-            </ul>
-          </div>
-        </div>
-      </article>
-
-
-      <article class="group bg-white rounded-2xl p-5 shadow-sm border border-slate-100 hover:shadow-lg transition">
-        <div class="flex items-start gap-4">
-          <div class="p-3 bg-amber-50 rounded-lg">
-            <svg class="w-6 h-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7h18M6 7v10a1 1 0 001 1h10a1 1 0 001-1V7"/></svg>
-          </div>
-          <div class="flex-1">
-            <h3 class="font-semibold">Operations</h3>
-            <p class="text-sm text-slate-500 mt-1">Running freight & logistics activities</p>
-            <ul class="mt-3 text-sm text-slate-600 space-y-1 opacity-80 group-hover:opacity-100 transition">
-              <li>Fuel, lubricants, toll & port fees</li>
-              <li>Route scheduling & dispatch</li>
-              <li>Driver allowances & travel costs</li>
-              <li>Daily operational supplies & cargo insurance</li>
-            </ul>
-          </div>
-        </div>
-      </article>
-
-</div>
-  </main>
-
+    </div>
+</body>
+</html>
