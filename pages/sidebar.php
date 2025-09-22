@@ -37,6 +37,7 @@
    
     <a href="<?php echo $baseURL; ?>collection/receipt.php" class="sidebar-item">Receipts</a>
     <a href="<?php echo $baseURL; ?>collection/reminders.php" class="sidebar-item">Follow-ups & Reminders</a>
+     <a href="<?php echo $baseURL; ?>collection/adjustment.php" class="sidebar-item">Reminders Report</a>
     <!-- <a href=" <?php echo $baseURL; ?>agingreport" class="sidebar-item">Aging Report</a> -->
    
   </div>

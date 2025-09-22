@@ -106,6 +106,7 @@ function getTotalActiveLoans($pdo) {
 function getTotalOutstanding($pdo) {
     $sql = "
         SELECT l.LoanID, l.LoanAmount, COALESCE(l.paidAmount, 0) as paidAmount, l.interestRate
+       
         FROM loan l
         WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND Remarks = 'Approved'
     ";
@@ -117,11 +118,13 @@ function getTotalOutstanding($pdo) {
         $interestRate = $row['interestRate'];
         $paid = $row['paidAmount'];
         $totalInterest = $principal * ($interestRate / 100);
+ 
         $totalRepayable = $principal + $totalInterest;
         $outstanding = $totalRepayable - $paid;
         $totalOutstanding += $outstanding;
     }
     return '₱' . number_format($totalOutstanding, 2);
+  
 }
 
 function getNextDueDate($pdo) {
@@ -138,7 +141,7 @@ function getNextDueDate($pdo) {
     : 'No Active Loan';
 }
 
-header('Content-Type: application/json');
+
 ob_end_clean();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

@@ -310,6 +310,28 @@ try {
 </div>
 
 <script>
+    let isDarkMode = false;
+
+function getChartColors(isDark) {
+    if (isDark) {
+        return {
+            textColor: '#f8fafc',   // white text
+            gridColor: '#475569',   // slate-600
+            revenueColor: '#38bdf8', // cyan-400
+            expensesColor: '#f87171' // red-400
+        };
+    } else {
+        return {
+            textColor: '#334155',   // slate-800
+            gridColor: '#cbd5e1',   // slate-300
+            revenueColor: '#0ea5e9', // sky-500
+            expensesColor: '#ef4444' // red-500
+        };
+    }
+}
+
+let colors = getChartColors(isDarkMode);
+
    const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('change', function() {
       document.body.classList.toggle('dark-mode', this.checked);
@@ -354,84 +376,68 @@ try {
         return getComputedStyle(document.body).getPropertyValue(name).trim();
     }
 
-    // Function to create/update the chart
-    let financialChart;
-    function createChart() {
-        const ctx = document.getElementById('financialChart').getContext('2d');
-        const textColor = getCssVariable('--text-light');
-        const gridColor = getCssVariable('--text-dark');
-        const legendColor = getCssVariable('--text-light'); // Assuming legend color is also light text
-
-        const chartConfig = {
-            type: 'line',
-            data: {
-                labels: <?php echo json_encode($chartLabels); ?>,
-                datasets: [{
-                    label: 'Revenue',
-                    data: <?php echo json_encode($chartRevenue); ?>,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.3,
-                    fill: false,
-                }, {
-                    label: 'Expenses',
-                    data: <?php echo json_encode($chartExpenses); ?>,
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.3,
-                    fill: false,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: legendColor // Use the dynamically fetched color
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        ticks: {
-                            color: textColor // Use the dynamically fetched color
-                        },
-                        grid: {
-                            color: gridColor // Use the dynamically fetched color
-                        }
-                    },
-                    y: {
-                        ticks: {
-                            color: textColor // Use the dynamically fetched color
-                        },
-                        grid: {
-                            color: gridColor // Use the dynamically fetched color
-                        }
-                    }
+const ctx = document.getElementById('financialChart').getContext('2d');
+const financialChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: <?php echo json_encode($chartLabels); ?>,
+        datasets: [{
+            label: 'Revenue',
+            data: <?php echo json_encode($chartRevenue); ?>,
+            borderColor: colors.revenueColor,
+            tension: 0.3,
+            fill: false,
+        }, {
+            label: 'Expenses',
+            data: <?php echo json_encode($chartExpenses); ?>,
+            borderColor: colors.expensesColor,
+            tension: 0.3,
+            fill: false,
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                labels: {
+                    color: colors.textColor
                 }
             }
-        };
-
-        if (financialChart) {
-            financialChart.destroy();
+        },
+        scales: {
+            x: {
+                ticks: { color: colors.textColor },
+                grid: { color: colors.gridColor }
+            },
+            y: {
+                ticks: { color: colors.textColor },
+                grid: { color: colors.gridColor }
+            }
         }
-        financialChart = new Chart(ctx, chartConfig);
     }
+});
+
     
     // Function to update chart colors
-    function updateChartColors() {
-        const textColor = getCssVariable('--text-light');
-        const gridColor = getCssVariable('--text-dark');
-        const legendColor = getCssVariable('--text-light');
-        
-        if (financialChart) {
-            financialChart.options.plugins.legend.labels.color = legendColor;
-            financialChart.options.scales.x.ticks.color = textColor;
-            financialChart.options.scales.x.grid.color = gridColor;
-            financialChart.options.scales.y.ticks.color = textColor;
-            financialChart.options.scales.y.grid.color = gridColor;
-            financialChart.update();
-        }
-    }
+themeToggle.addEventListener('change', function() {
+    document.body.classList.toggle('dark-mode', this.checked);
+
+    isDarkMode = this.checked;
+    colors = getChartColors(isDarkMode);
+
+    // Update chart colors
+    financialChart.options.plugins.legend.labels.color = colors.textColor;
+    financialChart.options.scales.x.ticks.color = colors.textColor;
+    financialChart.options.scales.x.grid.color = colors.gridColor;
+    financialChart.options.scales.y.ticks.color = colors.textColor;
+    financialChart.options.scales.y.grid.color = colors.gridColor;
+
+    financialChart.data.datasets[0].borderColor = colors.revenueColor;
+    financialChart.data.datasets[1].borderColor = colors.expensesColor;
+
+    financialChart.update();
+});
 
     // Initialize the chart on page load
     window.onload = createChart;

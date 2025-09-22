@@ -285,8 +285,7 @@
     const notificationContainer = document.getElementById('notificationContainer');
     const approvalModal = document.getElementById('approvalModal');
     const approvalForm = document.getElementById('approvalForm');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const cancelBtn = document.getElementById('cancelBtn');
+
 
     function showNotification(message, isSuccess) {
         const bgClass = isSuccess ? 'bg-green-100 border-green-500 text-green-700' : 'bg-red-100 border-red-500 text-red-700';

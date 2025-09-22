@@ -51,6 +51,7 @@ body.dark-mode {
     transition: transform 0.3s ease;
     z-index: 1000;
     transform: translateX(0);
+     overflow-y: auto; 
 }
 
 .sidebar.collapsed,
@@ -127,7 +128,6 @@ body.dark-mode {
     border-left: 3px solid white;
 }
 
-/* Sidebar Scrollbar */
 .sidebar::-webkit-scrollbar {
     width: 10px;
 }
@@ -228,6 +228,7 @@ body.dark-mode {
     box-shadow: var(--shadow);
     padding: 1.5rem;
     transition: all 0.3s;
+    
 }
 
 .card:hover {
@@ -240,7 +241,7 @@ body.dark-mode {
     font-weight: 700;
 }
 
-/* Form Section */
+
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -365,7 +366,7 @@ th{
     border-bottom: 1px solid #ddd;
 }
 
-/* Dark mode overrides */
+
 body.dark-mode .table-section {
     background-color: var(--dark-card);
     color: var(--text-light);
@@ -502,7 +503,13 @@ thead {
     transition: .4s;
     border-radius: 50%;
 }
-
+.w-3xl {
+    width: 100%;
+    max-width: 8906px; /* Equivalent to Tailwind's w-3xl (56rem) */
+}
+#overdueModal > div {
+    max-width: 8960px; /* Match w-3xl */
+}
 input:checked + .slider {
     background-color: var(--primary-color);
 }

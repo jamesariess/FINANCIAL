@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Request Form</title>
+    <?php include "../../static/head/header.php" ?>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -137,8 +138,9 @@
     </style>
 </head>
 <body>
-  <?php include __DIR__ . "/../sidebar.html"; ?>  
-<div class="overlay" id="overlay"></div>
+
+    <?php include "../sidebar.php"; ?>
+    <div class="overlay" id="overlay"></div> 
     
     <div class="content" id="mainContent">
         <div class="header">

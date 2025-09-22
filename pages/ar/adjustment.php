@@ -6,31 +6,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Adjustment </title>
-  <style>
-
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            z-index: 999;
-        }
-
-        .overlay.show {
-            display: block;
-        }
-     
-        .dropdown.active .dropdown-menu {
-            display: block;
-        }
-    </style>
+  <?php include "../../static/head/header.php" ?>
 </head>
 <body>
-  <?php include __DIR__ . "/../sidebar.html"; ?>  
-<div class="overlay" id="overlay"></div>
+    <?php include "../sidebar.php"; ?> 
+    <div class="overlay" id="overlay"></div>
 <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>

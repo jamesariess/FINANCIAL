@@ -1,4 +1,4 @@
-<?php include __DIR__ . "/../sidebar.html"; ?>
+
 <?php include __DIR__ . '/../../crud/ap/loan.php'; ?>
 <?php include __DIR__ . '/../../crud/ap/loan2.php'; ?>
 <!DOCTYPE html> 
@@ -7,10 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AR Adjustment</title>
-    <link rel="stylesheet" href="/static/css/sidebar.css">
+ <?php include "../../static/head/header.php" ?>
 </head>
-
-<body> 
+<body>
+    <?php include "../sidebar.php"; ?>
+    <div class="overlay" id="overlay"></div> 
 <div class="content" id="mainContent">
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
@@ -57,6 +58,47 @@
     <?php include __DIR__ . '/../../modal/ap/loan.html'; ?>    
 </div>
 <script src="<?php echo '../../static/js/filter.js'; ?>"></script>
-<script src="<?php echo '../../static/js/modal.js'; ?>"></script>
+<script>
+      const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', function() {
+      document.body.classList.toggle('dark-mode', this.checked);
+    });
+const sidebar = document.getElementById('sidebar');
+const mainContent = document.getElementById('mainContent');
+const hamburger = document.getElementById('hamburger');
+const overlay = document.getElementById('overlay');
+
+// Sidebar toggle logic
+hamburger.addEventListener('click', function() {
+  if (window.innerWidth <= 992) {
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  } else {
+    // This is the key change for desktop
+    sidebar.classList.toggle('collapsed');
+    mainContent.classList.toggle('expanded'); 
+  }
+});
+
+// Close sidebar on overlay click
+overlay.addEventListener('click', function() {
+  sidebar.classList.remove('show');
+  overlay.classList.remove('show');
+});
+
+
+    // Dropdown toggle logic
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            const parentDropdown = this.closest('.dropdown');
+            parentDropdown.classList.toggle('active');
+        });
+    });
+
+</script>
+
+
 </body>
 </html>
