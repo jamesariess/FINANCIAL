@@ -300,7 +300,7 @@ try {
 </section>
         </div>
     </div>
-
+<script src="<?php echo '../../static/js/modal.js';?>"></script>
    <script>
     let isDarkMode = false;
     function getChartColors(isDark) {
@@ -323,6 +323,7 @@ try {
 
     let colors = getChartColors(isDarkMode);
     const ctx = document.getElementById('financialChart').getContext('2d');
+    
     const financialChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -392,42 +393,7 @@ try {
         }
     });
 // Theme toggle logic
-    const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('change', function() {
-      document.body.classList.toggle('dark-mode', this.checked);
-    });
-
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const hamburger = document.getElementById('hamburger');
-    const overlay = document.getElementById('overlay');
-
-
-    hamburger.addEventListener('click', function() {
-      if (window.innerWidth <= 992) {
-        sidebar.classList.toggle('show');
-        overlay.classList.toggle('show');
-      } else {
-        sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded');
-      }
-    });
-
-  
-    overlay.addEventListener('click', function() {
-      sidebar.classList.remove('show');
-      overlay.classList.remove('show');
-    });
-
-    // Dropdown toggle logic
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(event) {
-            event.preventDefault();
-            const parentDropdown = this.closest('.dropdown');
-            parentDropdown.classList.toggle('active');
-        });
-    });
+   
 
     themeToggle.addEventListener('change', function() {
         document.body.classList.toggle('dark-mode', this.checked);
