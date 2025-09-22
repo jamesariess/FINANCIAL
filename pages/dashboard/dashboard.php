@@ -166,17 +166,10 @@ try {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Financial Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <link rel="stylesheet" href="../../static/css/sidebar.css">
+    <?php include __DIR__ . '/../../static/head/header.php'; ?>
 </head>
 <body>
-    <?php include __DIR__ . "/../sidebar.html"; ?>
+    <?php include __DIR__ . "/../sidebar.php"; ?>
     <div class="overlay" id="overlay"></div>
     <div class="content" id="mainContent">
         <div class="header">
@@ -300,7 +293,7 @@ try {
 </section>
         </div>
     </div>
-<script src="<?php echo '../../static/js/modal.js';?>"></script>
+
    <script>
     let isDarkMode = false;
     function getChartColors(isDark) {
@@ -391,9 +384,43 @@ try {
                 easing: 'easeInOutQuart'
             }
         }
+    });    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('change', function() {
+      document.body.classList.toggle('dark-mode', this.checked);
     });
+
 // Theme toggle logic
-   
+   const sidebar = document.getElementById('sidebar');
+    const mainContent = document.getElementById('mainContent');
+    const hamburger = document.getElementById('hamburger');
+    const overlay = document.getElementById('overlay');
+
+
+    hamburger.addEventListener('click', function() {
+      if (window.innerWidth <= 992) {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('show');
+      } else {
+        sidebar.classList.toggle('collapsed');
+        mainContent.classList.toggle('expanded');
+      }
+    });
+
+  
+    overlay.addEventListener('click', function() {
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    });
+
+    // Dropdown toggle logic
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            const parentDropdown = this.closest('.dropdown');
+            parentDropdown.classList.toggle('active');
+        });
+    });
 
     themeToggle.addEventListener('change', function() {
         document.body.classList.toggle('dark-mode', this.checked);
