@@ -1,9 +1,9 @@
 <div class="container w-full">
     <div id="notificationContainer" class="mx-auto mt-4"></div>
 
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white shadow-md rounded-2xl p-6 border border-gray-200 mb-4">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between  shadow-md rounded-2xl p-6 border border-gray-200 mb-4">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">Loan Billing & Payments</h1> 
+            <h1 class="text-3xl font-bold  mb-6">Loan Billing & Payments</h1> 
         </div>
         <div class="mt-4 md:mt-0">
             <button id="toggleFormBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl shadow-md flex items-center gap-2 transition">
@@ -110,7 +110,7 @@
 
 <!-- Approval Modal -->
 <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+    <div class=" rounded-xl shadow-lg w-full max-w-md p-6">
         <h2 class="text-xl font-bold mb-4">Approve Loan</h2>
         <p class="text-gray-600 mb-4">Please upload the loan document (PDF or DOCS) to approve this loan.</p>
         <form id="approvalForm" enctype="multipart/form-data" class="space-y-4">
@@ -129,17 +129,17 @@
 </div>
 
 <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
+    <div class=" rounded-xl shadow-lg w-full max-w-2xl p-6">
         <h2 class="text-xl font-bold mb-4">Loan Management</h2>
         <div class="flex border-b mb-4">
             <button id="tabPayment" onclick="switchTab('payment')" class="px-4 py-2 font-medium border-b-2 border-indigo-600 text-indigo-600">Make Payment</button>
             <button id="tabHistory" onclick="switchTab('history')" class="px-4 py-2 font-medium text-gray-600 hover:text-indigo-600">Billing History</button>
         </div>
 
-        <form id="paymentForm" class="space-y-4" data-tab="payment">
+        <form id="paymentForm" class="space-y-4 form-group" data-tab="payment">
             <input type="hidden" id="loanId" name="loanId">
             <input type="hidden" name="action" value="submit_payment">
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-2 gap-4 ">
                 <div>
                     <label class="block text-sm text-gray-600 mb-1">Loan ID</label>
                     <input type="text" id="loanIdDisplay" class="w-full border rounded p-2 bg-gray-100" readonly>
@@ -189,90 +189,102 @@
     </div>
 </div>
 
-<div class="modal-overlay fixed inset-0 hidden items-center justify-center bg-black/50 z-50" id="modalOverlay">
-    <div class="bg-white p-6 rounded-2xl shadow-xl w-2/4 max-w-5xl" id="collectionform">
-        <legend class="text-xl font-semibold mb-4">Add Loan</legend>
-        <form action="loan.php" method="post" class="space-y-6">
-            <input type="hidden" id="RequestId" name="RequestId">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="form-group">
-                    <label for="loanTitle" class="block text-sm font-medium">Loan Title</label>
-                    <input type="text" id="loanTitle" name="loanTitle" class="w-full border rounded-lg p-2" required>
-                </div>
-                <div class="form-group">
-                    <label for="vendorName" class="block text-sm font-medium">Vendor Name</label>
-                    <select id="vendorName" name="vendorId" class="w-full border rounded-lg p-2" required>
-                        <option value="">--SELECT VENDOR--</option>
-                        <?php
-                        try {
-                            $sql = "SELECT vendor_id, vendor_name FROM vendor WHERE Status = 'Active' AND Archive='NO' ORDER BY vendor_name ASC";
-                            $stmt = $pdo->query($sql);
-                            $vendors = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                            foreach ($vendors as $vendor) {
-                                echo "<option value='" . htmlspecialchars($vendor['vendor_id'], ENT_QUOTES) . "'>" . htmlspecialchars($vendor['vendor_name'], ENT_QUOTES) . "</option>";
-                            }
-                        } catch (PDOException $e) {
-                            echo "<option value=''>Error loading vendors</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="loanAmount" class="block text-sm font-medium">Loan Amount</label>
-                    <input type="number" id="loanAmount" name="loanAmount" class="w-full border rounded-lg p-2" required>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="form-group">
-                    <label for="interestRate" class="block text-sm font-medium">Interest Rate</label>
-                    <input type="number" id="interestRate" name="interestRate" step="0.01" class="w-full border rounded-lg p-2" required>
-                </div>
-                <div class="form-group">
-                    <label for="PenaltyRate" class="block text-sm font-medium">Penalty Interest Rate</label>
-                    <input type="number" id="PenaltyRate" name="PenaltyRate" step="0.01" class="w-full border rounded-lg p-2" required>
-                </div>
-                <div class="form-group">
-                    <label for="Disbursement" class="block text-sm font-medium">Loan Disbursement Date</label>
-                    <input type="date" id="Disbursement" name="Disbursement" class="w-full border rounded-lg p-2" required>
-                </div>
-                <div class="form-group">
-                    <label for="day" class="block text-sm font-medium">Payment Due Day</label>
-                    <input type="number" id="day" name="day" class="w-full border rounded-lg p-2" required>
-                </div>
-            </div>  
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="form-group">
-                    <label for="Installment" class="block text-sm font-medium">Installment</label>
-                    <input type="number" id="Installment" name="Installment" class="w-full border rounded-lg p-2" required>
-                </div>
-                <div class="form-group">
-                    <label for="Collateral" class="block text-sm font-medium">Collateral</label>
-                    <input type="text" id="Collateral" name="Collateral" class="w-full border rounded-lg p-2">
-                </div>
-                <div class="form-group">
-                    <label for="Penalty" class="block text-sm font-medium">Penalty Details</label>
-                    <input type="text" id="Penalty" name="Penalty" class="w-full border rounded-lg p-2">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="Received" class="block text-sm font-medium">Received Via</label>
-                <select id="Received" name="Received" class="w-full border rounded-lg p-2">
-                    <option value="">--Select Method</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Check">Check</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="Purpose" class="block text-sm font-medium">Purpose</label>
-                <input type="text" id="Purpose" name="Purpose" class="w-full border rounded-lg p-2">
-            </div>
-            <div class="flex justify-end space-x-4">
-                <button type="button" id="cancelBtn" class="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400">Cancel</button>
-                <button type="submit" name="create" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Create Loan</button>
-            </div>
-        </form>
-    </div>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="form-collection" id="collectionform">
+    <legend>Add Loan</legend>
+    <form action="loan.php" method="post" class="form-group">
+      <input type="hidden" id="RequestId" name="RequestId">
+
+      <!-- Loan Info -->
+      <div class="grid-container">
+        <div class="form-group">
+          <label for="loanTitle">Loan Title</label>
+          <input type="text" id="loanTitle" name="loanTitle" required>
+        </div>
+        <div class="form-group">
+          <label for="vendorName">Vendor Name</label>
+          <select id="vendorName" name="vendorId" required>
+            <option value="">--SELECT VENDOR--</option>
+            <?php
+              try {
+                $sql = "SELECT vendor_id, vendor_name FROM vendor WHERE Status = 'Active' AND Archive='NO' ORDER BY vendor_name ASC";
+                $stmt = $pdo->query($sql);
+                $vendors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                foreach ($vendors as $vendor) {
+                  echo "<option value='" . htmlspecialchars($vendor['vendor_id'], ENT_QUOTES) . "'>" . htmlspecialchars($vendor['vendor_name'], ENT_QUOTES) . "</option>";
+                }
+              } catch (PDOException $e) {
+                echo "<option value=''>Error loading vendors</option>";
+              }
+            ?>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="loanAmount">Loan Amount</label>
+          <input type="number" id="loanAmount" name="loanAmount" required>
+        </div>
+      </div>
+
+      <!-- Rates -->
+      <div class="grid-container rates">
+        <div class="form-group">
+          <label for="interestRate">Interest Rate</label>
+          <input type="number" id="interestRate" name="interestRate" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="PenaltyRate">Penalty Interest Rate</label>
+          <input type="number" id="PenaltyRate" name="PenaltyRate" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="Disbursement">Loan Disbursement Date</label>
+          <input type="date" id="Disbursement" name="Disbursement" required>
+        </div>
+        <div class="form-group">
+          <label for="day">Payment Due Day</label>
+          <input type="number" id="day" name="day" required>
+        </div>
+      </div>
+
+      <!-- Installment & Collateral -->
+      <div class="grid-container">
+        <div class="form-group">
+          <label for="Installment">Installment</label>
+          <input type="number" id="Installment" name="Installment" required>
+        </div>
+        <div class="form-group">
+          <label for="Collateral">Collateral</label>
+          <input type="text" id="Collateral" name="Collateral">
+        </div>
+        <div class="form-group">
+          <label for="Penalty">Penalty Details</label>
+          <input type="text" id="Penalty" name="Penalty">
+        </div>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="form-group">
+        <label for="Received">Received Via</label>
+        <select id="Received" name="Received">
+          <option value="">--Select Method</option>
+          <option value="Cash">Cash</option>
+          <option value="Check">Check</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+        </select>
+      </div>
+
+      <!-- Purpose -->
+      <div class="form-group">
+        <label for="Purpose">Purpose</label>
+        <input type="text" id="Purpose" name="Purpose">
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        <button type="submit" name="create" class="btn btn-primary">Create Loan</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script>

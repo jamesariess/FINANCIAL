@@ -55,7 +55,7 @@
     <?php endif; ?>
     <br>
     <?php include __DIR__ . '/../../contents/ap/vendor.php'; ?>    <br>
-    <?php include __DIR__ . '/../../modal/ap/loan.html'; ?>    
+   
 </div>
 <script src="<?php echo '../../static/js/filter.js'; ?>"></script>
 <script>
