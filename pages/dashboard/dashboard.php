@@ -309,7 +309,7 @@ try {
     </div>
 </div>
 
-<script src="../../static/js/modal.js"></script>
+<script src="/../../static/js/modal.js"></script>
 
 </body>
 </html>
