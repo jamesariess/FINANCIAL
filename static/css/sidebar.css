@@ -162,6 +162,14 @@ body.dark-mode {
     justify-content: space-between;
 }
 
+.dropdown-toggle .arrow {
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.dropdown-toggle.active .arrow {
+    transform: rotate(90deg);
+}
 
 .dropdown-menu {
     display: none;
