@@ -271,7 +271,7 @@ try {
 
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div class="lg:col-span-2">
-                <div class="bg-slate-900 p-6 rounded-xl shadow-lg border border-slate-800 h-80">
+                <div class="bg-slate-900 p-11 rounded-xl shadow-lg border border-slate-800 h-96 ">
                     <h2 class="text-xl font-semibold mb-4 text-var(--text-light)">Financial Overview</h2>
                     <canvas id="financialChart" class="w-full h-full"></canvas>
                 </div>

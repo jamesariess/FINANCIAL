@@ -83,31 +83,31 @@
         <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('updateModal')">&times;</button>
         <form method="post">
             <input type="hidden" name="bill_id" id="updateBillID">
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Vendor ID:</label>
                 <input type="text" name="vendor_id" id="updateVendorID" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Bill Date:</label>
                 <input type="date" name="bill_date" id="updateBillDate" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Due Date:</label>
                 <input type="date" name="due_date" id="updateDueDate" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Description:</label>
                 <input type="text" name="description" id="updateDescription" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Amount:</label>
                 <input type="number" step="0.01" name="amount" id="updateAmount" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Reference Number:</label>
                 <input type="text" name="reference_no" id="updateReference" class="w-full border border-gray-300 p-2 rounded" required>
             </div>
-            <div class="mb-4">
+            <div class="mb-4 form-group">
                 <label class="block text-gray-700">Created At:</label>
                 <input type="date" name="created_at" id="updateCreated" class="w-full border border-gray-300 p-2 rounded" required>
             </div>

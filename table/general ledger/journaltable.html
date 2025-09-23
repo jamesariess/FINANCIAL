@@ -21,7 +21,7 @@
         <td ><?php echo htmlspecialchars($row['description']); ?></td>
         <td ><?php echo htmlspecialchars($row['referenceType']); ?></td>
         <td ><?php echo htmlspecialchars($row['createdBy']); ?></td>
-        <td class="border p-2 space-x-2">
+        <td >
           <!-- View -->
           <a href="#" 
              class=" hover:underline"
@@ -71,6 +71,7 @@
     <p><strong>Description:</strong> <span id="viewDescription"></span></p>
     <p><strong>Reference Type:</strong> <span id="viewReferenceType"></span></p>
     <p><strong>Created By:</strong> <span id="viewCreatedBy"></span></p>
+                 <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="closeModal('viewModal')">Close</button>
   </div>
 </div>
 
@@ -80,17 +81,22 @@
     <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('updateModal')">&times;</button>
     <h2 class="text-lg font-bold mb-4">Update Journal Entry</h2>
     <form method="post">
+      
       <input type="hidden" name="journalID" id="updateJournalID">
+         <div class="form-group">
       <label class="block mb-2">Date:</label>
       <input type="date" name="date" id="updateDate" class="border p-2 w-full mb-4" required>
+      </div>   <div class="form-group">
       <label class="block mb-2">Description:</label>
       <input type="text" name="description" id="updateDescription" class="border p-2 w-full mb-4" required>
+       </div>   <div class="form-group">
       <label class="block mb-2">Reference Type:</label>
       <input type="text" name="referenceType" id="updateReferenceType" class="border p-2 w-full mb-4" required>
+       </div>   <div class="form-group">
       <label class="block mb-2">Created By:</label>
       <input type="text" name="createdBy" id="updateCreatedBy" class="border p-2 w-full mb-4" required>
-      <div class="flex justify-end space-x-3">
-        <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('updateModal')">Cancel</button>
+      </div><div class="flex justify-end space-x-3">
+      <button type="button" class="text-white px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600" onclick="closeModal('updateModal')">Cancel</button>
         <button type="submit" name="update" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Update</button>
       </div>
     </form>
@@ -103,14 +109,14 @@
     <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
-         <h2 class="text-lg font-bold mb-4">Archive Journal Entry</h2>
+         <h2 class="text-lg font-bold mb-4 text-center">Archive Journal Entry</h2>
     <p>Are you sure you want to archive this journal entry?</p>
     <form method="post">
       <input type="hidden" name="archive_journalID" id="archiveJournalID">
       <div class="flex justify-end space-x-3">
-        <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('archiveModal')">Cancel</button>
-        <button type="submit" name="archive" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Archive</button>
-      </div>
+       <button type="button" onclick="closeModal('archiveModal')" class="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300">Cancel</button>
+                 <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" name="archive">Yes, Archive</button>
+             </div>
     </form>
   </div>
 

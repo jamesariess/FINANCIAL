@@ -1,9 +1,9 @@
 
 <div class="max-w-7xl mx-auto p-6">
-  <form method="POST" id="adjustForm" class="bg-white border border-gray-200 rounded-2xl shadow-md p-8 space-y-6">
-    <h2 class="text-2xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-6">Budget Allocation Adjustment</h2>
+  <form method="POST" id="adjustForm" class=" border border-gray-200 rounded-2xl shadow-md p-8 space-y-6">
+    <h2 class="text-2xl font-semibold  border-b border-gray-200 pb-3 mb-6">Budget Allocation Adjustment</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 form-group">
       <div>
         <label>Department</label>
         <select id="department" name="department" class="w-full p-3 border rounded-lg" required>
@@ -22,8 +22,8 @@
     </div>
 
     <!-- Increase / Decrease -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-      <div class="p-6 border rounded-xl shadow-sm bg-gray-50">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6 form-group">
+      <div class="p-6 border rounded-xl shadow-sm ">
         <h3 class="text-lg font-semibold mb-4">Adjust Allocation (can increase or decrease)</h3>
         <select id="title_increase" name="title_increase" class="w-full p-3 border rounded-lg" required>
           <option value="">--SELECT TITLE--</option>
@@ -38,7 +38,7 @@
         </div>
       </div>
 
-      <div class="p-6 border rounded-xl shadow-sm bg-gray-50">
+      <div class="p-6 border rounded-xl shadow-sm ">
         <h3 class="text-lg font-semibold mb-4">Decrease Allocation (required for increase)</h3>
         <select id="title_decrease" name="title_decrease" class="w-full p-3 border rounded-lg">
           <option value="">--SELECT TITLE--</option>
@@ -54,7 +54,7 @@
       </div>
     </div>
 
-    <div><label>Reason</label><input type="text" name="reason" required class="w-full border p-3 rounded"></div>
+    <div class="form-group"><label>Reason</label><input type="text" name="reason" required class="w-full border p-3 rounded"></div>
     <div class="flex justify-end"><button type="submit" class="px-6 py-3 bg-indigo-600 text-white rounded shadow">Adjust Budget</button></div>
   </form>
 </div>

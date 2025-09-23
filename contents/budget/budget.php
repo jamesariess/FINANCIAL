@@ -1,15 +1,15 @@
-<div class="container mx-auto p-6">
+<div class="container">
   <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between bg-white shadow-md rounded-2xl p-6 border border-gray-200">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between  shadow-md rounded-2xl p-6 border border-gray-200">
     <div>
-      <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+      <h2 class="text-2xl font-bold  flex items-center gap-2">
         <i class="fas fa-bell text-indigo-500"></i>
         Budget | Add Budget
       </h2>
     </div>
     <div class="mt-4 md:mt-0">
       <div class="flex gap-3 items-center">
-<div class="mb-6">
+<div class="mb-6 form-group">
   <label class="block text-gray-700 font-semibold mb-2">Filter by Year</label>
   <select id="yearFilter" class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
     
@@ -34,13 +34,13 @@
 
   <!-- Cards -->
   <div class="mt-8">
-    <h2 class="text-xl font-semibold text-gray-800 mb-4">Department Budgets</h2>
+    <h2 class="text-xl font-semibold  mb-4">Department Budgets</h2>
    <div id="budgetCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   <?php if (count($budgets) > 0): ?>
     <?php foreach ($budgets as $row): ?>
-      <div class="bg-white rounded-xl shadow p-6 border border-gray-200 hover:shadow-lg transition flex flex-col"
+      <div class=" rounded-xl shadow p-6 border border-gray-200 hover:shadow-lg transition flex flex-col"
            data-year="<?= htmlspecialchars($row['DateValid']) ?>">
-        <h3 class="text-lg font-semibold text-gray-800 mb-2"><?= htmlspecialchars($row['Name']) ?></h3>
+        <h3 class="text-lg font-semibold  mb-2"><?= htmlspecialchars($row['Name']) ?></h3>
         <p class="text-gray-600 text-sm mb-4"><?= htmlspecialchars($row['Details']) ?></p>
         <div class="mt-auto pt-4 border-t border-gray-200">
           <div class="flex items-center justify-between">
@@ -72,14 +72,14 @@
 
 <!-- Modal -->
 <div id="budgetModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
-  <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-lg">
+  <div class=" rounded-lg shadow-xl p-6 w-full max-w-lg">
     <div class="flex justify-between items-center border-b pb-3 mb-4">
       <h3 class="text-xl font-bold">Create New Budget</h3>
       <button id="closeModalBtn" type="button" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
     </div>
 <form id="budgetForm" method="POST">
   <!-- Department -->
-  <div class="mb-4">
+  <div class="mb-4 form-group">
     <label class="block text-gray-700 font-semibold mb-2">Department Name</label>
 
     <!-- Dropdown -->
@@ -100,7 +100,7 @@
   </div>
 
   <!-- Year -->
-<div class="mb-4">
+<div class="mb-4 form-group">
   <label for="budgetYear" class="block text-gray-700 font-semibold mb-2">Year</label>
   <select id="budgetYear" name="budgetYear" 
           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
@@ -114,13 +114,13 @@
   </select>
 </div>
   <!-- Amount -->
-  <div class="mb-4">
+  <div class="mb-4 form-group">
     <label for="budgetAmount" class="block text-gray-700 font-semibold mb-2">Budget Amount (₱)</label>
     <input type="number" id="budgetAmount" name="budgetAmount" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
   </div>
 
   <!-- Budget Details -->
-  <div class="mb-4">
+  <div class="mb-4 form-group">
     <label class="block text-gray-700 font-semibold mb-2">Budget Details</label>
     <textarea id="budgetDetailsInput" name="budgetDetails" rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter Budget Details"></textarea>
   </div>

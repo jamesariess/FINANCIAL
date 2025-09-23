@@ -1,4 +1,4 @@
-<?php include __DIR__ . "/../sidebar.html"; ?>
+
 <?php include __DIR__ . '/../../crud/legder/balance.php';?>
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +15,7 @@
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
-            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+            <h1>Disbursement Dashboard </h1>
         </div>
         <div class="theme-toggle-container">
             <span class="theme-label">Dark Mode</span>
@@ -31,7 +31,7 @@
 
 </div>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
-<script src="<?php echo '../../static/js/filter.js';?>"></script>
+
 <script>
       const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('change', function() {

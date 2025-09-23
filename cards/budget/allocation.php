@@ -1,5 +1,5 @@
-<div class="max-w-7xl mx-auto p-6 bg-white shadow-lg rounded-xl mt-4">
-    <h1 class="text-3xl font-extrabold mb-8 text-gray-800 border-b-2 border-gray-200 pb-4">
+<div class="max-w-7xl mx-auto p-6 form-group shadow-lg rounded-xl mt-4">
+    <h1 class="text-3xl font-extrabold mb-8  border-b-2 border-gray-200 pb-4">
         Department Allocations
     </h1>
 
@@ -22,7 +22,7 @@
     <div id="cardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <?php if($selectedYear && count($allocationsByDept) > 0): ?>
             <?php foreach($allocationsByDept as $deptName => $allocs): ?>
-                <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                <div class=" border border-gray-200 rounded-xl p-6 shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <h2 class="text-2xl font-bold mb-4 text-indigo-700 border-b-2 border-indigo-200 pb-2">
                         <?= $deptName ?>
                     </h2>
@@ -36,8 +36,8 @@
                             $monthly = round($yearly / 12);
                             $daily = round($yearly / 365);
                         ?>
-                            <div class="p-4 border border-gray-100 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
-                                <p class="font-bold text-gray-800 text-lg mb-1"><?= $alloc['Title'] ?></p>
+                            <div class="p-4 border border-gray-100 rounded-lg   ">
+                                <p class="font-bold  text-lg mb-1"><?= $alloc['Title'] ?></p>
                                 <p class="text-sm text-gray-600">
                                     Percentage: <span class="font-semibold text-indigo-600"><?= $alloc['Percentage'] ?>%</span>
                                 </p>

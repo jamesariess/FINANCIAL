@@ -4,13 +4,13 @@
 
 <div id="allocationError" class="mb-4 hidden bg-red-200 text-red-800 p-3 rounded"></div>
 
-<div class="bg-white p-6 rounded-2xl shadow-md">
+<div class=" p-6 rounded-2xl shadow-md form-group">
   <h1 class="text-2xl font-bold mb-4 text-indigo-700">Department Cost Allocation</h1>
 
   <form method="POST" id="allocationForm">
-    <div class="grid grid-cols-2 gap-4 mb-6">
-      <div>
-        <label class="block text-gray-700 mb-1">Select Department</label>
+    <div class="grid grid-cols-2 gap-4 mb-6 ">
+      <div >
+        <label class="block  mb-1">Select Department</label>
         <select id="department" name="department" class="w-full p-2 border rounded">
           <option value="">-- Choose Department --</option>
           <?php foreach ($departments as $d): ?>
@@ -24,16 +24,16 @@
         </select>
       </div>
       <div>
-        <label class="block text-gray-700 mb-1">Year</label>
+        <label class="block  mb-1">Year</label>
         <select id="year" name="year" class="w-full p-2 border rounded">
           <option value="">-- Choose Year --</option>
         </select>
       </div>
     </div>
 
-    <div id="budgetInfo" class="mb-6 hidden bg-gray-50 p-4 rounded border">
-      <p class="text-gray-700">Yearly Budget: <span id="yearlyBudget" class="font-bold text-indigo-600"></span></p>
-      <p class="text-gray-700">Remaining Budget: <span id="remainingBudget" class="font-bold text-green-600"></span></p>
+    <div id="budgetInfo" class="mb-6 hidden  p-4 rounded border">
+      <p class="">Yearly Budget: <span id="yearlyBudget" class="font-bold text-indigo-600"></span></p>
+      <p class="">Remaining Budget: <span id="remainingBudget" class="font-bold text-green-600"></span></p>
     </div>
 
     <div class="mt-6">
@@ -41,7 +41,7 @@
         <span>Total Percentage</span>
         <span id="totalPercent">0%</span>
       </div>
-      <div class="w-full bg-gray-200 rounded-full h-3">
+      <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
         <div id="progressBar" class="bg-indigo-500 h-3 rounded-full w-0"></div>
       </div>
 
@@ -209,7 +209,7 @@ function addRow() {
   }
   const container = document.getElementById("allocationRows");
   const row = document.createElement("div");
-  row.className = "grid grid-cols-12 gap-2 items-center bg-gray-50 p-3 rounded border";
+  row.className = "grid grid-cols-12 gap-2 items-center  p-3 rounded border";
   row.innerHTML = `
     <select name="allocations[${rowIndex}][accountID]" class="col-span-3 p-2 border rounded account-select" onchange="updateAccountSelections(this)">
       <option value="">-- Select Account --</option>

@@ -162,7 +162,7 @@
          
             <p><strong>Purpuse:</strong> <span id="viewPurpuse"></span></p>
         </div>
-        <button class="mt-4 px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('viewModal')">Close</button>
+         <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="closeModal('viewModal')">Close</button>
     </div>
 </div>
 
@@ -173,14 +173,14 @@
         <h2 class="text-lg font-bold mb-4">Update Request</h2>
         <form id="updateForm" method="post">    
             <input type="hidden" name="update_request_id" id="updateRequestId">
-            <div class="space-y-4">
+            <div class="space-y-4 form-group">
                 <div>
                     <label for="updateAmount" class="block text-gray-700">Approve Amount:</label>
                     <input type="number" name="update_amount" id="updateAmount" class="w-full p-2 border rounded" required>
                 </div>
             </div>
             <div class="flex justify-end space-x-3 mt-4">
-                <button type="button" class="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400" onclick="closeModal('updateModal')">Cancel</button>
+                <button type="button" class="text-white px-4 py-2 bg-red-500 rounded-lg hover:bg-red-600" onclick="closeModal('updateModal')">Cancel</button>
                 <button name="update" type="submit" onclick="submitUpdate()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Update</button>
             </div>
         </form>

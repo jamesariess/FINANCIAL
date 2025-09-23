@@ -1,7 +1,7 @@
 <div class="container mx-auto p-6">
-    <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-200">
+    <div class=" rounded-2xl shadow-xl p-6 border border-gray-200">
         <div class="flex items-center justify-between mb-6">
-            <h2 class="text-xl font-bold text-gray-800 flex items-center">
+            <h2 class="text-xl font-bold  flex items-center">
                 <i class="fas fa-check-circle text-indigo-500 mr-2"></i>
                 Approval Section
             </h2>
@@ -17,7 +17,7 @@
         <button onclick="closeModals()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
             <i class="fas fa-times"></i>
         </button>
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Request Details</h3>
+        <h3 class="text-lg font-semibold  mb-4">Request Details</h3>
         <div id="modalContent" class="text-sm text-gray-600 space-y-2"></div>
         <div class="mt-4 flex justify-end space-x-2" id="modalButtons"></div>
     </div>
@@ -71,7 +71,7 @@
             if (req.status === "Pending") {
                 buttonHTML = `
                 <div class="mt-4 space-y-3">
-                    <label class="block text-sm text-gray-700">Change Amount</label>
+                    <label class="block text-sm ">Change Amount</label>
                     <input id="approvedAmount-${req.requestID}" 
                            type="number" 
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
@@ -89,10 +89,10 @@
             }
 
             container.innerHTML += `
-                      <div class="bg-gradient-to-br ${cardColor} rounded-xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-opacity-50" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
+                      <div class=" ${cardColor} rounded-xl shadow-lg p-6 hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 border border-opacity-50" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
                     <div class="flex items-center justify-between mb-4">
                         <i class="fas ${icon} text-3xl ${cardColor.split(' ')[2].replace('border-', 'text-')}"></i>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'}">
                             ${req.status}
                         </span>
                     </div>

@@ -91,8 +91,10 @@
         <p><strong>Receipt Date:</strong> <span id="viewReceiptDate"></span></p>
         <p><strong>Receipt Number:</strong> <span id="viewReceiptNumber"></span></p>
         <p><strong>Issued By:</strong> <span id="viewIssueBy"></span></p>
-        <img id="viewReceiptImage" src="" alt="Receipt Image" style="max-width: 100%; height: auto;">
+        <img id="viewReceiptImage" src="<?php echo '../../' . htmlspecialchars($row['receiptImage']); ?>" alt="Receipt Image" style="max-width: 100%; height: auto;">
+      <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="closeModal('viewModal')">Close</button>
       </div>
+      
     </div>
 
 
@@ -104,10 +106,11 @@
     <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                 </svg>
+                <h2 class="text-lg font-bold mb-4 text-center">Archive Receipt</h2>
         <p>Are you sure you want to archive this receipt?</p>
         <form id="archiveForm" method="post" class="flex justify-end space-x-3">
           <input type="hidden" name="receiptID" id="archiveReceiptID">
-        <button type="button" onclick="closeModal('archiveModal')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+         <button type="button" onclick="closeModal('archiveModal')" class="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300">Cancel</button>
       <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" name="archive">Yes, Archive</button>
     </form>
   </div>

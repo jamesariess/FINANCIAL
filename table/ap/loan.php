@@ -95,32 +95,32 @@
             <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('updateModal')">&times;</button>
             <form method="post">
                 <input type="hidden" name="loan_id" id="updateLoanID">
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">Loan Title:</label>
                     <input type="text" name="loanTitle" id="updateLoanTitle" class="w-full border border-gray-300 p-2 rounded" required>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">Loan Amount:</label>
                     <input type="number" name="loanAmount" id="updateLoanAmount" class="w-full border border-gray-300 p-2 rounded" required>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4    form-group">
                     <label class="block text-gray-700">Interest Rate:</label>
                     <input type="number" name="interestRate" id="updateInterestRate" class="w-full border border-gray-300 p-2 rounded" step="0.01" required>
                 </div>
 
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">Start Date:</label>
                     <input type="date" name="startDate" id="updateStartDate" class="w-full border border-gray-300 p-2 rounded" required>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">End Date:</label>
                     <input type="date" name="endDate" id="updateEndDate" class="w-full border border-gray-300 p-2 rounded" required>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">Payment Terms:</label>
                     <input type="number" name="paymentTerms" id="updatePaymentTerms" class="w-full border border-gray-300 p-2 rounded" required>
                 </div>
-                <div class="mb-4">
+                <div class="mb-4 form-group">
                     <label class="block text-gray-700">Notes:</label>
                     <input type="text" name="notes" id="updateNotes" class="w-full border border-gray-300 p-2 rounded">
                 </div>

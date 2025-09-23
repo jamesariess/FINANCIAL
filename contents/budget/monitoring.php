@@ -22,17 +22,17 @@
     }
     </style>
 
-    <div class="max-w-7xl mx-auto p-6">
+    <div class="max-w-7xl mx-auto p-6 form-group">
         <header class="flex items-center justify-between mb-6">
             <div>
                 <h1 class="text-2xl font-semibold">Budget Monitoring</h1>
                 <p class="text-sm text-gray-600">Track budgets, allocations, expenditures and variances</p>
             </div>
             <div class="flex gap-3 items-center">
-                <select id="yearFilter" class="border rounded px-3 py-2 bg-white">
+                <select id="yearFilter" class="border rounded px-3 py-2 ">
           
                 </select>
-                <select id="deptFilter" class="border rounded px-3 py-2 bg-white">
+                <select id="deptFilter" class="border rounded px-3 py-2 ">
                     <option value="all">All Departments</option>
                  
                 </select>
@@ -42,7 +42,7 @@
 
 
         <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-4 rounded-lg shadow flex flex-col border-l-4 border-purple-500">
+            <div class="quick-stat-card purple border-b-2 border-opacity-50">
                 <div class="flex items-center justify-between ">
                     <div >
                         <p class="text-sm text-gray-500">Total Budget</p>
@@ -53,19 +53,19 @@
                 <p class="text-xs text-gray-500 mt-2">Sum of all budgets for selected filters</p>
             </div>
 
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500">
+            <div class="quick-stat-card red border-b-2 border-opacity-50">
                 <p class="text-sm text-gray-500">Total Spent</p>
                 <p id="totalSpent" class="text-xl font-semibold">–</p>
                 <p class="text-xs text-gray-500 mt-2">Total expenditures recorded</p>
             </div>
 
-            <div class="bg-white p-4 rounded-lg shadow  border-l-4 border-green-500">
+            <div class="quick-stat-card green border-b-2 border-opacity-50">
                 <p class="text-sm text-gray-500">Remaining</p>
                 <p id="totalRemaining" class="text-xl font-semibold">–</p>
                 <p class="text-xs text-gray-500 mt-2">Budget - Spent</p>
             </div>
 
-            <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500">
+            <div class="quick-stat-card yellow border-b-2 border-opacity-50">
                 <p class="text-sm text-gray-500">Utilization</p>
                 <p id="utilization" class="text-xl font-semibold">–</p>
                 <p class="text-xs text-gray-500 mt-2">% of budget used</p>
@@ -73,24 +73,24 @@
         </section>
 
 
-<div class="bg-white p-4 rounded-lg shadow mb-6">
+<div class="p-4 rounded-lg shadow mb-6 ">
     <div class="flex items-center justify-between mb-3">
         <h2 class="font-medium">Budget vs Actual (by Title)</h2>
         <div class="text-sm text-gray-500 mb-4">Click bars to view details</div>
     </div>
     <div class="flex flex-col md:flex-row gap-6">
      
-        <div class="w-full md:w-1/2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700 mb-2">Chart View</h3>
+        <div class="w-full md:w-1/2 p-4  rounded-lg border border-gray-200">
+            <h3 class="text-sm font-semibold  mb-2">Chart View</h3>
             <div id="stackedBarChart" class="w-full">
         
             </div>
         </div>
  
-        <div class="w-full md:w-1/2 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <h3 class="text-sm font-semibold text-gray-700 mb-2">Table View</h3>
-            <div class="overflow-x-auto table-section">
-                <table id="costAllocationTable" class="min-w-full divide-y divide-gray-200">
+        <div class="w-full md:w-1/2 p-4  rounded-lg border border-gray-200">
+            <h3 class="text-sm font-semibold  mb-2">Table View</h3>
+            <div class="table-section overflow-x-auto" id="invoiceTableSection">
+              <table id="employeesTable">
                     <thead >
                         <tr>
                             <th >Title</th>
@@ -98,7 +98,7 @@
                             <th>Actual</th>
                         </tr>
                     </thead>
-                    <tbody id="costAllocationTableBody" class="bg-white divide-y divide-gray-200">
+                    <tbody id="costAllocationTableBody" class=" divide-y divide-gray-200">
           
                     </tbody>
                 </table>
@@ -108,10 +108,10 @@
 </div>
    
         <div id="detailModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-end sm:items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow w-full max-w-2xl p-4">
+            <div class=" rounded-lg shadow w-full max-w-2xl p-4">
                 <div class="flex items-center justify-between mb-4">
                     <h3 id="detailTitle" class="text-lg font-semibold">Title Detail</h3>
-                    <button id="closeModal" class="px-3 py-1 border rounded">Close</button>
+                    <button id="closeModal" class="px-3 py-1 border rounded">X</button>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -250,7 +250,7 @@
                     <g transform="translate(170,0)" class="pointer" data-id="${s.id}">
                         <rect x="0" y="${y - 10}" width="${usedWidth}" height="20" class="bar" fill="#a7f3d0" stroke="#059669"></rect>
                         <rect x="${usedWidth}" y="${y - 10}" width="${remainingWidth}" height="20" class="bar" fill="#c7d2fe" stroke="#4338ca"></rect>
-                        <text x="-5" y="${y + 5}" font-size="12" text-anchor="end" fill="#111827">${s.title}</text>
+                        <text x="-5" y="${y + 5}" font-size="12" text-anchor="end" fill="#5c616dff">${s.title}</text>
                     </g>
                 `;
             });

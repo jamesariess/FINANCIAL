@@ -12,7 +12,7 @@
             <th>Action</th>
           </tr>
         </thead>
-        <tbody id="employeesTableBody">s
+        <tbody id="employeesTableBody">
           <?php if(!empty($journalDetails)):
           foreach($journalDetails as $row): ?>
         <tr>
@@ -58,9 +58,10 @@
         <p><strong>Account ID:</strong> <span id="viewAccountID"></span></p>
         <p><strong>Debited Amount:</strong> <span id="viewDebit"></span></p>
         <p><strong>Credit Amount:</strong> <span id="viewCredit"></span></p>
-      </div>
+     
+                      <button class="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600" onclick="closeModal('viewModal')">Close</button>
     </div>
-
+ </div>
 
 
 
