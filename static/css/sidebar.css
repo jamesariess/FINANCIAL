@@ -321,12 +321,12 @@ body.dark-mode {
 }
 
 .btn-secondary {
-    background-color: #6c757d;
+    background-color: #f13131;
     color: white;
 }
 
 .btn-secondary:hover {
-    background-color: #5a6268;
+    background-color: #f13131b3;
 }
 
 .toggle-form-btn {

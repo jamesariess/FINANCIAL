@@ -8,14 +8,14 @@
     .card:hover {
       box-shadow: 0 6px 18px rgba(0,0,0,0.12);
     }
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 2px solid #f0f0f0;
-    }
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
     .card-header h2 {
       margin: 0;
       font-size: 20px;
@@ -29,7 +29,7 @@
     .search-box input {
       padding: 8px 12px;
       border: 1px solid #ddd;
-
+      color: var(--text-dark);
       border-radius: 8px;
       width: 220px;
       transition: 0.3s;
@@ -107,6 +107,7 @@
       -moz-appearance: none;
       background-size: 14px;
     }
+    .dark-mode .search-box input,
     .dark-mode .form-group input,
     .dark-mode .form-group select {
       background: var(--dark-card);
@@ -166,10 +167,20 @@
     flex: 1 1 100%;
     font-size: 18px;
   }
+    .search-box  {
+    order: -1; /* move search on top */
+    width: 100%; /* take full width */
+  }
 
   .search-box input {
-    max-width: 100%;
+    width: 100%;
   }
+
+  .card-header button {
+    width: 100%; /* buttons full width on small screens */
+  }
+
+
 
   .btn {
     width: 100%; /* buttons take full width */

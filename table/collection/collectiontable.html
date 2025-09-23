@@ -143,15 +143,15 @@
     <h2 class="text-xl font-semibold mb-4">Update Plan</h2>
     <form method="POST"  class="space-y-4">
       <input type="hidden" name="planID" id="updatePlanID">
-      <div>
+      <div class="form-group">
         <label class="block text-sm font-medium">Plan Title</label>
         <input type="text" name="plan" id="updatePlanTitle" class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
       </div>
-      <div>
+      <div class="form-group">
         <label class="block text-sm font-medium">Remaining Days</label>
         <input type="number" name="remaining" id="updateRemaining" class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
       </div>
-      <div>
+      <div class="form-group">
         <label class="block text-sm font-medium">Plan Type</label>
         <select name="type" id="updatePlanType"  class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
          
@@ -161,7 +161,7 @@
         </select>
        
       </div>
-      <div>
+      <div class="form-group">
         <label class="block text-sm font-medium">Status</label>
         <select name="status" id="updateStatus" class="w-full border rounded-lg px-3 py-2 focus:ring focus:ring-blue-300">
           <option value="Active">Active</option>
@@ -192,7 +192,7 @@
     <p class="mb-4">Are you sure you want to archive <span class="font-medium" id="archivePlanTitle"></span> (ID: <span id="archivePlanID"></span>)?</p>
     <form method="POST"  class="flex justify-end space-x-3">
       <input type="hidden" name="planID" id="archiveHiddenID">
-      <button type="button" onclick="closeModal('archiveModal')" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Cancel</button>
+      <button type="button" onclick="closeModal('archiveModal')" class="px-4 py-2 bg-blue-200 rounded-lg hover:bg-blue-300">Cancel</button>
       <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" name="archive">Yes, Archive</button>
     </form>
   </div>
