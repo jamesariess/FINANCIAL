@@ -140,4 +140,67 @@
       flex: 1;
     }
 
-    
+    /* 📱 Responsive adjustments */
+@media (max-width: 1024px) {
+  .card {
+    padding: 40px 20px; /* reduce padding for tablets */
+  }
+
+  .search-box input {
+    width: 100%;
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 25px 15px;
+  }
+
+  .card-header {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .card-header h2 {
+    flex: 1 1 100%;
+    font-size: 18px;
+  }
+
+  .search-box input {
+    max-width: 100%;
+  }
+
+  .btn {
+    width: 100%; /* buttons take full width */
+  }
+
+  .filters {
+    grid-template-columns: 1fr; /* stack filters vertically */
+  }
+
+  .date-range {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 15px 10px;
+  }
+
+  .card-header h2 {
+    font-size: 16px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .btn {
+    font-size: 13px;
+    padding: 6px 12px;
+  }
+}

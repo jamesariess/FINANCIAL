@@ -1,4 +1,4 @@
-<link rel="stylesheet" href="<?php echo '../../static/css/filter.css';?>">
+<link rel="stylesheet" href="../../static/css/filter.css?v=<?php echo time(); ?>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">

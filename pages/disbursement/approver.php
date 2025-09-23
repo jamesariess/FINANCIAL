@@ -29,7 +29,7 @@
 <?php include __DIR__ . '/../../cards/disbursement/cashrelease.php'; ?>
 <br>
     <?php include __DIR__ . '/../../contents/disbursement/approver.php';?>
-</div>
+
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
 <script>
       const themeToggle = document.getElementById('themeToggle');
