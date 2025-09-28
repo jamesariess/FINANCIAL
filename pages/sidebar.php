@@ -57,7 +57,7 @@
     <a href="<?php echo $baseURL; ?>general ledger/journalentries.php" class="sidebar-item">Journal Entries</a>
 
     <a href="<?php echo $baseURL; ?>general ledger/ledgerbalances.php" class="sidebar-item">Account Ledger</a>
-    <!-- <a href="#" class="sidebar-item">Period Control</a> -->
+    <a href="#" class="sidebar-item">Cash Management</a>
   </div>
  </div>
 
