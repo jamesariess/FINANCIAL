@@ -2,10 +2,10 @@
 <?php include __DIR__ . '/../../crud/legder/trial.php';?>
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trial Balance </title>
+    <title>Cash Management </title>
  <?php include "../../static/head/header.php" ?>
 </head>
 <body>
@@ -25,12 +25,12 @@
             </label>
         </div>
     </div>
-
+   <?php include __DIR__ . '/../../cards/gl/add.php';?>
     <?php include __DIR__ . '/../../table/general ledger/trialbalance.html';?>
-
+<?php include __DIR__ . '/../../modal/general ledger/add.html';?>
 </div>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
-<script src="<?php echo '../../static/js/filter.js';?>"></script>
+
 <script>
       const themeToggle = document.getElementById('themeToggle');
     themeToggle.addEventListener('change', function() {
@@ -70,8 +70,8 @@ overlay.addEventListener('click', function() {
         });
     });
 
+    
 </script>
-
 </body>
 
 </html>

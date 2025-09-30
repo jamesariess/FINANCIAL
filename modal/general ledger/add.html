@@ -1,0 +1,159 @@
+<div>
+<div id="depositModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+    <h2 class="text-xl font-semibold mb-4">Deposit Funds</h2>
+
+    <form method="POST" id="depositForm">
+      <input type="hidden" name="depositType" id="depositType">
+
+
+      <div id="bankSelectWrapper">
+        <label class="block text-sm">Select Bank</label>
+        <select name="bankID" id="bankID" class="w-full border rounded px-3 py-2 mb-2">
+          <option value="">-- Choose Bank --</option>
+          <?php
+            $banks = $pdo->query("
+                SELECT DISTINCT bankName, MIN(bankID) as bankID 
+                FROM bank 
+                WHERE Archive = 'NO'
+                GROUP BY bankName
+                ORDER BY bankName ASC
+            ")->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($banks as $bank): ?>
+            <option value="<?= $bank['bankID']; ?>"><?= htmlspecialchars($bank['bankName']); ?></option>
+          <?php endforeach; ?>
+        </select>
+
+        <a href="#" id="bankSelectAdd" class="text-blue-600 text-sm">+ Add New</a>
+      </div>
+
+      <div id="newBankWrapper" class="hidden">
+        <label class="block text-sm">Enter Bank Name</label>
+        <input type="text" name="newBankName" class="w-full border rounded px-3 py-2 mb-2">
+        <a href="#" id="bankSelectBack" class="text-blue-600 text-sm">← Back to Select</a>
+      </div>
+
+      <label class="block text-sm">Amount</label>
+      <input type="number" name="amount" step="0.01" required class="w-full border rounded px-3 py-2 mb-3">
+
+      <label class="block text-sm">Reference</label>
+      <input type="text" name="reference" class="w-full border rounded px-3 py-2 mb-3">
+
+      <div class="flex justify-end space-x-2">
+        <button type="button" data-close-modal class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+        <button type="submit" name="saveDeposit" class="bg-blue-600 text-white px-4 py-2 rounded">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ====== WITHDRAW MODAL ====== -->
+<div id="withdrawModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 mx-4">
+    <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
+    <form id="withdrawForm" method="POST">
+      <input type="hidden" name="action" value="withdraw">
+
+      <label class="block text-sm mb-1">Select Fund (Bank)</label>
+      <select name="fundID" id="withdrawFundID" class="w-full border rounded px-3 py-2 mb-3" required>
+        <option value="">-- Choose Bank --</option>
+        <?php foreach ($banksForWithdraw as $bank): ?>
+          <option value="<?= $bank['fundID']; ?>"><?= htmlspecialchars($bank['bankName']); ?> (₱<?= number_format($bank['useAmount'],2) ?>)</option>
+        <?php endforeach; ?>
+      </select>
+
+      <label class="block text-sm mb-1">Withdraw Amount</label>
+      <input type="number" name="amount" step="0.01" min="0.01" class="w-full border rounded px-3 py-2 mb-3" required>
+
+      <div class="flex justify-end gap-3">
+        <button type="button" data-close-modal class="px-4 py-2 bg-gray-200 rounded-lg">Cancel</button>
+        <button type="submit" name="saveWithdraw" class="px-4 py-2 bg-red-500 text-white rounded-lg">Withdraw</button>
+      </div>
+    </form>
+  </div>
+</div>
+</div>
+<!-- ====== JS - attach handlers after DOM ready (paste this before </body>) ====== -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const depositModal = document.getElementById('depositModal');
+  const withdrawModal = document.getElementById('withdrawModal');
+
+  // helpers
+  function showModal(modal) { modal.classList.remove('hidden'); }
+  function hideModal(modal) { modal.classList.add('hidden'); }
+
+  // deposit buttons (Bank / Owner / Petty Cash)
+  document.querySelectorAll('.open-deposit').forEach(btn => {
+    btn.addEventListener('click', function (e) {
+      const type = btn.dataset.type || 'Bank';
+      document.getElementById('depositType').value = type;
+
+      // show/hide bank selection for non-Bank deposits
+      if (type !== 'Bank') {
+        document.getElementById('bankSelectWrapper').classList.add('hidden');
+        document.getElementById('newBankWrapper').classList.add('hidden');
+        document.querySelector("[name='newBankName']").removeAttribute('required');
+        document.getElementById('bankID').removeAttribute('required');
+      } else {
+        document.getElementById('bankSelectWrapper').classList.remove('hidden');
+        document.getElementById('newBankWrapper').classList.add('hidden');
+        document.querySelector("[name='newBankName']").removeAttribute('required');
+        document.getElementById('bankID').setAttribute('required','true');
+      }
+
+      showModal(depositModal);
+    });
+  });
+
+  // withdraw open
+  const openWithdrawBtn = document.getElementById('open-withdraw');
+  if (openWithdrawBtn) openWithdrawBtn.addEventListener('click', () => showModal(withdrawModal));
+
+  // close buttons inside modals (data-close-modal)
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', function () {
+      const modalEl = btn.closest('.fixed');
+      if (modalEl) hideModal(modalEl);
+    });
+  });
+
+  // overlay click -> close when clicking on the backdrop
+  [depositModal, withdrawModal].forEach(modal => {
+    if (!modal) return;
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) hideModal(modal);
+    });
+  });
+
+  // keyboard ESC to close
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      hideModal(depositModal);
+      hideModal(withdrawModal);
+    }
+  });
+
+  // + Add New / Back to Select links
+  const addLink = document.getElementById('bankSelectAdd');
+  const backLink = document.getElementById('bankSelectBack');
+  if (addLink) addLink.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    document.getElementById('bankSelectWrapper').classList.add('hidden');
+    document.getElementById('newBankWrapper').classList.remove('hidden');
+    document.querySelector("[name='newBankName']").setAttribute('required','true');
+    document.getElementById('bankID').removeAttribute('required');
+  });
+  if (backLink) backLink.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    document.getElementById('bankSelectWrapper').classList.remove('hidden');
+    document.getElementById('newBankWrapper').classList.add('hidden');
+    document.querySelector("[name='newBankName']").removeAttribute('required');
+    document.getElementById('bankID').setAttribute('required','true');
+  });
+
+  // expose small global helpers for backward compatibility (optional)
+  window.openDepositModal = function(type){ const btn = document.querySelector('.open-deposit[data-type="'+type+'"]'); if(btn) btn.click(); };
+  window.openWithdrawModal = function(){ openWithdrawBtn && openWithdrawBtn.click(); };
+});
+</script>

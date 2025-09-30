@@ -183,7 +183,7 @@ try {
     if ($selectedPeriodId) {
         $sqlTB .= " WHERE e.periodID = :period_id ";
     }
-    $sqlTB .= " GROUP BY c.accountID, c.accountName, c.accounType
+    $sqlTB .= " GROUP BY  c.accountName, c.accounType
                 ORDER BY c.accountName";
     $stmt = $pdo->prepare($sqlTB);
     if ($selectedPeriodId) $stmt->bindValue(':period_id', $selectedPeriodId, PDO::PARAM_INT);
@@ -203,7 +203,7 @@ try {
               JOIN entries e ON jd.journalID = e.journalID
               WHERE LOWER(c.accounType) IN ('revenue','income','expense','expenses')";
     if ($selectedPeriodId) $sqlIS .= " AND e.periodID = :period_id ";
-    $sqlIS .= " GROUP BY c.accountID, c.accountName, c.accounType
+    $sqlIS .= " GROUP BY  c.accountName, c.accounType
                 ORDER BY c.accounType, c.accountName";
     $stmt = $pdo->prepare($sqlIS);
     if ($selectedPeriodId) $stmt->bindValue(':period_id', $selectedPeriodId, PDO::PARAM_INT);
@@ -223,7 +223,7 @@ try {
               JOIN entries e ON jd.journalID = e.journalID
               WHERE LOWER(c.accounType) IN ('assets','asset','liabilities','liability','equity','owner equity')";
     if ($selectedPeriodId) $sqlBS .= " AND e.periodID = :period_id ";
-    $sqlBS .= " GROUP BY c.accountID, c.accountName, c.accounType
+    $sqlBS .= " GROUP BY  c.accountName, c.accounType
                 ORDER BY FIELD(LOWER(c.accounType),'assets','asset','liabilities','liability','equity','owner equity'), c.accountName";
     $stmt = $pdo->prepare($sqlBS);
     if ($selectedPeriodId) $stmt->bindValue(':period_id', $selectedPeriodId, PDO::PARAM_INT);
