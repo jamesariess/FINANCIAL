@@ -175,22 +175,7 @@ try {
 </head>
 <body>
     <?php include "../sidebar.php"; ?>
-<div class="overlay" id="overlay"></div>
 
-<div class="content" id="mainContent">
-    <div class="header">
-        <div class="hamburger" id="hamburger">☰</div>
-        <div>
-            <h1>Admin Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
-        </div>
-        <div class="theme-toggle-container">
-            <span class="theme-label">Dark Mode</span>
-            <label class="theme-switch">
-                <input type="checkbox" id="themeToggle">
-                <span class="slider"></span>
-            </label>
-        </div>
-    </div>
 
     <div class="w-full h-full space-y-8">
         <header>
@@ -308,8 +293,9 @@ try {
         </section>
     </div>
 </div>
-
+<?php include "../../static/js/modal.php" ?>
 <script>
+  
     let isDarkMode = false;
 
 function getChartColors(isDark) {
@@ -332,46 +318,6 @@ function getChartColors(isDark) {
 
 let colors = getChartColors(isDarkMode);
 
-   const themeToggle = document.getElementById('themeToggle');
-    themeToggle.addEventListener('change', function() {
-      document.body.classList.toggle('dark-mode', this.checked);
-      // Update chart colors when theme changes
-      updateChartColors();
-    });
-
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const hamburger = document.getElementById('hamburger');
-    const overlay = document.getElementById('overlay');
-
-    // Sidebar toggle logic
-    hamburger.addEventListener('click', function() {
-      if (window.innerWidth <= 992) {
-        sidebar.classList.toggle('show');
-        overlay.classList.toggle('show');
-      } else {
-        sidebar.classList.toggle('collapsed');
-        mainContent.classList.toggle('expanded');
-      }
-    });
-
-    // Close sidebar on overlay click
-    overlay.addEventListener('click', function() {
-      sidebar.classList.remove('show');
-      overlay.classList.remove('show');
-    });
-
-    // Dropdown toggle logic
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(event) {
-            event.preventDefault();
-            const parentDropdown = this.closest('.dropdown');
-            parentDropdown.classList.toggle('active');
-        });
-    });
-
-    // Function to get CSS variable value
     function getCssVariable(name) {
         return getComputedStyle(document.body).getPropertyValue(name).trim();
     }
@@ -418,8 +364,7 @@ const financialChart = new Chart(ctx, {
     }
 });
 
-    
-    // Function to update chart colors
+   
 themeToggle.addEventListener('change', function() {
     document.body.classList.toggle('dark-mode', this.checked);
 
@@ -442,6 +387,9 @@ themeToggle.addEventListener('change', function() {
 
     window.onload = createChart;
 </script>
+
+
+
 
 </body>
 </html>

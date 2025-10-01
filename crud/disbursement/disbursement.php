@@ -3,11 +3,6 @@ include_once __DIR__ . '/../../utility/connection.php';
 
 date_default_timezone_set('Asia/Manila');
 
-$id = $_GET['id'] ?? null;
-$sql = "SELECT * FROM disbursement WHERE disbursement_id = :id";
-$stmt = $pdo->prepare($sql);
-$stmt->bindParam(':id', $id);
-$stmt->execute();
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     

@@ -1,5 +1,4 @@
-<div>
-<div id="depositModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+<div id="depositModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center form-group">
   <div class="bg-white rounded-lg shadow-lg w-96 p-6">
     <h2 class="text-xl font-semibold mb-4">Deposit Funds</h2>
 
@@ -48,7 +47,7 @@
 </div>
 
 <!-- ====== WITHDRAW MODAL ====== -->
-<div id="withdrawModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
+<div id="withdrawModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center form-group">
   <div class="bg-white rounded-2xl shadow-lg w-full max-w-md p-6 mx-4">
     <h2 class="text-xl font-bold mb-4">Withdraw Funds</h2>
     <form id="withdrawForm" method="POST">
@@ -58,7 +57,9 @@
       <select name="fundID" id="withdrawFundID" class="w-full border rounded px-3 py-2 mb-3" required>
         <option value="">-- Choose Bank --</option>
         <?php foreach ($banksForWithdraw as $bank): ?>
-          <option value="<?= $bank['fundID']; ?>"><?= htmlspecialchars($bank['bankName']); ?> (₱<?= number_format($bank['useAmount'],2) ?>)</option>
+          <option value="<?= $bank['bankID']; ?>">
+            <?= htmlspecialchars($bank['bankName']); ?> (₱<?= number_format($bank['useAmount'],2) ?>)
+          </option>
         <?php endforeach; ?>
       </select>
 
@@ -73,8 +74,63 @@
   </div>
 </div>
 </div>
-<!-- ====== JS - attach handlers after DOM ready (paste this before </body>) ====== -->
+
+
+
+
+<div id="bankModal" class="fixed inset-0 hidden bg-black bg-opacity-40 flex items-center justify-center z-50 form-group">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6">
+    <h2 class="text-lg font-bold mb-4">Bank Details</h2>
+    <form method="POST" id="bankForm">
+      <input type="hidden" id="bankId" name="bankId">
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium">Bank Name</label>
+        <input type="text" id="bankName" name="bankName" 
+          class="w-full p-2 border rounded-lg" readonly>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium">Status</label>
+        <select id="status" name="status" class="w-full p-2 border rounded-lg">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="flex justify-end gap-3">
+        <button type="submit" name="editBank" 
+          class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+          Save Changes
+        </button>
+        <button type="submit" name="archiveBank" 
+          class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+          Archive
+        </button>
+        <button type="button" onclick="closeBankModal()" 
+          class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
 <script>
+
+    function openBankModal(id, name, status) {
+  document.getElementById("bankId").value = id;
+  document.getElementById("bankName").value = name;
+  document.getElementById("status").value = status;
+
+  document.getElementById("bankModal").classList.remove("hidden");
+}
+
+function closeBankModal() {
+  document.getElementById("bankModal").classList.add("hidden");
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   const depositModal = document.getElementById('depositModal');
   const withdrawModal = document.getElementById('withdrawModal');
@@ -90,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('depositType').value = type;
 
       // show/hide bank selection for non-Bank deposits
-      if (type !== 'Bank') {
+      if (type !== 'Bank' && type !== 'Owner') {
         document.getElementById('bankSelectWrapper').classList.add('hidden');
         document.getElementById('newBankWrapper').classList.add('hidden');
         document.querySelector("[name='newBankName']").removeAttribute('required');

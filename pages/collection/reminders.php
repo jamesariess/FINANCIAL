@@ -13,21 +13,7 @@ include "../../crud/collection/reminder.php";
 </head>
 <body>
     <?php include "../sidebar.php"; ?> 
-    <div class="overlay" id="overlay"></div>
-    <div class="content" id="mainContent">
-        <div class="header">
-            <div class="hamburger" id="hamburger">☰</div>
-            <div>
-                <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
-            </div>
-            <div class="theme-toggle-container">
-                <span class="theme-label">Dark Mode</span>
-                <label class="theme-switch">
-                    <input type="checkbox" id="themeToggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-        </div>
+   
         <!-- Confirmation Modal -->
 <div id="confirmationModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 shadow-lg w-full max-w-md">
@@ -55,6 +41,7 @@ include "../../crud/collection/reminder.php";
 </div>
 
 <script src="<?php echo '../../static/js/filter.js'; ?>"></script>
+<?php include "../../static/js/modal.php" ?>
 <script>
      const data = <?php 
      $data = [
@@ -272,46 +259,8 @@ function attachSendReminderListeners() {
     // Attach initial listeners
     attachSendReminderListeners();
 
-    // Existing theme toggle and sidebar logic
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('change', function() {
-            document.body.classList.toggle('dark-mode', this.checked);
-        });
-    }
+ 
 
-    const sidebar = document.getElementById('sidebar');
-    const mainContent = document.getElementById('mainContent');
-    const hamburger = document.getElementById('hamburger');
-    const overlay = document.getElementById('overlay');
-
-    if (hamburger) {
-        hamburger.addEventListener('click', function() {
-            if (window.innerWidth <= 992) {
-                sidebar.classList.toggle('show');
-                overlay.classList.toggle('show');
-            } else {
-                sidebar.classList.toggle('collapsed');
-                mainContent.classList.toggle('expanded');
-            }
-        });
-    }
-
-    if (overlay) {
-        overlay.addEventListener('click', function() {
-            sidebar.classList.remove('show');
-            overlay.classList.remove('show');
-        });
-    }
-
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(event) {
-            event.preventDefault();
-            const parentDropdown = this.closest('.dropdown');
-            parentDropdown.classList.toggle('active');
-        });
-    });
 });
 </script>
 </body>

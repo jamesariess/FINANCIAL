@@ -1,30 +1,29 @@
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
   <!-- Bank Balance -->
-  <div class="bg-white rounded-2xl shadow p-6 border-t-4 border-purple-500">
-    <p class="text-gray-500 text-sm">Bank Balance</p>
-    <h2 class="text-3xl font-bold mt-2 text-gray-800">₱<?php echo number_format(getBankBalance($pdo), 2); ?></h2>
-    <div class="flex gap-3 mt-4">
-      <button type="button" class="open-deposit px-4 py-2 bg-purple-500 text-white rounded-lg" data-type="Bank">Deposit</button>
-      <button type="button" id="open-withdraw" class="px-4 py-2 bg-gray-200 rounded-lg">Withdraw</button>
+  <div class="quick-stat-card purple border-b-2 border-opacity-50 p-4 rounded-xl shadow-sm">
+    <p class="text-gray-500 text-xs">Bank Balance</p>
+    <h2 class="text-xl font-bold mt-1 text-gray-800">₱<?php echo number_format(getBankBalance($pdo), 2); ?></h2>
+    <div class="flex gap-2 mt-2">
+      <button type="button" class="open-deposit px-3 py-1.5 bg-purple-500 text-white text-sm rounded-md" data-type="Bank">Deposit</button>
+      <button type="button" id="open-withdraw" class="px-3 py-1.5 bg-gray-200 text-sm rounded-md">Withdraw</button>
     </div>
   </div>
 
   <!-- Owner Deposit -->
-  <div class="bg-white rounded-2xl shadow p-6 border-t-4 border-green-500">
-    <p class="text-gray-500 text-sm">Owner Deposit</p>
-    <h2 class="text-3xl font-bold mt-2 text-gray-800">₱<?php echo number_format(getOwnerDeposit($pdo), 2); ?></h2>
-    <div class="flex gap-3 mt-4">
-      <button type="button" class="open-deposit px-4 py-2 bg-green-500 text-white rounded-lg" data-type="Owner">Add Capital</button>
+  <div class="quick-stat-card green border-b-2 border-opacity-50 p-4 rounded-xl shadow-sm">
+    <p class="text-gray-500 text-xs">Owner Deposit</p>
+    <h2 class="text-xl font-bold mt-1 text-gray-800">₱<?php echo number_format(getOwnerDeposit($pdo), 2); ?></h2>
+    <div class="flex gap-2 mt-2">
+      <button type="button" class="open-deposit px-3 py-1.5 bg-green-500 text-white text-sm rounded-md" data-type="Owner">Add Capital</button>
     </div>
   </div>
 
   <!-- Cash On Hand -->
-  <div class="bg-white rounded-2xl shadow p-6 border-t-4 border-red-500">
-    <p class="text-gray-500 text-sm">Cash On Hand</p>
-    <h2 class="text-3xl font-bold mt-2 text-gray-800">₱<?php echo number_format(getCashOnHand($pdo), 2); ?></h2>
-    <div class="mt-3">
-      <button type="button" class="open-deposit px-4 py-2 bg-red-500 text-white rounded-lg" data-type="Petty Cash">Add Capital</button>
+  <div class="quick-stat-card red border-b-2 border-opacity-50 p-4 rounded-xl shadow-sm">
+    <p class="text-gray-500 text-xs">Cash On Hand</p>
+    <h2 class="text-xl font-bold mt-1 text-gray-800">₱<?php echo number_format(getCashOnHand($pdo), 2); ?></h2>
+    <div class="mt-2">
+      <button type="button" class="open-deposit px-3 py-1.5 bg-red-500 text-white text-sm rounded-md" data-type="Petty Cash">Add Capital</button>
     </div>
   </div>
 </div>
-
