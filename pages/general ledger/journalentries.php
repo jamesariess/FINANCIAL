@@ -18,7 +18,7 @@
 
 </div>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
-
+<?php include "../../static/js/modal.php" ?>
 </body>
 
 </html>

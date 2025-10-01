@@ -138,7 +138,7 @@
     <div class="header">
         <div class="hamburger" id="hamburger">☰</div>
         <div>
-            <h1>Disbursement Dashboard <span class="system-title">| (NAME OF DEPARTMENT)</span></h1>
+           
         </div>
         <div class="theme-toggle-container">
             <span class="theme-label">Dark Mode</span>
