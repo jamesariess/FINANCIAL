@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 
 function getBankBalance($pdo) {
-    $stmt = $pdo->query("SELECT SUM(Amount - UsedAmount) AS balance FROM funds WHERE Archive='NO'");
+    $stmt = $pdo->query("SELECT SUM(Amount - UsedAmount) AS balance FROM funds WHERE Archive='NO' AND fundType=!'PettyCash'");
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     return $row['balance'] ?? 0;
 }

@@ -10,8 +10,6 @@
 </head>
 <body>
     <?php include "../sidebar.php"; ?> 
-
-
     <?php include __DIR__ . '/../../cards/budget/budget.php'; ?>
     <?php include __DIR__ . '/../../ai/budget/budget.php'; ?>
   <?php include __DIR__ . '/../../contents/budget/budget.php'; ?>

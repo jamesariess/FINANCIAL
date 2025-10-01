@@ -1,4 +1,5 @@
-<div class="container">
+
+  <div class="container">
   <!-- Header -->
   <div class="flex flex-col md:flex-row md:items-center md:justify-between  shadow-md rounded-2xl p-6 border border-gray-200">
     <div>
@@ -15,7 +16,7 @@
     
     <?php
       // Fetch DISTINCT years from departmentbudget
-      $yearStmt = $pdo->query("SELECT DISTINCT DateValid FROM departmentbudget ORDER BY DateValid ASC");
+      $yearStmt = $pdo->query("SELECT DISTINCT YEAR(DateValid) AS y FROM departmentbudget ORDER BY y ASC");
       $years = $yearStmt->fetchAll(PDO::FETCH_COLUMN);
 
       foreach ($years as $year) {
@@ -39,7 +40,7 @@
   <?php if (count($budgets) > 0): ?>
     <?php foreach ($budgets as $row): ?>
       <div class=" rounded-xl shadow p-6 border border-gray-200 hover:shadow-lg transition flex flex-col"
-           data-year="<?= htmlspecialchars($row['DateValid']) ?>">
+           data-year="<?= date('Y', strtotime($row['DateValid'])) ?>">
         <h3 class="text-lg font-semibold  mb-2"><?= htmlspecialchars($row['Name']) ?></h3>
         <p class="text-gray-600 text-sm mb-4"><?= htmlspecialchars($row['Details']) ?></p>
         <div class="mt-auto pt-4 border-t border-gray-200">
@@ -78,6 +79,9 @@
       <button id="closeModalBtn" type="button" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
     </div>
 <form id="budgetForm" method="POST">
+  <?php if ($error): ?>
+  <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"><?php echo $error; ?></div>
+  <?php endif; ?>
   <!-- Department -->
   <div class="mb-4 form-group">
     <label class="block text-gray-700 font-semibold mb-2">Department Name</label>
@@ -116,7 +120,8 @@
   <!-- Amount -->
   <div class="mb-4 form-group">
     <label for="budgetAmount" class="block text-gray-700 font-semibold mb-2">Budget Amount (₱)</label>
-    <input type="number" id="budgetAmount" name="budgetAmount" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+    <input type="number" id="budgetAmount" name="budgetAmount" step="0.01" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required min="0">
+    <small id="maxAllowedMsg" class="text-gray-500 text-sm mt-1 hidden">Maximum allowed: ₱<span id="maxValue"></span></small>
   </div>
 
   <!-- Budget Details -->
@@ -133,7 +138,14 @@
   </div>
 </div>
 
-
+<?php if ($error): ?>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('budgetModal');
+    modal.style.display = 'flex';
+  });
+</script>
+<?php endif; ?>
 
 <script>
 const modal = document.getElementById('budgetModal');
@@ -146,6 +158,9 @@ closeBtn.onclick = () => modal.style.display = 'none';
 window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
 
 const deptDetailsMap = <?php echo json_encode($deptDetails); ?>;
+
+const yearSums = <?php echo json_encode($yearSums); ?>;
+const totalGLCash = <?php echo json_encode($totalGLCash); ?>;
 
 const deptSelect = document.getElementById("deptNameSelect");
 const deptInput = document.getElementById("deptNameInput");
@@ -197,6 +212,43 @@ form.addEventListener("submit", function() {
         realDeptName.value = deptInput.value;
     }
 });
+
+// Budget amount validation with automatic blocking
+const budgetYearSelect = document.getElementById('budgetYear');
+const budgetAmountInput = document.getElementById('budgetAmount');
+const maxAllowedMsg = document.getElementById('maxAllowedMsg');
+const maxValueSpan = document.getElementById('maxValue');
+
+function validateBudgetAmount() {
+    const year = parseInt(budgetYearSelect.value);
+    if (!year) {
+        maxAllowedMsg.classList.add('hidden');
+        budgetAmountInput.max = '';
+        return;
+    }
+
+    const existing = yearSums[year] || 0;
+    const maxAdditional = Math.max(0, totalGLCash - existing);
+
+    // Set max attribute for number input
+    budgetAmountInput.max = maxAdditional;
+
+    // Show max allowed message
+    maxValueSpan.textContent = maxAdditional.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    maxAllowedMsg.classList.remove('hidden');
+
+    // Clamp the current value
+    let amount = parseFloat(budgetAmountInput.value) || 0;
+    if (amount > maxAdditional) {
+        budgetAmountInput.value = maxAdditional.toFixed(2);
+    }
+}
+
+budgetYearSelect.addEventListener('change', validateBudgetAmount);
+budgetAmountInput.addEventListener('input', validateBudgetAmount);
+
+// Initial validation on load if year is selected
+document.addEventListener('DOMContentLoaded', validateBudgetAmount);
 
 
 

@@ -1,5 +1,5 @@
 <div class="container mx-auto">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
 
         <!-- Total Budgets -->
         <div class="quick-stat-card purple border-b-2 border-opacity-50">
@@ -37,6 +37,17 @@
             </div>
         </div>
 
+             <div class="quick-stat-card blue border-b-2 border-opacity-50">
+            <div class="flex items-center mb-3">
+                <i class="fas fa-times-circle text-blue-600 text-xl mr-2"></i>
+                <h3 class="text-base font-semibold text-gray-800">GL Cash</h3>
+            </div>
+            <div class="flex items-end justify-between">
+                <div id="Cash" class="text-2l font-bold text-blue-600">0</div>
+                <span class="text-gray-500 text-sm">Available</span>
+            </div>
+        </div>
+
         <!-- Pending Budgets -->
         <div class="quick-stat-card yellow border-b-2 border-opacity-50">
             <div class="flex items-center mb-3">
@@ -58,4 +69,5 @@
             document.getElementById("approvedBudgets").textContent = data.approvedBudgets;
             document.getElementById("cancelledBudgets").textContent = data.cancelledBudgets;
             document.getElementById("totalDepartments").textContent = data.totalDepartments;
+             document.getElementById("Cash").textContent = data.cash;
 </script>

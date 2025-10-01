@@ -3,7 +3,7 @@ include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
 
-$stmtTotalBudgets = $pdo->prepare("SELECT IFNULL(SUM(Amount), 0) AS total FROM departmentbudget WHERE YEAR(DateValid) = YEAR(CURDATE())");
+$stmtTotalBudgets = $pdo->prepare("SELECT IFNULL(SUM(Amount), 0) AS total FROM departmentbudget WHERE YEAR(DateValid) = YEAR(CURDATE()) AND status = 'Proceed'");
 $stmtTotalBudgets->execute();
 $totalBudgets = $stmtTotalBudgets->fetch(PDO::FETCH_ASSOC)['total'];
 
@@ -22,12 +22,32 @@ $stmtTotalDepartments = $pdo->prepare("SELECT COUNT(DISTINCT Name) AS totalDepar
 $stmtTotalDepartments->execute();
 $totalDepartments = $stmtTotalDepartments->fetch(PDO::FETCH_ASSOC)['totalDepartments'];
 
+$stmtCashOnHand = $pdo->query("
+    SELECT IFNULL(SUM(jd.debit) - SUM(jd.credit), 0) AS cashOnHand
+    FROM details jd
+    JOIN chartofaccount c ON jd.accountID = c.accountID
+    WHERE c.accountName = 'Cash on Hand'
+");
+$cashOnHand = $stmtCashOnHand->fetch(PDO::FETCH_ASSOC)['cashOnHand'];
+
+
+$stmtBankBalance = $pdo->query("
+    SELECT IFNULL(SUM(f.Amount - f.UsedAmount), 0) AS bankBalance
+    FROM funds f
+    WHERE f.Archive = 'NO'
+");
+$bankBalance = $stmtBankBalance->fetch(PDO::FETCH_ASSOC)['bankBalance'];
+
+// ---- NEW: Total GL Cash (Cash on Hand + Bank Balance) ----
+$totalGLCash = $cashOnHand + $bankBalance;
+
 
 $data = [
     'totalBudgets' => '₱' . number_format($totalBudgets, 2, '.', ','),
     'approvedBudgets' => '₱' . number_format($approvedBudgets, 2, '.', ','),
     'cancelledBudgets' => '₱' . number_format($cancelledBudgets, 2, '.', ','),
-    'totalDepartments' => $totalDepartments
+    'totalDepartments' => $totalDepartments,
+    'cash' => '₱' . number_format( $totalGLCash, 2, '.', ',')
 ];
 
 
@@ -35,6 +55,7 @@ $data = [
 
 
 $reload = false;
+$error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $deptName     = $_POST['deptName'] ?? '';
@@ -43,22 +64,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $year         = $_POST['budgetYear'] ?? date("Y");
 
     if ($deptName && $budgetAmount && $budgetDetails) {
-        $check = $pdo->prepare("SELECT COUNT(*) FROM departmentbudget WHERE Name = :name AND DateValid = :year AND status='Proceed'");
-        $check->execute([':name' => $deptName, ':year' => $year]);
+        $check = $pdo->prepare("SELECT COUNT(*) FROM departmentbudget WHERE Name = :name AND YEAR(DateValid) = :year AND status='Proceed'");
+        $check->execute([':name' => $deptName, ':year' => (int)$year]);
         $exists = $check->fetchColumn();
 
         if ($exists == 0) {
-            $stmt = $pdo->prepare("
-                INSERT INTO departmentbudget (Name, Amount, DateValid, Details, status) 
-                VALUES (:name, :amount, :year, :details, 'Proceed')
-            ");
-            $stmt->execute([
-                ':name'    => $deptName,
-                ':amount'  => $budgetAmount,
-                ':year'    => $year,
-                ':details' => $budgetDetails
-            ]);
-            $reload = true;
+            $stmtExistingSum = $pdo->prepare("SELECT IFNULL(SUM(Amount), 0) AS existing FROM departmentbudget WHERE status = 'Proceed' AND YEAR(DateValid) = :year");
+            $stmtExistingSum->execute([':year' => (int)$year]);
+            $existing = $stmtExistingSum->fetch(PDO::FETCH_ASSOC)['existing'];
+
+            if ($existing + $budgetAmount > $totalGLCash) {
+                $error = "The proposed budget would exceed the available cash of ₱" . number_format($totalGLCash, 2) . ". Maximum additional budget allowed: ₱" . number_format($totalGLCash - $existing, 2) . ".";
+            } else {
+                $stmt = $pdo->prepare("
+                    INSERT INTO departmentbudget (Name, Amount, DateValid, Details, status) 
+                    VALUES (:name, :amount, :year, :details, 'Proceed')
+                ");
+                $stmt->execute([
+                    ':name'    => $deptName,
+                    ':amount'  => $budgetAmount,
+                    ':year'    => $year . '-01-01', // Ensure it's a valid date
+                    ':details' => $budgetDetails
+                ]);
+                $reload = true;
+            }
         }
     }
 }
@@ -74,4 +103,12 @@ $deptDetails = $deptDetailsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
 $stmt = $pdo->query("SELECT Name, Amount, Details,Deptbudget,DateValid FROM departmentbudget WHERE status='Proceed' ORDER BY Name ASC");
 $budgets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Compute per-year sums for JS validation
+$yearSums = [];
+$stmtYearSums = $pdo->prepare("SELECT YEAR(DateValid) AS yr, IFNULL(SUM(Amount), 0) AS sum_amt FROM departmentbudget WHERE status = 'Proceed' GROUP BY yr");
+$stmtYearSums->execute();
+foreach ($stmtYearSums->fetchAll(PDO::FETCH_ASSOC) as $row) {
+    $yearSums[(int)$row['yr']] = (float)$row['sum_amt'];
+}
 ?>
