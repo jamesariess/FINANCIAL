@@ -1,4 +1,4 @@
-
+<?php include __DIR__ . '/../../crud/collection/plan.php';?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +10,7 @@
 </head>
 <body>
   <?php include "../sidebar.php"; ?> 
-
+ 
   
     <?php include __DIR__ . '/../../filtering/collection/planfilter.html';?>
       <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>

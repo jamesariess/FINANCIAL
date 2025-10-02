@@ -2,7 +2,7 @@
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
-// Handle check_allocation request
+
 if (isset($_GET['check_allocation']) && isset($_GET['accountID']) && isset($_GET['deptname'])) {
     $accountID = $_GET['accountID'];
     $deptname = trim($_GET['deptname']);
@@ -21,7 +21,7 @@ if (isset($_GET['check_allocation']) && isset($_GET['accountID']) && isset($_GET
     exit;
 }
 
-// Handle deptname and year request
+
 if (isset($_GET['deptname']) && isset($_GET['year'])) {
     $deptname = trim($_GET['deptname']);
     $year = $_GET['year'];
@@ -94,7 +94,6 @@ if (isset($_GET['deptname']) && isset($_GET['year'])) {
     exit;
 }
 
-// Handle deptname request for years
 if (isset($_GET['deptname'])) {
     $deptname = trim($_GET['deptname']);
     error_log("Fetching years for Deptname: $deptname at " . date('Y-m-d H:i:s'));
@@ -123,7 +122,7 @@ if (isset($_GET['deptname'])) {
     exit;
 }
 
-// Fetch departments
+
 $departments = $pdo->query("
     SELECT DISTINCT Name, MAX(Deptbudget) AS Deptbudget, MAX(Amount) AS Amount, COALESCE(MAX(UsedBudget), 0) AS UsedBudget, MAX(DateValid) AS DateValid
     FROM departmentbudget 
@@ -132,7 +131,7 @@ $departments = $pdo->query("
     HAVING (MAX(Amount) - COALESCE(MAX(UsedBudget), 0)) > 0
 ")->fetchAll(PDO::FETCH_ASSOC);
 
-// Handle POST request
+
 $remaining = 0;
 $errors = [];
 
@@ -219,7 +218,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 
-// Fetch accounts
+
 $exclude = ['Cash On Hand', 'Cash On Bank', 'Account Receivable'];
 $placeholders = str_repeat('?,', count($exclude) - 1) . '?';
 $sql = "SELECT accountID, accountName, accounType 
@@ -229,7 +228,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($exclude);
 $accounts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Display errors
+
 if (!empty($errors)) {
     foreach ($errors as $err) {
         echo '<div class="mb-2 p-3 rounded-lg bg-red-100 border border-red-400 text-red-700 flex items-center">
@@ -238,7 +237,7 @@ if (!empty($errors)) {
     }
 }
 
-// Fetch allocations for display
+
 $years = $pdo->query("
     SELECT DISTINCT yearlybudget 
     FROM costallocation 

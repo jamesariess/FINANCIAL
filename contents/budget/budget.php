@@ -1,7 +1,7 @@
 
   <div class="container">
-  <!-- Header -->
-  <div class="flex flex-col md:flex-row md:items-center md:justify-between  shadow-md rounded-2xl p-6 border border-gray-200">
+
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between  shadow-md rounded-2xl p-4 border border-gray-200 card">
     <div>
       <h2 class="text-2xl font-bold  flex items-center gap-2">
         <i class="fas fa-bell text-indigo-500"></i>
@@ -15,7 +15,7 @@
   <select id="yearFilter" class="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500">
     
     <?php
-      // Fetch DISTINCT years from departmentbudget
+    
       $yearStmt = $pdo->query("SELECT DISTINCT YEAR(DateValid) AS y FROM departmentbudget ORDER BY y ASC");
       $years = $yearStmt->fetchAll(PDO::FETCH_COLUMN);
 
@@ -33,8 +33,8 @@
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="mt-8">
+
+  <div class="mt-8 bg-white p-6 rounded-lg shadow-md border border-gray-200 card">
     <h2 class="text-xl font-semibold  mb-4">Department Budgets</h2>
    <div id="budgetCardsContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   <?php if (count($budgets) > 0): ?>
@@ -52,7 +52,7 @@
               </span>
             </div>
             <span class="text-gray-500 text-sm"><?= htmlspecialchars($row['DateValid']) ?></span>
-            <!-- Cancel button -->
+            
             <form method="POST" onsubmit="return confirm('Are you sure you want to cancel this budget?');">
               <input type="hidden" name="cancel_id" value="<?= $row['Deptbudget'] ?>">
               <button type="submit" class="text-red-600 hover:text-red-800 font-semibold">
@@ -71,7 +71,7 @@
   </div>
 </div>
 
-<!-- Modal -->
+
 <div id="budgetModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center p-4">
   <div class=" rounded-lg shadow-xl p-6 w-full max-w-lg">
     <div class="flex justify-between items-center border-b pb-3 mb-4">
@@ -82,11 +82,11 @@
   <?php if ($error): ?>
   <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4"><?php echo $error; ?></div>
   <?php endif; ?>
-  <!-- Department -->
+  
   <div class="mb-4 form-group">
     <label class="block text-gray-700 font-semibold mb-2">Department Name</label>
 
-    <!-- Dropdown -->
+   
     <select id="deptNameSelect" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
       <option value="">-- Select Department --</option>
       <?php foreach ($deptDetails as $name => $details): ?>
@@ -94,37 +94,37 @@
       <?php endforeach; ?>
     </select>
 
-    <!-- Manual input (hidden by default) -->
+    
     <input type="text" id="deptNameInput" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 hidden mt-2" placeholder="Enter Department Name">
 
-    <!-- Hidden field that actually gets submitted -->
+    
     <input type="hidden" id="realDeptName" name="deptName">
 
     <button type="button" id="addNewDeptBtn" class="mt-2 text-indigo-600 hover:underline text-sm">➕ Add New</button>
   </div>
 
-  <!-- Year -->
+  
 <div class="mb-4 form-group">
   <label for="budgetYear" class="block text-gray-700 font-semibold mb-2">Year</label>
   <select id="budgetYear" name="budgetYear" 
           class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
     <?php
       $currentYear = date("Y");
-      for ($i = 0; $i <= 5; $i++) { // allow up to +5 years
+      for ($i = 0; $i <= 5; $i++) {
         $year = $currentYear + $i;
         echo "<option value='$year'>$year</option>";
       }
     ?>
   </select>
 </div>
-  <!-- Amount -->
+  
   <div class="mb-4 form-group">
     <label for="budgetAmount" class="block text-gray-700 font-semibold mb-2">Budget Amount (₱)</label>
     <input type="number" id="budgetAmount" name="budgetAmount" step="0.01" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required min="0">
     <small id="maxAllowedMsg" class="text-gray-500 text-sm mt-1 hidden">Maximum allowed: ₱<span id="maxValue"></span></small>
   </div>
 
-  <!-- Budget Details -->
+  
   <div class="mb-4 form-group">
     <label class="block text-gray-700 font-semibold mb-2">Budget Details</label>
     <textarea id="budgetDetailsInput" name="budgetDetails" rows="4" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Enter Budget Details"></textarea>
@@ -152,7 +152,6 @@ const modal = document.getElementById('budgetModal');
 const openBtn = document.getElementById('toggleFormBtn');
 const closeBtn = document.getElementById('closeModalBtn');
 
-// Modal toggle
 openBtn.onclick = () => modal.style.display = 'flex';
 closeBtn.onclick = () => modal.style.display = 'none';
 window.onclick = (e) => { if (e.target == modal) modal.style.display = 'none'; };
@@ -169,10 +168,9 @@ const detailsInput = document.getElementById("budgetDetailsInput");
 const addNewBtn = document.getElementById("addNewDeptBtn");
 const form = document.getElementById("budgetForm");
 
-// Handle dropdown change
 deptSelect.addEventListener("change", function() {
     const selected = this.value;
-    realDeptName.value = selected; // always set hidden field
+    realDeptName.value = selected;
 
     if (deptDetailsMap[selected]) {
         detailsInput.value = deptDetailsMap[selected];
@@ -183,10 +181,8 @@ deptSelect.addEventListener("change", function() {
     }
 });
 
-// Switch to "Add New" mode
 addNewBtn.addEventListener("click", function() {
     if (deptSelect.classList.contains("hidden")) {
-        // Switch back to select mode
         deptSelect.classList.remove("hidden");
         deptInput.classList.add("hidden");
         detailsInput.value = "";
@@ -194,7 +190,6 @@ addNewBtn.addEventListener("click", function() {
         this.textContent = "➕ Add New";
         realDeptName.value = deptSelect.value;
     } else {
-        // Switch to manual input mode
         deptSelect.classList.add("hidden");
         deptInput.classList.remove("hidden");
         detailsInput.value = "";
@@ -204,7 +199,6 @@ addNewBtn.addEventListener("click", function() {
     }
 });
 
-// Ensure hidden field has value before submit
 form.addEventListener("submit", function() {
     if (!deptSelect.classList.contains("hidden")) {
         realDeptName.value = deptSelect.value;
@@ -213,7 +207,6 @@ form.addEventListener("submit", function() {
     }
 });
 
-// Budget amount validation with automatic blocking
 const budgetYearSelect = document.getElementById('budgetYear');
 const budgetAmountInput = document.getElementById('budgetAmount');
 const maxAllowedMsg = document.getElementById('maxAllowedMsg');
@@ -230,14 +223,11 @@ function validateBudgetAmount() {
     const existing = yearSums[year] || 0;
     const maxAdditional = Math.max(0, totalGLCash - existing);
 
-    // Set max attribute for number input
     budgetAmountInput.max = maxAdditional;
 
-    // Show max allowed message
     maxValueSpan.textContent = maxAdditional.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     maxAllowedMsg.classList.remove('hidden');
 
-    // Clamp the current value
     let amount = parseFloat(budgetAmountInput.value) || 0;
     if (amount > maxAdditional) {
         budgetAmountInput.value = maxAdditional.toFixed(2);
@@ -247,23 +237,19 @@ function validateBudgetAmount() {
 budgetYearSelect.addEventListener('change', validateBudgetAmount);
 budgetAmountInput.addEventListener('input', validateBudgetAmount);
 
-// Initial validation on load if year is selected
 document.addEventListener('DOMContentLoaded', validateBudgetAmount);
 
 
 
 document.addEventListener("DOMContentLoaded", function() {
-    // Get the year filter dropdown
     const yearFilter = document.getElementById("yearFilter");
     
-    // Set the selected year to the current year by default
     const currentYear = new Date().getFullYear().toString();
     const currentYearOption = yearFilter.querySelector(`option[value='${currentYear}']`);
     if (currentYearOption) {
         currentYearOption.selected = true;
     }
     
-    // Function to apply the filter
     function applyFilter() {
         const selectedYear = yearFilter.value;
         const cards = document.querySelectorAll("#budgetCardsContainer > div");
@@ -271,17 +257,15 @@ document.addEventListener("DOMContentLoaded", function() {
         cards.forEach(card => {
             const cardYear = card.getAttribute("data-year");
             if (cardYear === selectedYear) {
-                card.style.display = "flex"; // show
+                card.style.display = "flex";
             } else {
-                card.style.display = "none"; // hide
+                card.style.display = "none";
             }
         });
     }
 
-    // Apply the filter on page load
     applyFilter();
     
-    // Add the change event listener to re-apply the filter
     yearFilter.addEventListener("change", applyFilter);
 });
 </script>

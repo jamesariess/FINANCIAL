@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-// --- Fetch unique departments by name ---
+
 $departments = $pdo->query("
     SELECT MIN(Deptbudget) AS Deptbudget, Name, Amount
     FROM departmentbudget
@@ -29,7 +29,7 @@ if (isset($_GET['dept']) && !isset($_GET['year'])) {
     exit();
 }
 
-// --- AJAX: Fetch allocations by department + year ---
+
 if (isset($_GET['dept']) && isset($_GET['year'])) {
     $dept = $_GET['dept'];
     $year = $_GET['year'];
@@ -58,13 +58,13 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"
     $newTargetPercent = floatval($_POST['new_percent_increase']);
     $reason = trim($_POST['reason']);
 
-    // Validation
+
     if ($newTargetPercent < 0 || $newTargetPercent > 100) {
         echo "<div class='bg-red-200 text-red-800 p-3 rounded mb-4'>❌ Error: New percentage must be between 0 and 100.</div>";
         exit();
     }
 
-    // Additional safety check
+
     if (!empty($decreaseID) && $decreaseID == $targetID) {
         echo "<div class='bg-red-200 text-red-800 p-3 rounded mb-4'>❌ Error: Cannot use the same allocation for both.</div>";
         exit();
@@ -73,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"
     try {
         $pdo->beginTransaction();
 
-        // Fetch target allocation
+
         $stmtTarget = $pdo->prepare("SELECT allocationID, percentage, Amount FROM costallocation WHERE allocationID = :target AND Deptbudget = :dept AND yearlybudget = :year");
         $stmtTarget->execute([':target' => $targetID, ':dept' => $dept, ':year' => $year]);
         $targetAlloc = $stmtTarget->fetch(PDO::FETCH_ASSOC);
@@ -84,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST"
             exit();
         }
 
-        // Total department budget
+
         $stmtDept = $pdo->prepare("SELECT Amount FROM departmentbudget WHERE Deptbudget = :dept");
         $stmtDept->execute([':dept' => $dept]);
         $totalBudget = floatval($stmtDept->fetchColumn());

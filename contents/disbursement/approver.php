@@ -20,23 +20,41 @@
     </div>
 </div>
 
+<div id="releaseConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" onclick="outsideClick(event, 'releaseConfirmModal')">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-1/3 relative max-w-md" onclick="event.stopPropagation()">
+        <button class="absolute top-2 right-2 text-gray-500 hover:text-black" onclick="closeModal('releaseConfirmModal')">&times;</button>
+        <h2 class="text-lg font-bold mb-4">Confirm Payment Release</h2>
+        <input type="hidden" id="releaseRequestId">
+        <div class="space-y-4">
+            <p class="text-gray-700">Are you sure you want to confirm the payment release for this request?</p>
+        </div>
+        <div class="flex justify-end space-x-3 mt-4">
+            <button type="button"  class="text-white px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600" onclick="closeModal('releaseConfirmModal')">Cancel</button>
+            <button type="button" id="confirmReleaseBtn" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">Confirm Release</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    const requests = <?php echo json_encode($requests); ?>;
+    let requests = <?php echo json_encode($requests); ?>;
     const container = document.getElementById("approvalCards");
     const modal = document.getElementById("detailsModal");
     const modalContent = document.getElementById("modalContent");
     const modalButtons = document.getElementById("modalButtons");
 
-    // Render cards
-    if (requests.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-10 text-gray-400">
-                <i class="fas fa-money-check-alt text-6xl mb-4"></i>
-                <h4 class="text-lg font-medium">No Payments to Release</h4>
-                <p>All pending payments have been released. Good job!</p>
-            </div>
-        `;
-    } else {
+    function renderCards() {
+        container.innerHTML = '';
+        if (requests.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-10 text-gray-400">
+                    <i class="fas fa-money-check-alt text-6xl mb-4"></i>
+                    <h4 class="text-lg font-medium">No Payments to Release</h4>
+                    <p>All pending payments have been released. Good job!</p>
+                </div>
+            `;
+            return;
+        }
+
         requests.forEach(req => {
             if (req.status === "Paid") return;
 
@@ -71,39 +89,61 @@
             let amountDisplay = req.status === "Approved" ? req.ApprovedAmount : null;
 
             if (req.status === "Approved") {
-                buttonHTML = `<button class="btn btn-primary" onclick="confirmRelease(${req.requestID})">Confirm Release</button>`;
+                buttonHTML = `<button class="btn btn-primary" onclick="openReleaseConfirmModal(${req.requestID})">Confirm Release</button>`;
             } else if (req.status === "Pending") {
                 buttonHTML = `<button class="btn btn-secondary opacity-70 cursor-not-allowed">Waiting for Approval</button>`;
             }
-container.innerHTML += `
-    <div class="quick-stat-card ${cardClasses}" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
-        <div class="flex items-center justify-between mb-4">
-            <i class="fas ${iconClass} text-2xl text-${cardClasses}-color"></i>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+            container.innerHTML += `
+                <div class="quick-stat-card ${cardClasses}" data-id="${req.requestID}" role="article" aria-labelledby="card-title-${req.requestID}">
+                    <div class="flex items-center justify-between mb-4">
+                        <i class="fas ${iconClass} text-2xl text-${cardClasses}-color"></i>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${req.status === 'Approved' ? 'bg-green-300 text-green-800' : 'bg-yellow-300 text-yellow-800'}">
                             ${req.status}
                         </span>
-        </div>
-        <h3 class="text-lg font-bold mb-2 capitalize" id="card-title-${req.requestID}">${req.Name} Department</h3>
-        <h4 class="text-md font-semibold mb-4 capitalize">${req.accountName}</h4>
-        <div class="text-sm space-y-2">
-            <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
-            <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
-            <p><span class="font-medium">Amount:</span> ${amountDisplay != null ? `₱${Number(amountDisplay).toLocaleString()}` : 'Waiting For Approved Amount'}</p>
-            <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
-        </div>
-        <div class="flex mt-6 space-x-3">
-            ${buttonHTML}
-            <button class="text-primary-color text-sm font-medium underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="viewDetails(${req.requestID})" aria-label="View details for request ${req.requestID}">
-                Details
-            </button>
-        </div>
-    </div>
-`;
+                    </div>
+                    <h3 class="text-lg font-bold mb-2 capitalize" id="card-title-${req.requestID}">${req.Name} Department</h3>
+                    <h4 class="text-md font-semibold mb-4 capitalize">${req.accountName}</h4>
+                    <div class="text-sm space-y-2">
+                        <p><span class="font-medium">ID:</span> REQ-${req.requestID}</p>
+                        <p><span class="font-medium">Title:</span> ${req.requestTitle}</p>
+                        <p><span class="font-medium">Amount:</span> ${amountDisplay != null ? `₱${Number(amountDisplay).toLocaleString()}` : 'Waiting For Approved Amount'}</p>
+                        <p><span class="font-medium">Requested By:</span> ${req.Requested_by}</p>
+                    </div>
+                    <div class="flex mt-6 space-x-3">
+                        ${buttonHTML}
+                        <button class="text-primary-color text-sm font-medium underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="viewDetails(${req.requestID})" aria-label="View details for request ${req.requestID}">
+                            Details
+                        </button>
+                    </div>
+                </div>
+            `;
         });
     }
 
-    function confirmRelease(id) {
-        if (!confirm("Are you sure you want to confirm the payment release for this request?")) return;
+    // Initial render
+    renderCards();
+
+    // Polling for automatic updates
+    setInterval(() => {
+        fetch('?fetch=requests')
+            .then(res => res.json())
+            .then(data => {
+                if (JSON.stringify(requests) !== JSON.stringify(data)) {
+                    requests = data;
+                    renderCards();
+                }
+            })
+            .catch(err => console.error('Polling error:', err));
+    }, 5000); // Poll every 5 seconds
+
+    function openReleaseConfirmModal(id) {
+        document.getElementById('releaseRequestId').value = id;
+        document.getElementById('releaseConfirmModal').classList.remove('hidden');
+    }
+
+    document.getElementById('confirmReleaseBtn').addEventListener('click', function() {
+        const id = document.getElementById('releaseRequestId').value;
+        closeModal('releaseConfirmModal');
 
         fetch("", {
             method: "POST",
@@ -113,8 +153,9 @@ container.innerHTML += `
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                alert("Payment successfully released!");
-                window.location.reload();
+                requests = data.requests || requests;
+                renderCards(); 
+                alert('Payment successfully released!'); 
             } else {
                 alert(data.error || "Failed to confirm payment release.");
             }
@@ -123,7 +164,7 @@ container.innerHTML += `
             console.error("Error:", err);
             alert("An error occurred. Please try again.");
         });
-    }
+    });
 
     function viewDetails(id) {
         const req = requests.find(r => Number(r.requestID) === Number(id));
@@ -143,7 +184,7 @@ container.innerHTML += `
             <p><span class="font-medium">Date:</span> ${req.date}</p>
         `;
 
-        let approvedButton = `<button class="btn btn-primary" onclick="confirmRelease(${req.requestID})">Confirm Release</button>`;
+        let approvedButton = `<button class="btn btn-primary" onclick="openReleaseConfirmModal(${req.requestID})">Confirm Release</button>`;
         let waitingButton = `<button class="btn btn-secondary opacity-70 cursor-not-allowed">Waiting for Approval</button>`;
         let closeButton = `<button onclick="closeModal()" class="btn btn-secondary">Close</button>`;
 
@@ -156,7 +197,13 @@ container.innerHTML += `
         modal.classList.remove("hidden");
     }
 
-    function closeModal() {
-        modal.classList.add("hidden");
+    function closeModal(modalId = 'detailsModal') {
+        document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function outsideClick(event, modalId) {
+        if (event.target.id === modalId) {
+            closeModal(modalId);
+        }
     }
 </script>

@@ -3,7 +3,6 @@ ob_start();
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
-// Function to get the payment history for a loan
 function getPaymentHistory($pdo, $loanId) {
     $sql = "
         SELECT payment_date, amount, method, remarks
@@ -17,7 +16,6 @@ function getPaymentHistory($pdo, $loanId) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-// Function to get the current outstanding principal balance for a loan
 function getOutstandingForLoan($pdo, $loanId) {
     $sql = "
         SELECT LoanAmount, paidAmount, interestRate
@@ -34,8 +32,6 @@ function getOutstandingForLoan($pdo, $loanId) {
         $totalInterest = $principal * ($interestRate / 100);
         $totalRepayable = $principal + $totalInterest;
         $paid = $row['paidAmount'] ?? 0;
-        
-        // Return the remaining balance including interest
         return $totalRepayable - $paid;
     }
     return 0;
@@ -67,16 +63,11 @@ function getActiveLoans($pdo) {
         $principal = $row['LoanAmount'];
         $interestRate = $row['interestRate'];
         $paid = $row['paidAmount'] ?? 0;
-        
-        // Calculate total repayable amount including interest
         $totalInterest = $principal * ($interestRate / 100);
         $totalRepayable = $principal + $totalInterest;
         $outstanding = $totalRepayable - $paid;
-        
-        // Monthly due based on remaining outstanding
         $monthlyDue = ($outstanding > 0) ? ($outstanding + ($outstanding * $interestRate / 100)) / 12 : 0;
         $dueDate = date('Y-m-d', strtotime($row['EndDate'])); 
-
         $loans[] = [
             'id' => 'LN-' . date('Y') . '-' . str_pad($row['LoanID'], 3, '0', STR_PAD_LEFT),
             'rawId' => $row['LoanID'], 
@@ -106,7 +97,6 @@ function getTotalActiveLoans($pdo) {
 function getTotalOutstanding($pdo) {
     $sql = "
         SELECT l.LoanID, l.LoanAmount, COALESCE(l.paidAmount, 0) as paidAmount, l.interestRate
-       
         FROM loan l
         WHERE l.Archive = 'NO' AND l.Status != 'Paid' AND Remarks = 'Approved'
     ";
@@ -118,13 +108,11 @@ function getTotalOutstanding($pdo) {
         $interestRate = $row['interestRate'];
         $paid = $row['paidAmount'];
         $totalInterest = $principal * ($interestRate / 100);
- 
         $totalRepayable = $principal + $totalInterest;
         $outstanding = $totalRepayable - $paid;
         $totalOutstanding += $outstanding;
     }
     return '₱' . number_format($totalOutstanding, 2);
-  
 }
 
 function getNextDueDate($pdo) {
@@ -140,7 +128,6 @@ function getNextDueDate($pdo) {
     ? date('M d, Y', strtotime($row['nextDue'])) 
     : 'No Active Loan';
 }
-
 
 ob_end_clean();
 
@@ -163,7 +150,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $pdo->beginTransaction();
 
-                // Insert into ap_payments
                 $sql = "INSERT INTO ap_payments (LoanID, payment_date, amount, method, remarks, created_at, Archive) 
                         VALUES (:loanId, :paymentDate, :amount, :method, :remarks, NOW(), 'NO')";
                 $stmt = $pdo->prepare($sql);
@@ -175,7 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'remarks' => $remarks
                 ]);
 
-                // Update paidAmount in loan
                 $updateSql = "UPDATE loan SET paidAmount = COALESCE(paidAmount, 0) + :amount WHERE LoanID = :loanId";
                 $updateStmt = $pdo->prepare($updateSql);
                 $updateStmt->execute([
@@ -183,7 +168,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'loanId' => $loanId
                 ]);
 
-                // Fetch LoanTitle and startDate from loan
                 $getSql = "SELECT LoanTitle, startDate FROM loan WHERE LoanID = :loanId";
                 $getStmt = $pdo->prepare($getSql);
                 $getStmt->execute(['loanId' => $loanId]);
@@ -207,7 +191,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $allocData = $allocStmt->fetch(PDO::FETCH_ASSOC);
                 $allocationID = $allocData ? $allocData['allocationID'] : null;
 
-                // Insert into request table
                 $requestSql = "INSERT INTO request (requestTitle, amount, Requested_by, Due, LoanID, Purpuse, allocationID) 
                               VALUES (:title, :amount, :requested, :due, :loanId, 'Loan Payment', :allocationID)";
                 $requestStmt = $pdo->prepare($requestSql);
@@ -285,19 +268,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $accountID = 2;
                         }
 
-                        // Insert into entries (journal header)
                         $entrySql = "INSERT INTO entries (date, description, referenceType, createdBy, Archive) 
                                     VALUES (NOW(), :desc, 'Loan Approval', 'system', 'NO')";
                         $entryStmt = $pdo->prepare($entrySql);
                         $entryStmt->execute(['desc' => 'Loan Approved: ' . $loanTitle]);
                         $journalID = $pdo->lastInsertId();
 
-                        // Insert into details (journal lines)
                         $detailSql = "INSERT INTO details (journalID, accountID, debit, credit, Archive) 
                                      VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
                         $detailStmt = $pdo->prepare($detailSql);
 
-                        // Cash ↑
                         $detailStmt->execute([
                             'journalID' => $journalID,
                             'accountID' => $accountID,
@@ -305,10 +285,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             'credit' => 0
                         ]);
 
-                        // Loan Payable ↑
                         $detailStmt->execute([
                             'journalID' => $journalID,
-                            'accountID' => 11, // Loan Payable
+                            'accountID' => 11,
                             'debit' => 0,
                             'credit' => $totalAmount
                         ]);
@@ -327,7 +306,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     try {
                         $pdo->rollBack();
                     } catch (PDOException $pe) {
-                        // Ignore rollback error if no transaction was started
                     }
                 }
                 echo json_encode(['success' => false, 'message' => 'Error approving loan: ' . $e->getMessage()]);

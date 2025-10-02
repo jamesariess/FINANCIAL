@@ -89,14 +89,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
     $loan = $_POST['loanAmount'];
     $interest = $_POST['interestRate'];
 
-    // Sanitize inputs
     $loantitle = htmlspecialchars($loantitle, ENT_QUOTES, 'UTF-8');
     $purpose = htmlspecialchars($purpose, ENT_QUOTES, 'UTF-8');
     $collateral = htmlspecialchars($collateral, ENT_QUOTES, 'UTF-8');
     $penalty = htmlspecialchars($penalty, ENT_QUOTES, 'UTF-8');
     $receive = htmlspecialchars($receive, ENT_QUOTES, 'UTF-8');
 
-    // Validate inputs
     if (!is_numeric($loan) || $loan <= 0) {
         ob_end_clean();
         echo '<h1>Error</h1><p>Invalid loan amount</p>';
@@ -138,7 +136,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
     $endDate->modify('+' . ($installment - 1) . ' months');
 
     try {
-        // Fetch vendor details
         $stmt_vendor = $pdo->prepare("SELECT vendor_name, address FROM vendor WHERE vendor_id = :vendorID");
         $stmt_vendor->execute([':vendorID' => $vendor]);
         $vendor_data = $stmt_vendor->fetch(PDO::FETCH_ASSOC);
@@ -151,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
             $lender_address = '[Lender Address]';
         }
 
-        // Generate PDF
+      
         $pdf = new LoanPDF();
         $pdf->AddPage();
         $pdf->SetFont('Arial', '', 10);
@@ -164,7 +161,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
         $pdf->SetFont('Arial', 'I', 10);
         $pdf->Ln(4);
 
-        // Parties
         $pdf->AddBold('LENDER:');
         $pdf->AddLine('__' . $lender_name . '__, a [corporation/individual] duly organized and existing under the laws of the Republic of the Philippines, with principal office at __' . $lender_address . '__ (hereinafter referred to as the "Lender");');
         $pdf->SetFont('Arial', 'I', 10);
@@ -186,7 +182,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
         $pdf->SetFont('Arial', '', 10);
         $pdf->Ln(10);
 
-        // Articles
         $pdf->ChapterTitle('Article I – Loan Amount and Purpose');
         $pdf->AddLine('1.1 The Lender agrees to extend to the Borrower a loan in the principal amount of __ PHP' . number_format($loan, 2) . '__. (the "Loan").');
         $pdf->SetFont('Arial', 'I', 10);
@@ -395,7 +390,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
         $pdf->Line(10, $pdf->GetY(), 200, $pdf->GetY());
         $pdf->Ln(5);
 
-        // Save PDF
         $safeLoanTitle = preg_replace('/[^A-Za-z0-9_-]/', '_', $loantitle);
         $filename = 'loan_' . $safeLoanTitle . '_' . time() . '.pdf';
         $filePath = '../../pdfs/' . $filename;
@@ -461,4 +455,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create'])) {
 $success = isset($_GET['success']) && $_GET['success'] == 1;
 $message = $success ? urldecode($_GET['message']) ?? 'Loan agreement created successfully' : '';
 ?>
+
 

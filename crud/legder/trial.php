@@ -53,7 +53,7 @@ function getCashOnHand($pdo, $selectedPeriodId = null) {
     }
 }
 
-   // ---------- reusable helper ----------
+
     function getOrCreateAccount($pdo, $accountName, $accountType) {
         $checkSql = "SELECT accountID FROM chartofaccount 
                      WHERE accountName = :name AND Archive = 'NO' LIMIT 1";
@@ -87,7 +87,7 @@ function getCashOnHand($pdo, $selectedPeriodId = null) {
 try {
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Fetch bank names for dropdown
+    
     $bankNamesStmt = $pdo->query("SELECT bankName FROM bank WHERE archive='NO' AND status='Active'");
     $bankNames = $bankNamesStmt->fetchAll(PDO::FETCH_COLUMN);
    
@@ -97,14 +97,14 @@ try {
 }
 
 if (isset($_POST['saveDeposit'])) {
-    $depositType   = $_POST['depositType']; // "Bank" | "Owner" | "Petty Cash"
+    $depositType   = $_POST['depositType']; 
     $bankID        = $_POST['bankID'] ?? null;
     $newBankName   = trim($_POST['newBankName'] ?? '');
     $amount        = floatval($_POST['amount']);
     $reference     = $_POST['reference'] ?: "N/A";
     $date          = date("Y-m-d H:i:s");
 
-    // ---------- handle bank creation ----------
+
     if ($newBankName !== "" && $depositType === "Bank") {
         $normalizedBank = strtoupper($newBankName);
         $check = $pdo->prepare("SELECT bankID FROM bank 
@@ -125,7 +125,7 @@ if (isset($_POST['saveDeposit'])) {
     }
 
 
-    // ---------- Create Journal Entry ----------
+
     $entrySql = "INSERT INTO entries (date, description, referenceType, createdBy, Archive)
                  VALUES (:date, :description, :ref, :createdBy, 'NO')";
     $entryStmt = $pdo->prepare($entrySql);
@@ -141,9 +141,9 @@ if (isset($_POST['saveDeposit'])) {
                   VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
     $detailStmt = $pdo->prepare($detailSql);
 
-    // ---------- Logic per deposit type ----------
+  
     if ($depositType === "Bank" && $bankID) {
-        // funds record
+   
         $stmt = $pdo->prepare("INSERT INTO funds (bankID, Amount, UsedAmount, reference,Notes, Archive, Date, fundType) 
                                VALUES (:bankID, :amount, 0, :reference,:typet, 'NO', :date, 'Bank')");
         $stmt->execute([
@@ -154,7 +154,7 @@ if (isset($_POST['saveDeposit'])) {
             ':date' => $date
         ]);
 
-        // Journal: Debit Cash On Bank, Credit Cash On Hand
+        
         $bankAccountID = getOrCreateAccount($pdo, "Cash On Bank", "Assets");
         $detailStmt->execute([
             ':journalID' => $journalID,
@@ -172,7 +172,7 @@ if (isset($_POST['saveDeposit'])) {
         ]);
 
     } elseif ($depositType === "Owner" && $bankID) {
-        // funds record (Owner Capital)
+     
         $stmt = $pdo->prepare("INSERT INTO funds (bankID, Amount, UsedAmount, reference,Notes, Archive, Date, fundType) 
                                VALUES (:bankID, :amount, 0, :reference,:typet, 'NO', :date, 'Owner')");
         $stmt->execute([
@@ -183,7 +183,7 @@ if (isset($_POST['saveDeposit'])) {
             ':date' => $date
         ]);
 
-        // Journal: Debit Cash On Bank, Credit Owner Capital
+     
         $bankAccountID = getOrCreateAccount($pdo, "Cash On Bank", "Assets");
         $detailStmt->execute([
             ':journalID' => $journalID,
@@ -201,7 +201,7 @@ if (isset($_POST['saveDeposit'])) {
         ]);
 
     } elseif ($depositType === "Petty Cash") {
-        // funds record (Petty Cash)
+   
         $stmt = $pdo->prepare("INSERT INTO funds (bankID, Amount, UsedAmount, reference,Notes, Archive, Date, fundType) 
                                VALUES (NULL, :amount, 0, :reference,:typet, 'NO', :date, 'PettyCash')");
         $stmt->execute([
@@ -211,7 +211,7 @@ if (isset($_POST['saveDeposit'])) {
             ':date' => $date
         ]);
 
-        // Journal: Debit Cash On Hand, Credit Petty Cash Funding
+        
         $cashOnHandID = getOrCreateAccount($pdo, "Cash On Hand", "Assets");
         $detailStmt->execute([
             ':journalID' => $journalID,
@@ -267,7 +267,7 @@ if (isset($_POST['saveWithdraw'])) {
     if (!$bankID || $amount <= 0) {
         echo "<script>alert('Invalid bank or amount.');</script>";
     } else {
-        // get all funds of that bank in FIFO
+     
         $stmt = $pdo->prepare("
             SELECT fundsID, Amount, COALESCE(UsedAmount,0) AS UsedAmount
             FROM funds
@@ -301,7 +301,7 @@ if (isset($_POST['saveWithdraw'])) {
                 if ($remaining <= 0) break;
             }
 
-            // ---------- Create Journal Entry ----------
+ 
             $entrySql = "INSERT INTO entries (date, description, referenceType, createdBy, Archive)
                          VALUES (:date, :description, :ref, :createdBy, 'NO')";
             $entryStmt = $pdo->prepare($entrySql);
@@ -317,7 +317,7 @@ if (isset($_POST['saveWithdraw'])) {
                           VALUES (:journalID, :accountID, :debit, :credit, 'NO')";
             $detailStmt = $pdo->prepare($detailSql);
 
-            // Journal: Credit Cash On Bank, Debit Owner Capital (owner withdrawal)
+
             $bankAccountID = getOrCreateAccount($pdo, "Cash On Bank", "Assets");
             $detailStmt->execute([
                 ':journalID' => $journalID,

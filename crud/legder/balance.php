@@ -1,34 +1,24 @@
-
 <?php
-// dashboard.php
-// Modern Ledger / Trial Balance / Income Statement / Balance Sheet dashboard
-// Requires: connection.php that creates $pdo (PDO)
-
-// --- config / include ---
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
-// Handle period actions (close/reopen) before anything else
 if (isset($_POST['action']) && in_array($_POST['action'], ['close', 'reopen'])) {
     $month = isset($_POST['month']) ? (int)$_POST['month'] : 0;
     $year = isset($_POST['year']) ? (int)$_POST['year'] : 0;
-    error_log("Action: {$_POST['action']}, Month: $month, Year: $year"); // Debug log
+    error_log("Action: {$_POST['action']}, Month: $month, Year: $year");
     if ($month > 0 && $year > 0) {
         try {
             if ($_POST['action'] === 'close') {
-                // Check if period already exists for this month and year
                 $checkStmt = $pdo->prepare("SELECT period_id, status FROM periods WHERE year = :year AND month = :month");
                 $checkStmt->execute([':year' => $year, ':month' => $month]);
                 $existingPeriod = $checkStmt->fetch(PDO::FETCH_ASSOC);
 
                 if (!$existingPeriod) {
-                    // Insert new period with status 'Closed'
                     $insertStmt = $pdo->prepare("INSERT INTO periods (year, month, status) VALUES (:year, :month, 'Closed')");
                     $insertStmt->execute([':year' => $year, ':month' => $month]);
                     $newPeriodId = $pdo->lastInsertId();
                     error_log("New period inserted with ID: $newPeriodId");
 
-                    // Assign unassigned entries to this new period based on date
                     $assignStmt = $pdo->prepare(
                         "UPDATE entries 
                          SET periodID = :period_id 
@@ -39,13 +29,11 @@ if (isset($_POST['action']) && in_array($_POST['action'], ['close', 'reopen'])) 
                     $assignStmt->execute([':period_id' => $newPeriodId, ':year' => $year, ':month' => $month]);
                     error_log("Assigned entries to period ID: $newPeriodId");
                 } else {
-                    // Update existing period to 'Closed' if it's 'Open'
                     if ($existingPeriod['status'] === 'Open') {
                         $updateStmt = $pdo->prepare("UPDATE periods SET status = 'Closed' WHERE period_id = :period_id");
                         $updateStmt->execute([':period_id' => $existingPeriod['period_id']]);
                         error_log("Updated period ID: {$existingPeriod['period_id']} to Closed");
 
-                        // Assign unassigned entries to this period
                         $assignStmt = $pdo->prepare(
                             "UPDATE entries 
                              SET periodID = :period_id 
@@ -60,7 +48,6 @@ if (isset($_POST['action']) && in_array($_POST['action'], ['close', 'reopen'])) 
                     }
                 }
             } elseif ($_POST['action'] === 'reopen') {
-                // Check if a closed period exists for this month and year
                 $checkStmt = $pdo->prepare("SELECT period_id FROM periods WHERE year = :year AND month = :month AND status = 'Closed'");
                 $checkStmt->execute([':year' => $year, ':month' => $month]);
                 $closedPeriod = $checkStmt->fetch(PDO::FETCH_ASSOC);
@@ -73,19 +60,14 @@ if (isset($_POST['action']) && in_array($_POST['action'], ['close', 'reopen'])) 
                     error_log("No closed period found for month $month, year $year");
                 }
             }
-
-        
         } catch (Exception $e) {
             error_log("Error: " . $e->getMessage());
-            // For debugging, you can uncomment the next line to display the error
-            // echo "Error: " . $e->getMessage();
         }
     } else {
         error_log("Invalid month or year submitted: Month $month, Year $year");
     }
 }
 
-// --- helpers ---
 function fmtMoney($centsOrFloat) {
     if (is_int($centsOrFloat)) {
         $v = $centsOrFloat / 100;
@@ -97,7 +79,6 @@ function fmtMoney($centsOrFloat) {
 
 function safe($s) { return htmlspecialchars((string)$s); }
 
-// --- fetch periods for dropdown ---
 try {
     $periodsStmt = $pdo->query("SELECT period_id, year, month, status FROM periods ORDER BY year DESC, month DESC");
     $periods = $periodsStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -106,7 +87,6 @@ try {
     error_log("Error fetching periods: " . $e->getMessage());
 }
 
-// --- process incoming filters ---
 $selectedPeriodId = isset($_POST['period_id']) ? (int)$_POST['period_id'] : (isset($_GET['period_id']) ? (int)$_GET['period_id'] : null);
 $selectedAccountName = isset($_POST['accountName']) ? trim($_POST['accountName']) : (isset($_GET['accountName']) ? trim($_GET['accountName']) : 'all');
 
@@ -117,7 +97,6 @@ if ($selectedPeriodId) {
     $params[':period_id'] = $selectedPeriodId;
 }
 
-// --- Fetch account list for filter ---
 try {
     $sqlAccounts = "SELECT DISTINCT c.accountName
                     FROM chartofaccount c
@@ -134,7 +113,6 @@ try {
     error_log("Error fetching account names: " . $e->getMessage());
 }
 
-// --- JOURNAL / LEDGER rows ---
 $accountFilterSql = '';
 if ($selectedAccountName && $selectedAccountName !== 'all') {
     $accountFilterSql = ' AND c.accountName = :accountName ';
@@ -173,7 +151,6 @@ try {
     error_log("Error fetching journal details: " . $e->getMessage());
 }
 
-// --- TRIAL BALANCE ---
 try {
     $sqlTB = "SELECT c.accountID, c.accountName, c.accounType,
                      SUM(jd.debit) AS total_debit, SUM(jd.credit) AS total_credit
@@ -194,7 +171,6 @@ try {
     error_log("Error fetching trial balance: " . $e->getMessage());
 }
 
-// --- Income Statement ---
 try {
     $sqlIS = "SELECT c.accountID, c.accountName, LOWER(c.accounType) as acctype,
                      SUM(jd.debit) AS total_debit, SUM(jd.credit) AS total_credit
@@ -214,7 +190,6 @@ try {
     error_log("Error fetching income statement: " . $e->getMessage());
 }
 
-// --- Balance Sheet ---
 try {
     $sqlBS = "SELECT c.accountID, c.accountName, LOWER(c.accounType) as acctype,
                      SUM(jd.debit) AS total_debit, SUM(jd.credit) AS total_credit

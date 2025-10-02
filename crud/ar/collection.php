@@ -7,16 +7,16 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
     $height = 800;
     $im = imagecreatetruecolor($width, $height);
 
-    // Colors
+  
     $white = imagecolorallocate($im, 255, 255, 255);
     $black = imagecolorallocate($im, 0, 0, 0);
     $gray  = imagecolorallocate($im, 128, 128, 128);
     $green = imagecolorallocate($im, 0, 128, 0);
 
-    // Fill background
+
     imagefilledrectangle($im, 0, 0, $width, $height, $white);
 
-    // Text
+
     $y = 20;
     imagestring($im, 5, 150, $y, "SLATE Freight Mgmt System", $black);
     $y += 30;
@@ -56,7 +56,7 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
 
     imagestring($im, 2, 100, $y, "Thank you for your business! This is a computer-generated receipt.", $gray);
 
-    // Save image
+ 
     $folder = __DIR__ . "/../../uploads/receipt/";
     if (!file_exists($folder)) {
         mkdir($folder, 0777, true);
@@ -68,7 +68,6 @@ function generateReceiptImage($receiptNumber, $invoiceRef, $amount, $method, $is
     imagepng($im, $filePath);
     imagedestroy($im);
 
-    // Return relative path for DB (so it works in <img src>)
     return "uploads/receipt/" . $fileName;
 }
 
@@ -83,9 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $stmt->execute();
-            echo "✅ Customer archived successfully.";
+            $successMessage = "Customer archived successfully.";
         } catch (PDOException $e) {
-            echo "❌ Error: " . $e->getMessage();
+            $errorMessage = "Error: " . $e->getMessage();
         }
     }
 
@@ -97,11 +96,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address = $_POST['update_remarks'];
 
         $sql = "UPDATE ar_collections SET 
-                        invoice_id = :custumerName,
-                        amount = :contactNumber,
-                        method = :email,
-                        remarks = :address
-                    WHERE collection_id = :custumerID";
+                    invoice_id = :custumerName,
+                    amount = :contactNumber,
+                    method = :email,
+                    remarks = :address
+                WHERE collection_id = :custumerID";
 
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':custumerName', $custumerName);
@@ -112,9 +111,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         try {
             $stmt->execute();
-            echo "✅ Customer updated successfully.";
+            $successMessage = "Customer updated successfully.";
         } catch (PDOException $e) {
-            echo "❌ Error: " . $e->getMessage();
+            $errorMessage = "Error: " . $e->getMessage();
         }
     }
 
@@ -122,14 +121,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $invoiceID = $_POST['Invoice'];
         $amount = $_POST['Amount'];
         $method = $_POST['paymethod'];
-       
         $issuedBy = "Admin";
 
         try {
-            // Start a transaction
             $pdo->beginTransaction();
 
-            // Insert collection
+   
             $sql = "INSERT INTO ar_collections (invoice_id, amount, method, remarks, payment_date, created_at) 
                     VALUES (:invoiceID, :amount, :method, :remarks, NOW(), NOW())";
             $stmt = $pdo->prepare($sql);
@@ -139,8 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':remarks', $remarks);
             $stmt->execute();
             $paymentID = $pdo->lastInsertId();
-            
-            // Get invoice data
+
             $stmtInvoice = $pdo->prepare("SELECT reference_no, amount, stat FROM ar_invoices WHERE invoice_id = :id");
             $stmtInvoice->bindParam(':id', $invoiceID);
             $stmtInvoice->execute();
@@ -153,16 +149,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $invoiceRef = $invoiceData['reference_no'];
             $invoiceAmount = $invoiceData['amount'];
 
-            // Calculate total paid amount for the invoice, including the current payment
+  
             $stmtPaidAmount = $pdo->prepare("SELECT SUM(amount) FROM ar_collections WHERE invoice_id = :invoiceID");
             $stmtPaidAmount->bindParam(':invoiceID', $invoiceID);
             $stmtPaidAmount->execute();
             $totalPaid = $stmtPaidAmount->fetchColumn();
 
-            // Determine payment status and remarks
-            $newInvoiceStat = 'Unpaid';
-            $newRemarks = 'Partial Payment';
-
+ 
             if ($totalPaid >= $invoiceAmount) {
                 $newInvoiceStat = 'Paid';
                 $newRemarks = 'Full Payment';
@@ -171,31 +164,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newRemarks = 'Partial Payment';
             }
             
-            // Update the ar_collections table with the new remarks
+  
             $sql = "UPDATE ar_collections SET remarks = :remarks WHERE collection_id = :paymentID";
             $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':remarks', $newRemarks);
             $stmt->bindParam(':paymentID', $paymentID);
             $stmt->execute();
 
-            // Update ar_invoices stat column
+
             $sqlInvoiceUpdate = "UPDATE ar_invoices SET stat = :stat WHERE invoice_id = :invoiceID";
             $stmtInvoiceUpdate = $pdo->prepare($sqlInvoiceUpdate);
             $stmtInvoiceUpdate->bindParam(':stat', $newInvoiceStat);
             $stmtInvoiceUpdate->bindParam(':invoiceID', $invoiceID);
             $stmtInvoiceUpdate->execute();
             
-            // Update follow table's paymentstatus column
+ 
             $sqlFollowUpdate = "UPDATE follow SET paymentstatus = :paymentstatus WHERE InvoiceID = :invoiceID AND Archive = 'NO'";
             $stmtFollowUpdate = $pdo->prepare($sqlFollowUpdate);
             $stmtFollowUpdate->bindParam(':paymentstatus', $newInvoiceStat);
             $stmtFollowUpdate->bindParam(':invoiceID', $invoiceID);
             $stmtFollowUpdate->execute();
 
-            // Generate and store receipt
+     
             $receiptNumber = "RCP-" . date("Y") . "-" . str_pad($paymentID, 5, "0", STR_PAD_LEFT);
             $sqlReceipt = "INSERT INTO receipt (paymentID, receiptNumber, receiptsdate, issueBy, receiptImage) 
-                            VALUES (:paymentID, :receiptNumber, NOW(), :issuedBy, '')";
+                           VALUES (:paymentID, :receiptNumber, NOW(), :issuedBy, '')";
             $stmtReceipt = $pdo->prepare($sqlReceipt);
             $stmtReceipt->bindParam(':paymentID', $paymentID);
             $stmtReceipt->bindParam(':receiptNumber', $receiptNumber);
@@ -210,8 +203,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->bindParam(':imagePath', $imagePath);
             $stmt->bindParam(':id', $receiptID);
             $stmt->execute();
-            
-            // Log to journal entries
+       
             $sqlEntries = "
                 INSERT INTO entries (date, description, referenceType, createdBy, Archive)
                 VALUES (CURDATE(), :description, :ref, :createdBy, 'NO')
@@ -223,7 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtEntries->execute();
             $journalID = $pdo->lastInsertId();
 
-            // Log details to journal details
+          
             $detailSqlDebit = "
                 INSERT INTO details (journalID, accountID, debit, credit, Archive)
                 VALUES (:journalID, :accountID, :debit, :credit, 'NO')
@@ -246,20 +238,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmtDetailsCredit->bindParam(':credit', $amount);
             $stmtDetailsCredit->execute();
 
-            // If all queries were successful, commit the transaction
             $pdo->commit();
 
-            echo "✅ Collection & Receipt created successfully. <br><a href='{$imagePath}' target='_blank'>View Receipt</a>";
+            $successMessage = "Collection & Receipt created successfully. <a href='{$imagePath}' target='_blank'>View Receipt</a>";
 
         } catch (PDOException $e) {
             $pdo->rollBack();
-            die("❌ Error: " . $e->getMessage());
+            $errorMessage = "Error: " . $e->getMessage();
         } catch (Exception $e) {
             $pdo->rollBack();
-            die("❌ Error: " . $e->getMessage());
+            $errorMessage = "Error: " . $e->getMessage();
         }
-    } 
-
+    }
 }
 
 try {
@@ -267,7 +257,6 @@ try {
     $stmt = $pdo->query($sql);
     $collectionReports = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    die("❌ Error fetching collections: " . $e->getMessage());
+    $errorMessage = "Error fetching collections: " . $e->getMessage();
 }
 ?>
-

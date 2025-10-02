@@ -10,11 +10,10 @@
 
 </head>
 <body>
-  <?php include "../sidebar.php"; ?> 
-
+<?php include "../sidebar.php"; ?> 
 <?php include __DIR__ . '/../../cards/disbursement/cashrelease.php'; ?>
 <br>
-    <?php include __DIR__ . '/../../contents/disbursement/approver.php';?>
+<?php include __DIR__ . '/../../contents/disbursement/approver.php';?>
 
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
 <?php include "../../static/js/modal.php" ?>

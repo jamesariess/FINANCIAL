@@ -38,7 +38,6 @@ $stmtBankBalance = $pdo->query("
 ");
 $bankBalance = $stmtBankBalance->fetch(PDO::FETCH_ASSOC)['bankBalance'];
 
-// ---- NEW: Total GL Cash (Cash on Hand + Bank Balance) ----
 $totalGLCash = $cashOnHand + $bankBalance;
 
 
@@ -83,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([
                     ':name'    => $deptName,
                     ':amount'  => $budgetAmount,
-                    ':year'    => $year . '-01-01', // Ensure it's a valid date
+                    ':year'    => $year . '-01-01', 
                     ':details' => $budgetDetails
                 ]);
                 $reload = true;
@@ -104,7 +103,7 @@ $deptDetails = $deptDetailsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
 $stmt = $pdo->query("SELECT Name, Amount, Details,Deptbudget,DateValid FROM departmentbudget WHERE status='Proceed' ORDER BY Name ASC");
 $budgets = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Compute per-year sums for JS validation
+
 $yearSums = [];
 $stmtYearSums = $pdo->prepare("SELECT YEAR(DateValid) AS yr, IFNULL(SUM(Amount), 0) AS sum_amt FROM departmentbudget WHERE status = 'Proceed' GROUP BY yr");
 $stmtYearSums->execute();

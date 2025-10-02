@@ -1,4 +1,3 @@
-
 <?php
 include_once __DIR__ . '/../../utility/connection.php';
 
@@ -36,9 +35,11 @@ function sendEmailPHPMailer($to, $subject, $bodyHtml) {
 $input = json_decode(file_get_contents('php://input'), true);
 $successMessage = '';
 $errorMessage = '';
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
- if (!empty($input['action']) && $input['action'] === 'sendReminder' && !empty($input['reminderID'])) {
+
+    if (!empty($input['action']) && $input['action'] === 'sendReminder' && !empty($input['reminderID'])) {
         $reminderID = intval($input['reminderID']);
         $response = ['success' => true, 'message' => 'Reminder marked as sent'];
 
@@ -46,7 +47,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt = $pdo->prepare("UPDATE follow SET Remarks='Reminder Sent' WHERE reminderID = ?");
             $stmt->execute([$reminderID]);
 
-   
             $sql = "SELECT f.reminderID, i.reference_no, i.due_date, c.email AS customer_email
                     FROM follow f
                     INNER JOIN ar_invoices i ON f.InvoiceID = i.invoice_id
@@ -62,7 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $result = sendEmailPHPMailer($reminder['customer_email'], $subject, $body);
 
                 if ($result === true) {
-                    
                     $upd = $pdo->prepare("UPDATE follow SET Remarks='Emailed Sent' WHERE reminderID = :id");
                     $upd->execute([':id' => $reminderID]);
                     $successMessage = "Email sent to {$reminder['customer_email']}";
@@ -72,137 +71,117 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $response = ['success' => false, 'message' => $errorMessage];
                 }
             } else {
-
-                
                 $stmt = $pdo->prepare("UPDATE follow SET Remarks='Email not Working' WHERE reminderID = ?");
                 $stmt->execute([$reminderID]);
                 $errorMessage = 'Customer email not found.';
                 $response = ['success' => false, 'message' => $errorMessage];
             }
         } catch (PDOException $e) {
-                   $errorMessage = "Database error. " . $e->getMessage();
-                $response = ['success' => false, 'message' => $errorMessage];
-            
+            $errorMessage = "Database error. " . $e->getMessage();
+            $response = ['success' => false, 'message' => $errorMessage];
         }
-        
-     
+
         header('Content-Type: application/json');
         echo json_encode($response);
         exit;
     }
 
 
+    if (isset($_POST['create'])) {
+        $planID      = $_POST['planID'] ?? null;
+        $invoiceID   = $_POST['InvoiceID'] ?? null;
+        $contactinfo = $_POST['Contactinfo'] ?? null;
 
-if (isset($_POST['create'])) {
-    $planID    = $_POST['planID'] ?? null;
-    $invoiceID = $_POST['InvoiceID'] ?? null;
-    $contactinfo = $_POST['Contactinfo'] ?? null;
-  
-
-    if (empty($planID) || empty($invoiceID) || empty($contactinfo)) {
-        $errorMessage = "⚠️ Please fill in all required fields.";
-      
-    }
-
-    try {
-    
-        $sqlDue = "SELECT due_date FROM ar_invoices WHERE invoice_id = :invoiceID AND (Archive IS NULL OR UPPER(TRIM(Archive))='NO')";
-        $stmtDue = $pdo->prepare($sqlDue);
-        $stmtDue->execute([':invoiceID' => $invoiceID]);
-        $invoice = $stmtDue->fetch(PDO::FETCH_ASSOC);
-
-        if (!$invoice) {
-           $errorMessage = "❌ Invoice not found or archived.";
-            
-        }
-        $dueDate = new DateTime($invoice['due_date'], new DateTimeZone('Asia/Manila'));
-
-    
-        $sqlPlan = "SELECT remaining_days	 FROM collection_plan WHERE planID = :planID AND (Archive IS NULL OR UPPER(TRIM(Archive))='NO')";
-        $stmtPlan = $pdo->prepare($sqlPlan);
-        $stmtPlan->execute([':planID' => $planID]);
-        $plan = $stmtPlan->fetch(PDO::FETCH_ASSOC);
-
-        if (!$plan) {
-           $errorMessage = "❌ Plan not found or archived.";
-            
-        }
-        $remainingDays = (int)$plan['remaining_days'];
-
-     
-        $followUpDate = clone $dueDate;
-        $followUpDate->modify("-{$remainingDays} days");
-        $followUpDateStr = $followUpDate->format("Y-m-d");
-
-      
-        $checkSql = "SELECT COUNT(*) FROM follow 
-                     WHERE InvoiceID = :invoiceID 
-                       AND planID = :planID
-                       AND (Archive IS NULL OR UPPER(TRIM(Archive)) = 'NO')";
-        $checkStmt = $pdo->prepare($checkSql);
-        $checkStmt->execute([':invoiceID' => $invoiceID, ':planID' => $planID]);
-        if ($checkStmt->fetchColumn() > 0) {
-            $errorMessage = "❌ This invoice already has a follow-up with the same plan.";
-            
+        if (empty($planID) || empty($invoiceID) || empty($contactinfo)) {
+            $errorMessage = "⚠️ Please fill in all required fields.";
         }
 
-      
-      
-
-        // ✅ Insert with calculated FollowUpDate
-        $sql = "INSERT INTO follow 
-                (planID, InvoiceID, FollowUpDate, Contactinfo, Remarks, paymentstatus, Archive) 
-                VALUES 
-                (:planID, :invoiceID, :followUpDate, :contactinfo, 'To Be Sent', 'NOT PAID', 'NO')";
-        $stmt = $pdo->prepare($sql);
-        $stmt->execute([
-            ':planID'       => $planID,
-            ':invoiceID'    => $invoiceID,
-            ':followUpDate' => $followUpDateStr,
-            ':contactinfo'  => $contactinfo
-            
-        ]);
-
-      
-    } catch (PDOException $e) {
-         $errorMessage = "❌ Error inserting reminder.";
-      
+        try {
            
+            $sqlDue = "SELECT due_date FROM ar_invoices WHERE invoice_id = :invoiceID AND (Archive IS NULL OR UPPER(TRIM(Archive))='NO')";
+            $stmtDue = $pdo->prepare($sqlDue);
+            $stmtDue->execute([':invoiceID' => $invoiceID]);
+            $invoice = $stmtDue->fetch(PDO::FETCH_ASSOC);
+
+            if (!$invoice) {
+                $errorMessage = "❌ Invoice not found or archived.";
+            } else {
+                $dueDate = new DateTime($invoice['due_date'], new DateTimeZone('Asia/Manila'));
+
+           
+                $sqlPlan = "SELECT remaining_days FROM collection_plan WHERE planID = :planID AND (Archive IS NULL OR UPPER(TRIM(Archive))='NO')";
+                $stmtPlan = $pdo->prepare($sqlPlan);
+                $stmtPlan->execute([':planID' => $planID]);
+                $plan = $stmtPlan->fetch(PDO::FETCH_ASSOC);
+
+                if (!$plan) {
+                    $errorMessage = "❌ Plan not found or archived.";
+                } else {
+                    $remainingDays = (int)$plan['remaining_days'];
+
+                    $followUpDate = clone $dueDate;
+                    $followUpDate->modify("-{$remainingDays} days");
+                    $followUpDateStr = $followUpDate->format("Y-m-d");
+
+                 
+                    $checkSql = "SELECT COUNT(*) FROM follow 
+                                 WHERE InvoiceID = :invoiceID 
+                                   AND planID = :planID
+                                   AND (Archive IS NULL OR UPPER(TRIM(Archive)) = 'NO')";
+                    $checkStmt = $pdo->prepare($checkSql);
+                    $checkStmt->execute([':invoiceID' => $invoiceID, ':planID' => $planID]);
+                    if ($checkStmt->fetchColumn() > 0) {
+                        $errorMessage = "❌ This invoice already has a follow-up with the same plan.";
+                    } else {
+                     
+                        $sql = "INSERT INTO follow 
+                                (planID, InvoiceID, FollowUpDate, Contactinfo, Remarks, paymentstatus, Archive) 
+                                VALUES 
+                                (:planID, :invoiceID, :followUpDate, :contactinfo, 'To Be Sent', 'NOT PAID', 'NO')";
+                        $stmt = $pdo->prepare($sql);
+                        $stmt->execute([
+                            ':planID'       => $planID,
+                            ':invoiceID'    => $invoiceID,
+                            ':followUpDate' => $followUpDateStr,
+                            ':contactinfo'  => $contactinfo
+                        ]);
+                        $successMessage = "✅ Reminder created successfully.";
+                    }
+                }
+            }
+        } catch (PDOException $e) {
+            $errorMessage = "❌ Error inserting reminder. " . $e->getMessage();
+        }
     }
-}
 
-
+ 
     if (isset($_POST['archive'])) {
         $reminderID = $_POST['reminderID'];
-        $sql = "UPDATE  follow SET Archive = 'YES' WHERE reminderID = :reminderID";
+        $sql = "UPDATE follow SET Archive = 'YES' WHERE reminderID = :reminderID";
         $stmt = $pdo->prepare($sql);
         $stmt->bindParam(':reminderID', $reminderID);
 
         try {
             $stmt->execute();
-            $successMessage = "✅  Payment archived successfully.";
-
-      
+            $successMessage = "✅ Payment archived successfully.";
         } catch (PDOException $e) {
-              $errorMessage = "❌ Error: " . $e->getMessage();
-          
-            
-           
+            $errorMessage = "❌ Error: " . $e->getMessage();
         }
     }
-    if(isset($_POST['update'])){
-        $reminderID = $_POST['reminderID'];
 
+    if (isset($_POST['update'])) {
+        $reminderID  = $_POST['reminderID'];
         $contactinfo = $_POST['Contactinfo'];
-        $remarks = $_POST['Remarks'];
-        $status = $_POST['status'];
-        if ( empty($contactinfo) || empty($remarks) || empty($status)) {
-            $errorMessage = "Don't Leave Empty.";
-          
-        } else {
-            $sql = "UPDATE  follow SET Contactinfo = :contactinfo, Remarks = :remarks, paymentstatus = :status WHERE reminderID = :reminderID";
-            $stmt = $pdo->prepare($sql);
+        $remarks     = $_POST['Remarks'];
+        $status      = $_POST['status'];
 
+        if (empty($contactinfo) || empty($remarks) || empty($status)) {
+            $errorMessage = "Don't Leave Empty.";
+        } else {
+            $sql = "UPDATE follow 
+                    SET Contactinfo = :contactinfo, Remarks = :remarks, paymentstatus = :status 
+                    WHERE reminderID = :reminderID";
+            $stmt = $pdo->prepare($sql);
             $stmt->bindParam(':contactinfo', $contactinfo);
             $stmt->bindParam(':remarks', $remarks);
             $stmt->bindParam(':status', $status);
@@ -210,19 +189,12 @@ if (isset($_POST['create'])) {
 
             try {
                 $stmt->execute();
-                          $successMessage = "✅  Reminder updated successfully";
-       
-                
+                $successMessage = "✅ Reminder updated successfully.";
             } catch (PDOException $e) {
-                              $errorMessage = "❌ Error: " . $e->getMessage();
-   
-            exit;
+                $errorMessage = "❌ Error: " . $e->getMessage();
             }
         }
-   
     }
-    
-   
 }
 
 
@@ -241,27 +213,27 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     ];
 
     try {
-        // Total Reminders
+      
         $sql = "SELECT COUNT(*) as total FROM follow WHERE Archive='NO'";
         $stmt = $pdo->query($sql);
         $response['data']['totalRequest'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Paid Reminders
+     
         $sql = "SELECT COUNT(*) as total FROM follow WHERE paymentstatus='Paid' AND Archive='NO'";
         $stmt = $pdo->query($sql);
         $response['data']['totalAmountRelease'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Unpaid Reminders
+     
         $sql = "SELECT COUNT(*) as total FROM follow WHERE paymentstatus='Not Paid' AND Archive='NO'";
         $stmt = $pdo->query($sql);
         $response['data']['rejectedRequest'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Failed Reminders
+   
         $sql = "SELECT COUNT(*) as total FROM follow WHERE Remarks='Failed To Sent' AND Archive='NO'";
         $stmt = $pdo->query($sql);
         $response['data']['newRequest'] = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Overdue Reminders
+      
         $now = date("Y-m-d H:i:s");
         $sql = "SELECT i.reference_no, i.amount, i.due_date, f.paymentstatus, f.Contactinfo, f.Remarks, f.reminderID
                 FROM follow f
@@ -273,7 +245,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         $stmt->execute(['now' => $now]);
         $response['data']['overdue'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Today's Reminders
+    
         $startOfToday = date("Y-m-d 00:00:00");
         $endOfToday = date("Y-m-d 23:59:59");
         $sql = "SELECT i.reference_no, i.amount, f.FollowUpDate, f.paymentstatus, f.Contactinfo, f.Remarks, f.reminderID
@@ -285,7 +257,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
         $stmt->execute(['start' => $startOfToday, 'end' => $endOfToday]);
         $response['data']['todayReminders'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Tomorrow's Reminders
+
         $startOfTomorrow = date("Y-m-d 00:00:00", strtotime("+1 day"));
         $endOfTomorrow = date("Y-m-d 23:59:59", strtotime("+1 day"));
         $sql = "SELECT i.reference_no, i.amount, f.FollowUpDate, f.paymentstatus, f.Contactinfo, f.Remarks, f.reminderID
@@ -300,12 +272,15 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
     } catch (PDOException $e) {
         $response['success'] = false;
         $response['message'] = "Database error: " . $e->getMessage();
+     
+        $errorMessage = "Database error: " . $e->getMessage();
     }
 
     header('Content-Type: application/json');
     echo json_encode($response);
     exit;
 }
+
 
 try {
     $sql = "
@@ -323,15 +298,47 @@ try {
         WHERE f.Archive = 'NO'
         ORDER BY f.FollowUpDate ASC
     ";
-
-    $stmt = $pdo->prepare($sql);  // ✅ safer than query()
+    $stmt = $pdo->prepare($sql);
     $stmt->execute();
     $reminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
-    echo "❌ Error fetching plans: " . htmlspecialchars($e->getMessage());
+    $errorMessage = "❌ Error fetching plans: " . $e->getMessage();
 }
 
+
+try {
+    $now = date("Y-m-d H:i:s");
+    $sql = "SELECT i.reference_no,i.amount,i.due_date,f.paymentstatus,f.Contactinfo,f.Remarks,f.reminderID
+            FROM follow f
+            JOIN ar_invoices i ON f.InvoiceID = i.invoice_id 
+            WHERE paymentstatus='Not Paid'
+              AND i.due_date < :now
+              AND f.Archive='NO'";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['now' => $now]);
+    $overdue = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $startOfToday = date("Y-m-d 00:00:00");
+    $endOfToday   = date("Y-m-d 23:59:59");
+    $sql = "SELECT i.reference_no,i.amount,f.FollowUpDate,f.paymentstatus,f.Contactinfo,f.Remarks,f.reminderID
+            FROM follow f
+            JOIN ar_invoices i ON f.InvoiceID = i.invoice_id 
+            WHERE f.FollowUpDate BETWEEN :start AND :end
+              AND f.Archive='NO'";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['start' => $startOfToday, 'end' => $endOfToday]);
+    $todayReminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $startOfTomorrow = date("Y-m-d 00:00:00", strtotime("+1 day"));
+    $endOfTomorrow   = date("Y-m-d 23:59:59", strtotime("+1 day"));
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['start' => $startOfTomorrow, 'end' => $endOfTomorrow]);
+    $tomorrowReminders = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    $errorMessage = "❌ Error fetching reminders: " . $e->getMessage();
+}
 
 $today = date("Y-m-d H:i:s");
 $tomorrow = date("Y-m-d H:i:s", strtotime("+1 day"));

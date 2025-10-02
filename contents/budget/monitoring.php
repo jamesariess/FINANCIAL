@@ -73,7 +73,7 @@
         </section>
 
 
-<div class="p-4 rounded-lg shadow mb-6 ">
+<div class="p-4 rounded-lg shadow mb-6  bg-white card">
     <div class="flex items-center justify-between mb-3">
         <h2 class="font-medium">Budget vs Actual (by Title)</h2>
         <div class="text-sm text-gray-500 mb-4">Click bars to view details</div>

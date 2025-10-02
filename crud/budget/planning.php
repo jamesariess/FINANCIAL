@@ -1,13 +1,23 @@
 <?php
-// PHP Backend Logic
+
 include_once __DIR__ . '/../../utility/connection.php';
 date_default_timezone_set('Asia/Manila');
 
-// Fetch requests
+
+$successMessage = '';
+$errorMessage = '';
+if (isset($_GET['success'])) {
+    $successMessage = $_GET['message'] ?? 'Operation successful';
+} elseif (isset($_GET['error'])) {
+    $errorMessage = $_GET['message'] ?? 'An error occurred';
+}
+ 
+
 $sql = "SELECT
     r.requestID, r.requestTitle, r.ApprovedAmount, r.Requested_by, r.Due, r.status, r.date,r.Amount,
             ch.accountName as Title, c.allocationID, 	
-         d.Name
+         d.Name,
+         (c.Amount - COALESCE(c.usedAllocation, 0)) as balance
         FROM request r
         JOIN costallocation c ON r.allocationID = c.allocationID
         JOIN chartofaccount ch ON c.accountID = ch.accountID 
@@ -24,6 +34,29 @@ try {
   
     die("Database query failed: " . $e->getMessage());
 }
+
+if (isset($_GET['json'])) {
+    header('Content-Type: application/json');
+    echo json_encode($requests);
+    exit;
+}
+
+if (isset($_GET['json_reports'])) {
+    $sql_reports = "SELECT r.* ,
+     ch.accountName AS Title,
+    d.Name
+    FROM request r
+JOIN costallocation c on r.allocationID = c.allocationID
+JOIN chartofaccount ch ON c.accountID = ch.accountID 
+JOIN departmentbudget d on c.Deptbudget = d.Deptbudget
+WHERE r.Archive = 'NO'";
+    $stmt_reports = $pdo->query($sql_reports);
+    $disbursementReports = $stmt_reports->fetchAll(PDO::FETCH_ASSOC);
+    header('Content-Type: application/json');
+    echo json_encode($disbursementReports);
+    exit;
+}
+
 $id = $_GET['id'] ?? null;
 $sql = "SELECT * FROM request WHERE requestID = :id";
 $stmt = $pdo->prepare($sql);
@@ -43,10 +76,9 @@ if (isset($_POST['update'])) {
     $stmt->bindParam(':requestID', $requestID);
 
     if ($stmt->execute()) {
-        echo "<script>window.location.href = window.location.pathname + '?refresh=1';</script>";
-        exit;
+        $successMessage = "Update successful";
     } else {
-        echo "Update failed!";
+        $errorMessage = "Update failed";
     }
 }
 
@@ -66,18 +98,51 @@ if (isset($_POST['update'])) {
             exit;
         }
 
+  
+        $checkStmt = $pdo->prepare("
+            SELECT (c.Amount - COALESCE(c.usedAllocation, 0)) as balance 
+            FROM costallocation c 
+            JOIN request r ON r.allocationID = c.allocationID 
+            WHERE r.requestID = :id
+        ");
+        $checkStmt->execute([':id' => $requestID]);
+        $balanceRow = $checkStmt->fetch(PDO::FETCH_ASSOC);
+        $balance = $balanceRow ? floatval($balanceRow['balance']) : 0;
+
+        if ($approvedAmount > $balance) {
+            echo json_encode(["success" => false, "message" => "Approved amount exceeds available balance of ₱" . number_format($balance, 2)]);
+            exit;
+        }
+
         try {
+            $pdo->beginTransaction();
+
             $update = $pdo->prepare("
                 UPDATE request 
                 SET status = :status, ApprovedAmount = :amount 
                 WHERE requestID = :id
             ");
-            $success = $update->execute([
+            $update->execute([
                 ":status" => $status,
                 ":amount" => $approvedAmount,
                 ":id" => $requestID
             ]);
+
+            
+            $updateAlloc = $pdo->prepare("
+                UPDATE costallocation 
+                SET usedAllocation = COALESCE(usedAllocation, 0) + :amount 
+                WHERE allocationID = (SELECT allocationID FROM request WHERE requestID = :id)
+            ");
+            $updateAlloc->execute([
+                ":amount" => $approvedAmount,
+                ":id" => $requestID
+            ]);
+
+            $pdo->commit();
+            $success = true;
         } catch (PDOException $e) {
+            $pdo->rollback();
             error_log("Database error: " . $e->getMessage());
             $success = false;
         }

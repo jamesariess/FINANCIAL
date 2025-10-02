@@ -11,7 +11,7 @@
 <body>
     <?php include "../sidebar.php"; ?> 
   
-
+ 
      <?php include __DIR__ . '/../../contents/budget/planning.php'; ?>
      <?php include __DIR__ . '/../../filtering/budget/planning.html'; ?>
      <?php include __DIR__ . '/../../modal/disbursement/disbursement.html'; ?>
@@ -23,6 +23,7 @@
 </div>
 <script src="<?php echo '../../static/js/filter.js';?>"></script>
 <?php include "../../static/js/modal.php" ?>
+
 
 </body>
 

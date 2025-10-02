@@ -54,25 +54,7 @@
 </div>
 
 
-<?php if (!empty($successMessage)): ?>
-    <div id="successAlert" class="mt-4 w-full bg-green-100 border-l-4 border-green-500 p-4 rounded-md shadow-md flex justify-between items-center mb-4">
-      <p class="text-green-600 font-medium text-lg px-4"><?php echo htmlspecialchars($successMessage); ?></p>
-      <button onclick="document.getElementById('successAlert').style.display='none';" class="text-green-600 hover:text-green-800 text-xl p-2">&times;</button>
-    </div>
-    <script>
-      setTimeout(() => document.getElementById('successAlert').style.display = 'none', 5000);
-    </script>
-  <?php endif; ?>
 
-  <?php if (!empty($errorMessage)): ?>
-    <div id="errorAlert" class="mt-4 w-full bg-red-100 border-l-4 border-red-500 p-4 rounded-md shadow-md flex justify-between items-center mb-4">
-      <p class="text-red-600 font-medium text-lg px-4"><?php echo htmlspecialchars($errorMessage); ?></p>
-      <button onclick="document.getElementById('errorAlert').style.display='none';" class="text-red-600 hover:text-red-800 text-xl p-2">&times;</button>
-    </div>
-    <script>
-      setTimeout(() => document.getElementById('errorAlert').style.display = 'none', 5000);
-    </script>
-  <?php endif; ?>
   
 
 <div>
@@ -93,10 +75,10 @@
     </div>
 </div>
 
-<div class="container mx-auto p-6 space-y-8">
+<div class="mt-6 space-y-8">
 
-<div class="card rounded-2xl shadow-lg p-6 border border-red-200">
-    <div class=" flex items-center justify-between mb-4">
+<div class="card rounded-2xl shadow-lg p-6 border border-red-200 border ">
+    <div class=" flex items-center justify-between mb-4 ">
         <h2 class="text-xl font-bold text-red-600 flex items-center gap-2">
             <i class="fas fa-exclamation-circle"></i>
             Overdue Reminders (Not Paid)
@@ -110,9 +92,9 @@
             <p class="text-gray-500 font-medium">No overdue reminders at the moment. 🎉</p>
         </div>
     <?php else: ?>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6  ">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <?php foreach ($overdue as $row): ?>
-                <div class="bg-red-50 border border-red-200 rounded-xl p-5 shadow card ">
+                <div class="bg-red-50 border border-red-200 rounded-xl p-5 shadow card  ">
                     <h3 class="font-semibold ">Reference #<?= $row['reference_no'] ?></h3>
                     <p class="text-sm ">Due Date: <span class="font-medium"><?= date("F j, Y", strtotime($row['due_date'])) ?></span></p>
                     <p class="text-sm ">Contact: <span class="font-medium"><?= $row['Contactinfo'] ?></span></p>

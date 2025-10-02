@@ -149,28 +149,23 @@
         </div>
     </div>
 
-  <?php if ($success): ?>
-        <div class="container mx-auto mt-6">
-            <div id="notificationContainer" class="mx-auto mt-6"></div>
-            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-6 rounded-lg shadow-md" role="alert">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <svg class="w-6 h-6 mr-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        <span class="text-lg font-semibold"><?php echo htmlspecialchars($message); ?></span>
-                    </div>
-                    <button type="button" class="text-green-700 hover:text-green-900" onclick="this.parentElement.parentElement.style.display='none';">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <script>
-        
-            setTimeout(() => {
-                document.querySelector('.bg-green-100').style.display = 'none';
-            }, 5000);
-        </script>
-    <?php endif; ?>
+<?php if (!empty($successMessage)): ?>
+    <div id="successAlert" class="mt-4 w-full bg-green-100 border-l-4 border-green-500 p-4 rounded-md shadow-md flex justify-between items-center mb-4">
+      <p class="text-green-600 font-medium text-lg px-4"><?php echo htmlspecialchars($successMessage); ?></p>
+      <button onclick="document.getElementById('successAlert').style.display='none';" class="text-green-600 hover:text-green-800 text-xl p-2">&times;</button>
+    </div>
+    <script>
+      setTimeout(() => document.getElementById('successAlert').style.display = 'none', 5000);
+    </script>
+  <?php endif; ?>
+
+  <?php if (!empty($errorMessage)): ?>
+    <div id="errorAlert" class="mt-4 w-full bg-red-100 border-l-4 border-red-500 p-4 rounded-md shadow-md flex justify-between items-center mb-4">
+      <p class="text-red-600 font-medium text-lg px-4"><?php echo htmlspecialchars($errorMessage); ?></p>
+      <button onclick="document.getElementById('errorAlert').style.display='none';" class="text-red-600 hover:text-red-800 text-xl p-2">&times;</button>
+    </div>
+    <script>
+      setTimeout(() => document.getElementById('errorAlert').style.display = 'none', 5000);
+    </script>
+  <?php endif; ?>
     <br>

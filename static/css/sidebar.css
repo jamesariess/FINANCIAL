@@ -232,7 +232,7 @@ body.dark-mode {
 }
 
 .card {
-    background-color: white;
+   
     border: none;
     border-radius: var(--border-radius);
     box-shadow: var(--shadow);
